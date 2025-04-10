@@ -21,12 +21,16 @@ export class AssetResolver {
   }
 
   /**
-   * Resolves an asset name to its full path
-   * @param assetName - Name of the asset to resolve
+   * Resolves an asset path and ensures it exists
+   * @param assetName The name of the asset to resolve
    * @returns The full path to the asset
-   * @throws Error if the asset is not found
+   * @throws Error if the asset cannot be found
    */
   resolveAsset(assetName: string): string {
+    if (!assetName || typeof assetName !== "string") {
+      throw new Error("Asset name must be a non-empty string");
+    }
+
     const assetPath = path.join(this.basePath, assetName);
     if (!fs.existsSync(assetPath)) {
       throw new Error(`Asset not found: ${assetName}`);
