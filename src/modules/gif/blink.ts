@@ -1,37 +1,26 @@
 import { Canvas, loadImage } from "canvas";
 import GIFEncoder from "gifencoder";
 import { ImageInput, ProcessedOutput } from "../../core/types.ts";
-import { BaseModule } from "../base-module.ts";
+import { MultiImageBaseModule } from "../base-module.ts";
 
-export class BlinkGif extends BaseModule {
+export class BlinkGif extends MultiImageBaseModule {
   private static readonly CANVAS_SIZE = 480;
 
-  /**
-   * Creates a blinking GIF from multiple images
-   * @param input Primary image input
-   * @param args First argument: frame delay (ms), followed by additional images
-   * @returns GIF buffer
-   */
   async process(
-    input: ImageInput,
-    ...args: unknown[]
+    inputs: ImageInput[],
+    delay: number = 100,
   ): Promise<ProcessedOutput> {
-    const [delay, ...additionalImages] = args;
-
-    if (typeof delay !== "number" || delay <= 0) {
-      throw new TypeError(`Invalid delay: ${delay}. Expected positive number.`);
-    }
-    if (additionalImages.length === 0) {
+    if (inputs.length < 2) {
       throw new Error(
         "At least two images are required for the blinking effect.",
       );
     }
 
-    const allImages = [input, ...(additionalImages as ImageInput[])];
+    if (typeof delay !== "number" || delay <= 0) {
+      throw new TypeError(`Invalid delay: ${delay}. Expected positive number.`);
+    }
 
-    const validatedImages = await Promise.all(
-      allImages.map((img) => this.validateInput(img)),
-    );
+    const validatedImages = await this.validateMultipleInputs(inputs);
 
     const encoder = new GIFEncoder(
       BlinkGif.CANVAS_SIZE,

@@ -10,12 +10,10 @@ import { Buffer } from "node:buffer";
 export async function validateImage(input: ImageInput): Promise<Buffer | null> {
   if (!input) return null;
 
-  // Directly return valid Buffer inputs
   if (Buffer.isBuffer(input)) {
     return input;
   }
 
-  // Handle file path strings
   if (typeof input === "string") {
     try {
       return await fs.readFile(input);

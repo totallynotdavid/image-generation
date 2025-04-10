@@ -11,10 +11,11 @@ export class TriggeredGif extends BaseModule {
    * @returns Processed GIF
    */
   async process(
-    input: ImageInput,
+    inputs: ImageInput[],
     timeout: number = 15,
   ): Promise<ProcessedOutput> {
-    const imageBuffer = await this.validateInput(input);
+    const validatedInputs = await this.validateInputs(inputs);
+    const imageBuffer = validatedInputs[0];
 
     if (isNaN(timeout)) {
       throw new Error("The timeout argument must be a number.");

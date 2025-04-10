@@ -1,10 +1,11 @@
 import {
   ImageInput,
   ImageProcessor,
+  MultiImageModule,
   ProcessedOutput,
   ProcessingModule,
+  SingleImageModule,
 } from "./types.ts";
-import { validateImage } from "../utils/image-validator.ts";
 
 export class ImageProcessorImpl implements ImageProcessor {
   private modules: Map<string, ProcessingModule> = new Map();
@@ -18,7 +19,7 @@ export class ImageProcessorImpl implements ImageProcessor {
   }
 
   async processImage<T extends unknown[] = unknown[]>(
-    input: ImageInput,
+    input: ImageInput | ImageInput[],
     moduleName: string,
     ...args: T
   ): Promise<ProcessedOutput> {
@@ -34,11 +35,19 @@ export class ImageProcessorImpl implements ImageProcessor {
     }
 
     try {
-      const validatedInput = await validateImage(input);
-      if (!validatedInput) {
-        throw new Error("Invalid image input - validation returned null");
+      if (isSingleImageModule(module) && Array.isArray(input)) {
+        throw new Error(
+          `Module "${normalizedName}" requires a single image, but an array of images was provided.`,
+        );
       }
-      return await module.process(validatedInput, ...args);
+
+      if (isMultiImageModule(module) && !Array.isArray(input)) {
+        throw new Error(
+          `Module "${normalizedName}" requires multiple images, but only a single image was provided.`,
+        );
+      }
+
+      return await module.process(input as any, ...args);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(
@@ -48,4 +57,16 @@ export class ImageProcessorImpl implements ImageProcessor {
       throw new Error(`Unknown error occurred in module "${normalizedName}"`);
     }
   }
+}
+
+function isSingleImageModule(
+  module: ProcessingModule,
+): module is SingleImageModule {
+  return module instanceof isSingleImageModule;
+}
+
+function isMultiImageModule(
+  module: ProcessingModule,
+): module is MultiImageModule {
+  return module instanceof isMultiImageModule;
 }

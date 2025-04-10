@@ -32,7 +32,7 @@ export class ColorUtil extends BaseModule {
    * @throws Error if invalid color format
    */
   process(
-    _input: ImageInput,
+    _inputs: ImageInput[],
     color: string = DEFAULT_CONFIG.defaultColor,
   ): Promise<ProcessedOutput> {
     if (!/^#([A-Fa-f0-9]{3,4}){1,2}$/.test(color)) {
