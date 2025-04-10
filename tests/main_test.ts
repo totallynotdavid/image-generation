@@ -74,16 +74,16 @@ Deno.test("ImageProcessor", async (t) => {
       const resolver = createTestAssetResolver();
       const processor = new ImageProcessorImpl();
 
-      // Create necessary assets for testing
-      saveTestAsset("gay.png", createImageInput());
+      const imageBuffer = await createImageInput();
+
+      saveTestAsset("gay.png", imageBuffer);
 
       // Register a module
       const filter = new GayFilter(resolver);
       processor.registerModule("testFilter", filter);
 
       // Process an image
-      const input = createImageInput();
-      const output = await processor.processImage(input, "testFilter");
+      const output = await processor.processImage(imageBuffer, "testFilter");
 
       assertExists(output);
       assertEquals(output instanceof Buffer, true);
@@ -91,7 +91,7 @@ Deno.test("ImageProcessor", async (t) => {
 
     await t.step("should throw error for unregistered module", async () => {
       const processor = new ImageProcessorImpl();
-      const input = createImageInput();
+      const input = await createImageInput();
 
       await assertRejects(
         async () => {
@@ -109,8 +109,11 @@ Deno.test("ImageProcessor", async (t) => {
         const processor = new ImageProcessorImpl();
 
         // Create necessary assets
-        saveTestAsset("gay.png", createImageInput());
-        saveTestAsset("triggered.png", createImageInput());
+        const imageBuffer = await createImageInput();
+        const imageBuffer2 = await createImageInput();
+
+        saveTestAsset("gay.png", imageBuffer);
+        saveTestAsset("triggered.png", imageBuffer2);
 
         // Register a single image module
         const singleImageModule = new GayFilter(resolver);
@@ -123,7 +126,8 @@ Deno.test("ImageProcessor", async (t) => {
         // Try to process an array with a single image module
         await assertRejects(
           async () => {
-            await processor.processImage([createImageInput()], "singleImage");
+            const imageInput = await createImageInput();
+            await processor.processImage([imageInput], "singleImage");
           },
           Error,
           "requires a single image",
@@ -132,7 +136,8 @@ Deno.test("ImageProcessor", async (t) => {
         // Try to process a single image with a multi image module
         await assertRejects(
           async () => {
-            await processor.processImage(createImageInput(), "multiImage");
+            const imageInput = await createImageInput();
+            await processor.processImage(imageInput, "multiImage");
           },
           Error,
           "requires multiple images",
@@ -150,7 +155,7 @@ Deno.test("BlurFilter", async (t) => {
       const resolver = createTestAssetResolver();
       const filter = new BlurFilter(resolver);
 
-      const input = createImageInput();
+      const input = await createImageInput();
       const output = await filter.process(input);
 
       assertExists(output);
@@ -161,7 +166,7 @@ Deno.test("BlurFilter", async (t) => {
       const resolver = createTestAssetResolver();
       const filter = new BlurFilter(resolver);
 
-      const input = createImageInput();
+      const input = await createImageInput();
       const output = await filter.process(input, 10);
 
       assertExists(output);
@@ -172,7 +177,7 @@ Deno.test("BlurFilter", async (t) => {
       const resolver = createTestAssetResolver();
       const filter = new BlurFilter(resolver);
 
-      const input = createImageInput();
+      const input = await createImageInput();
       // Should use default blur level for non-numeric input
       const output = await filter.process(
         input,
@@ -259,12 +264,12 @@ Deno.test("TriggeredGif", async (t) => {
       "should create a triggered gif with default timeout",
       async () => {
         const resolver = createTestAssetResolver();
-        // Create the necessary asset
-        saveTestAsset("triggered.png", createImageInput());
+        const imageBuffer = await createImageInput();
+        saveTestAsset("triggered.png", imageBuffer);
 
         const triggeredGif = new TriggeredGif(resolver);
 
-        const input = createImageInput();
+        const input = await createImageInput();
         const output = await triggeredGif.process(input);
 
         assertExists(output);
@@ -276,12 +281,12 @@ Deno.test("TriggeredGif", async (t) => {
       "should create a triggered gif with custom timeout",
       async () => {
         const resolver = createTestAssetResolver();
-        // Create the necessary asset
-        saveTestAsset("triggered.png", createImageInput());
+        const imageBuffer = await createImageInput();
+        saveTestAsset("triggered.png", imageBuffer);
 
         const triggeredGif = new TriggeredGif(resolver);
 
-        const input = createImageInput();
+        const input = await createImageInput();
         const output = await triggeredGif.process(input, 30);
 
         assertExists(output);
@@ -291,11 +296,12 @@ Deno.test("TriggeredGif", async (t) => {
 
     await t.step("should throw error for invalid timeout", async () => {
       const resolver = createTestAssetResolver();
-      saveTestAsset("triggered.png", createImageInput());
+      const imageBuffer = await createImageInput();
+      saveTestAsset("triggered.png", imageBuffer);
 
       const triggeredGif = new TriggeredGif(resolver);
 
-      const input = createImageInput();
+      const input = await createImageInput();
 
       await assertRejects(
         async () => {
@@ -333,15 +339,18 @@ Deno.test("Multi-module tests - Combined workflows", async (t) => {
       const processor = new ImageProcessorImpl();
 
       // Create necessary assets
-      saveTestAsset("gay.png", createImageInput());
-      saveTestAsset("ad.png", createImageInput());
+      const imageBuffer = await createImageInput();
+      const imageBuffer2 = await createImageInput();
+
+      saveTestAsset("gay.png", imageBuffer);
+      saveTestAsset("ad.png", imageBuffer2);
 
       // Register modules
       processor.registerModule("gay", new GayFilter(resolver));
       processor.registerModule("ad", new AdMontage(resolver));
 
       // First process with gay filter
-      const input = createImageInput();
+      const input = await createImageInput();
       const intermediateOutput = await processor.processImage(input, "gay");
 
       // Then take that output and process with ad montage

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { AssetResolver } from "../src/core/asset-resolver.ts";
 import { ImageInput } from "../src/core/types.ts";
+import { Jimp } from "jimp";
 
 /**
  * Creates a test asset resolver with a temporary directory
@@ -26,16 +27,13 @@ export function createTestAssetResolver(): AssetResolver {
  * @param color Background color (hex string)
  * @returns Buffer containing the image data
  */
-export function createTestImage(
+export async function createTestImage(
   width = 100,
   height = 100,
   color = "#FF0000",
-): Buffer {
-  return Buffer.from(
-    `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="${color}"/>
-  </svg>`,
-  );
+): Promise<Buffer> {
+  const image = await new Jimp({ width, height, color });
+  return await image.getBuffer("image/png");
 }
 
 /**
@@ -65,13 +63,13 @@ export function saveTestAsset(
  * @param type Type of input to create ('buffer' or 'path')
  * @returns An ImageInput for testing
  */
-export function createImageInput(
+export async function createImageInput(
   type: "buffer" | "path" = "buffer",
-): ImageInput {
-  const testImage = createTestImage();
+): Promise<ImageInput> {
+  const testImage = await createTestImage();
 
   if (type === "path") {
-    const imagePath = saveTestAsset("test-image.svg", testImage);
+    const imagePath = saveTestAsset("test-image.png", testImage);
     return imagePath;
   }
 
