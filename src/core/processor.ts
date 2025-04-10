@@ -7,6 +7,9 @@ import {
   SingleImageModule,
 } from "./types.ts";
 
+/**
+ * Extended interface for processing modules with type flag
+ */
 interface ModuleWithFlag extends ProcessingModule {
   _acceptsMultipleImages?: boolean;
 }
@@ -15,6 +18,14 @@ export class ImageProcessorImpl implements ImageProcessor {
   private modules: Map<string, ProcessingModule> = new Map();
 
   registerModule(name: string, module: ProcessingModule): void {
+    if (!name || typeof name !== "string") {
+      throw new Error("Module name must be a non-empty string");
+    }
+
+    if (!module || typeof module.process !== "function") {
+      throw new Error("Invalid module: must have a process method");
+    }
+
     const normalizedName = name.toLowerCase();
     if (this.modules.has(normalizedName)) {
       console.warn(`Overwriting existing module: ${normalizedName}`);
@@ -27,6 +38,10 @@ export class ImageProcessorImpl implements ImageProcessor {
     moduleName: string,
     ...args: T
   ): Promise<ProcessedOutput> {
+    if (!moduleName || typeof moduleName !== "string") {
+      throw new Error("Module name must be a non-empty string");
+    }
+
     const normalizedName = moduleName.toLowerCase();
     const module = this.modules.get(normalizedName);
 
@@ -72,19 +87,37 @@ export class ImageProcessorImpl implements ImageProcessor {
   }
 }
 
+/**
+ * Type guard for SingleImageModule
+ */
 function isSingleImageModule(
   module: ProcessingModule,
 ): module is SingleImageModule {
+  const modulePrototype = Object.getPrototypeOf(module);
+  if (modulePrototype && modulePrototype.constructor) {
+    const constructorName = modulePrototype.constructor.name;
+    if (constructorName === "SingleImageBaseModule") {
+      return true;
+    }
+  }
+
   return "process" in module &&
-    module.process.length >= 1 &&
+    typeof module.process === "function" &&
     !isMultiImageModule(module);
 }
 
+/**
+ * Type guard for MultiImageModule
+ */
 function isMultiImageModule(
   module: ProcessingModule,
 ): module is MultiImageModule {
-  if (module.constructor.name.includes("Multi")) {
-    return true;
+  const modulePrototype = Object.getPrototypeOf(module);
+  if (modulePrototype && modulePrototype.constructor) {
+    const constructorName = modulePrototype.constructor.name;
+    if (constructorName === "MultiImageBaseModule") {
+      return true;
+    }
   }
 
   const moduleWithFlag = module as ModuleWithFlag;
