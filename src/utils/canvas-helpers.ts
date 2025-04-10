@@ -3,10 +3,10 @@ import { CanvasData } from "../core/types.ts";
 
 /**
  * Creates a canvas with the specified dimensions
- * @param width - Canvas width (must be positive integer)
- * @param height - Canvas height (must be positive integer)
- * @returns Canvas data object
- * @throws {Error} If invalid dimensions are provided
+ * @param width - Width of the canvas in pixels
+ * @param height - Height of the canvas in pixels
+ * @returns Canvas data object with canvas and context
+ * @throws Error if dimensions are invalid
  */
 export function createCanvas(width: number, height: number): CanvasData {
   if (
@@ -22,14 +22,13 @@ export function createCanvas(width: number, height: number): CanvasData {
 }
 
 /**
- * Optimizes font size to fit text within maxWidth using binary search
+ * Calculates the optimal font size for text to fit within a maximum width
  * @param ctx - Canvas rendering context
  * @param text - Text to measure
- * @param maxWidth - Maximum allowed width in pixels
- * @param defaultFontSize - Initial font size (must be positive integer)
+ * @param maxWidth - Maximum width the text should occupy
+ * @param defaultFontSize - Starting font size
  * @param fontFamily - Font family to use
- * @returns Object containing final font string and calculated fontSize
- * @throws {Error} If invalid defaultFontSize is provided
+ * @returns Object containing the font string and calculated font size
  */
 export function applyText(
   ctx: CanvasRenderingContext2D,
@@ -43,16 +42,17 @@ export function applyText(
   }
 
   let low = 1;
-  let high = Math.min(defaultFontSize, 1000); // Set reasonable maximum
+  let high = Math.min(defaultFontSize, 1000);
   let optimalSize = 0;
 
-  // Early exit for empty text
+  // Short-circuit for empty text
   if (text.trim().length === 0) {
     const fontString = `${defaultFontSize}px ${fontFamily}`;
     ctx.font = fontString;
     return { fontString, fontSize: defaultFontSize };
   }
 
+  // Binary search for optimal font size
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
     ctx.font = `${mid}px ${fontFamily}`;
@@ -74,25 +74,25 @@ export function applyText(
 }
 
 /**
- * Wraps text to fit within specified width with word breaking and hyphen support
+ * Wraps text to fit within a maximum width
  * @param ctx - Canvas rendering context
  * @param text - Text to wrap
- * @param maxWidth - Maximum allowed width per line in pixels
- * @returns Array of wrapped text lines or null if wrapping impossible
+ * @param maxWidth - Maximum width for each line
+ * @returns Array of wrapped text lines or null if text cannot be wrapped
  */
 export function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
 ): string[] | null {
-  // Validate inputs
+  // Input validation
   if (typeof text !== "string") return null;
   if (maxWidth <= 0) return null;
 
   const trimmedText = text.trim();
   if (trimmedText === "") return [];
 
-  // Check if any character can fit
+  // Check if even a single character can fit
   if (ctx.measureText("W").width > maxWidth) return null;
 
   const words = trimmedText.split(/(\s+|-+)/g).filter((word) => {
@@ -115,7 +115,7 @@ export function wrapText(
       currentLine = testLine;
     } else {
       if (currentLine === "") {
-        // Handle single word that's too long
+        // Word is too long for a line by itself
         const chunks = splitWord(ctx, word, maxWidth);
         if (!chunks) return null;
         lines.push(...chunks);
@@ -134,7 +134,11 @@ export function wrapText(
 }
 
 /**
- * Splits a single word into chunks that fit within maxWidth
+ * Splits a word into chunks that fit within a maximum width
+ * @param ctx - Canvas rendering context
+ * @param word - Word to split
+ * @param maxWidth - Maximum width for each chunk
+ * @returns Array of word chunks or null if word cannot be split
  */
 function splitWord(
   ctx: CanvasRenderingContext2D,

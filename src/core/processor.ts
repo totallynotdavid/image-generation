@@ -7,6 +7,10 @@ import {
   SingleImageModule,
 } from "./types.ts";
 
+interface ModuleWithFlag extends ProcessingModule {
+  _acceptsMultipleImages?: boolean;
+}
+
 export class ImageProcessorImpl implements ImageProcessor {
   private modules: Map<string, ProcessingModule> = new Map();
 
@@ -37,24 +41,33 @@ export class ImageProcessorImpl implements ImageProcessor {
     try {
       if (isSingleImageModule(module) && Array.isArray(input)) {
         throw new Error(
-          `Module "${normalizedName}" requires a single image, but an array of images was provided.`,
+          `Module "${module.getName()}" requires a single image, but an array of images was provided.`,
         );
       }
 
       if (isMultiImageModule(module) && !Array.isArray(input)) {
         throw new Error(
-          `Module "${normalizedName}" requires multiple images, but only a single image was provided.`,
+          `Module "${module.getName()}" requires multiple images, but only a single image was provided.`,
         );
       }
 
-      return await module.process(input as any, ...args);
+      if (Array.isArray(input) && isMultiImageModule(module)) {
+        return await (module as MultiImageModule).process(input, ...args);
+      } else if (!Array.isArray(input) && isSingleImageModule(module)) {
+        return await (module as SingleImageModule).process(input, ...args);
+      } else {
+        return await module.process(
+          input as ImageInput | ImageInput[],
+          ...args,
+        );
+      }
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(
-          `Image processing failed in module "${normalizedName}": ${error.message}`,
+          `Image processing failed in module "${module.getName()}": ${error.message}`,
         );
       }
-      throw new Error(`Unknown error occurred in module "${normalizedName}"`);
+      throw new Error(`Unknown error occurred in module "${module.getName()}"`);
     }
   }
 }
@@ -62,11 +75,18 @@ export class ImageProcessorImpl implements ImageProcessor {
 function isSingleImageModule(
   module: ProcessingModule,
 ): module is SingleImageModule {
-  return module instanceof isSingleImageModule;
+  return "process" in module &&
+    module.process.length >= 1 &&
+    !isMultiImageModule(module);
 }
 
 function isMultiImageModule(
   module: ProcessingModule,
 ): module is MultiImageModule {
-  return module instanceof isMultiImageModule;
+  if (module.constructor.name.includes("Multi")) {
+    return true;
+  }
+
+  const moduleWithFlag = module as ModuleWithFlag;
+  return moduleWithFlag._acceptsMultipleImages === true;
 }

@@ -3,7 +3,13 @@ import { ImageInput, ProcessedOutput } from "../../core/types.ts";
 import { BaseModule } from "../base-module.ts";
 import { AssetResolver } from "../../core/asset-resolver.ts";
 
-const DEFAULT_CONFIG = {
+interface ColorConfig {
+  width: number;
+  height: number;
+  defaultColor: string;
+}
+
+const DEFAULT_CONFIG: ColorConfig = {
   width: 2048,
   height: 2048,
   defaultColor: "#FFFFFF",
@@ -11,30 +17,25 @@ const DEFAULT_CONFIG = {
 
 export class ColorUtil extends BaseModule {
   private dimensions: { width: number; height: number };
+  private defaultColor: string;
 
   constructor(
     assetResolver: AssetResolver,
-    config?: Partial<typeof DEFAULT_CONFIG>,
+    config?: Partial<ColorConfig>,
   ) {
-    // Pass the assetResolver to the base class
     super(assetResolver);
     this.dimensions = {
       width: config?.width ?? DEFAULT_CONFIG.width,
       height: config?.height ?? DEFAULT_CONFIG.height,
     };
+    this.defaultColor = config?.defaultColor ?? DEFAULT_CONFIG.defaultColor;
   }
 
-  /**
-   * Create a solid color image.
-   * @param _input Unused input parameter to match interface signature
-   * @param color Color value (default: #FFFFFF)
-   * @returns Color image buffer
-   * @throws Error if invalid color format
-   */
   process(
-    _inputs: ImageInput[],
-    color: string = DEFAULT_CONFIG.defaultColor,
+    _input?: ImageInput | ImageInput[],
+    color: string = this.defaultColor,
   ): Promise<ProcessedOutput> {
+    // Validate color format
     if (!/^#([A-Fa-f0-9]{3,4}){1,2}$/.test(color)) {
       throw new Error(`Invalid color format: ${color}`);
     }

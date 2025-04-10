@@ -3,9 +3,9 @@ import { ImageInput } from "../core/types.ts";
 import { Buffer } from "node:buffer";
 
 /**
- * Validates and retrieves image data from a Buffer or file path.
- * @param input Image input (Buffer or file path)
- * @returns Validated image data as Buffer or null if invalid
+ * Validates and converts an image input to a Buffer
+ * @param input - Image input (file path or Buffer)
+ * @returns Buffer containing the image data or null if invalid
  */
 export async function validateImage(input: ImageInput): Promise<Buffer | null> {
   if (!input) return null;

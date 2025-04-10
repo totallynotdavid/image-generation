@@ -9,6 +9,7 @@ export interface ProcessingModule<
   TInputs extends ImageInput | ImageInput[] = ImageInput | ImageInput[],
 > {
   process(input: TInputs, ...args: unknown[]): Promise<ProcessedOutput>;
+  getName(): string;
 }
 
 export interface SingleImageModule extends ProcessingModule<ImageInput> {

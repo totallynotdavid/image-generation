@@ -11,9 +11,15 @@ import { Buffer } from "node:buffer";
 
 export abstract class BaseModule implements ProcessingModule {
   protected assetResolver: AssetResolver;
+  protected name: string;
 
-  constructor(assetResolver: AssetResolver) {
+  constructor(assetResolver: AssetResolver, name?: string) {
     this.assetResolver = assetResolver;
+    this.name = name || this.constructor.name;
+  }
+
+  getName(): string {
+    return this.name;
   }
 
   abstract process(
@@ -48,6 +54,17 @@ export abstract class BaseModule implements ProcessingModule {
       }),
     );
   }
+
+  protected async validateInputs(
+    inputs: ImageInput | ImageInput[],
+  ): Promise<Buffer[]> {
+    if (Array.isArray(inputs)) {
+      return this.validateMultipleInputs(inputs);
+    } else {
+      const singleBuffer = await this.validateSingleInput(inputs);
+      return [singleBuffer];
+    }
+  }
 }
 
 export abstract class SingleImageBaseModule extends BaseModule
@@ -56,12 +73,37 @@ export abstract class SingleImageBaseModule extends BaseModule
     input: ImageInput,
     ...args: unknown[]
   ): Promise<ProcessedOutput>;
+
+  protected override async validateInputs(
+    input: ImageInput,
+  ): Promise<Buffer[]> {
+    if (Array.isArray(input)) {
+      throw new Error(
+        `${this.getName()} requires a single image, but an array was provided`,
+      );
+    }
+    const validated = await this.validateSingleInput(input);
+    return [validated];
+  }
 }
 
 export abstract class MultiImageBaseModule extends BaseModule
   implements MultiImageModule {
+  protected _acceptsMultipleImages = true;
+
   abstract override process(
     inputs: ImageInput[],
     ...args: unknown[]
   ): Promise<ProcessedOutput>;
+
+  protected override validateInputs(
+    inputs: ImageInput | ImageInput[],
+  ): Promise<Buffer[]> {
+    if (!Array.isArray(inputs)) {
+      throw new Error(
+        `${this.getName()} requires multiple images, but a single image was provided`,
+      );
+    }
+    return this.validateMultipleInputs(inputs);
+  }
 }

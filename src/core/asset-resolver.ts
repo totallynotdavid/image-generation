@@ -21,9 +21,10 @@ export class AssetResolver {
   }
 
   /**
-   * Resolves the path to an asset file
-   * @param assetName Name of the asset file
-   * @returns Full path to the asset
+   * Resolves an asset name to its full path
+   * @param assetName - Name of the asset to resolve
+   * @returns The full path to the asset
+   * @throws Error if the asset is not found
    */
   resolveAsset(assetName: string): string {
     const assetPath = path.join(this.basePath, assetName);

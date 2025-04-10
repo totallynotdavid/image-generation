@@ -20,6 +20,7 @@ export function createProcessor(assetsPath?: string): ImageProcessor {
   const assetResolver = new AssetResolver(assetsPath);
   const processor = new ImageProcessorImpl();
 
+  // Register all modules
   processor.registerModule("blur", new BlurFilter(assetResolver));
   processor.registerModule("greyscale", new GreyscaleFilter(assetResolver));
   processor.registerModule("invert", new InvertFilter(assetResolver));
@@ -37,6 +38,13 @@ export function createProcessor(assetsPath?: string): ImageProcessor {
   return processor;
 }
 
+/**
+ * Processes an image using the specified module
+ * @param input - Image input (file path, Buffer, or array of these)
+ * @param moduleName - Name of the module to use
+ * @param args - Additional arguments for the module
+ * @returns Processed image as Buffer
+ */
 export async function processImage(
   input: ImageInput | ImageInput[],
   moduleName: string,
