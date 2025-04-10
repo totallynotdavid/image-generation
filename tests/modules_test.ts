@@ -2,6 +2,7 @@ import {
   assertEquals,
   assertExists,
   assertThrows,
+  assertRejects
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   cleanupTestAssets,
@@ -41,7 +42,7 @@ Deno.test("GayFilter", async (t) => {
         const filter = new GayFilter(resolver);
         const input = createImageInput();
 
-        await assertThrows(
+        await assertRejects(
           async () => {
             await filter.process(input);
           },
@@ -72,7 +73,7 @@ Deno.test("GreyscaleFilter", async (t) => {
       const resolver = createTestAssetResolver();
       const filter = new GreyscaleFilter(resolver);
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           // @ts-ignore - intentionally testing invalid input
           await filter.process(null);
@@ -81,7 +82,7 @@ Deno.test("GreyscaleFilter", async (t) => {
         "Invalid image input",
       );
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           // @ts-ignore - intentionally testing invalid input
           await filter.process({});
@@ -175,7 +176,7 @@ Deno.test("BlinkGif", async (t) => {
       // Create array with only 1 image
       const inputs = [createImageInput()];
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await blinkGif.process(inputs);
         },
@@ -209,7 +210,7 @@ Deno.test("BlinkGif", async (t) => {
         createImageInput(),
       ];
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await blinkGif.process(inputs, -50);
         },
@@ -217,7 +218,7 @@ Deno.test("BlinkGif", async (t) => {
         "Invalid delay",
       );
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await blinkGif.process(inputs, 0);
         },

@@ -1,8 +1,8 @@
 import {
   assertEquals,
   assertExists,
+  assertRejects,
   assertThrows,
-  assertRejects
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   cleanupTestAssets,
@@ -213,7 +213,7 @@ Deno.test("ColorUtil", async (t) => {
       const resolver = createTestAssetResolver();
       const colorUtil = new ColorUtil(resolver);
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await colorUtil.process(undefined, "not-a-color");
         },
@@ -297,7 +297,7 @@ Deno.test("TriggeredGif", async (t) => {
 
       const input = createImageInput();
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await triggeredGif.process(input, -10);
         },
@@ -305,7 +305,7 @@ Deno.test("TriggeredGif", async (t) => {
         "Invalid timeout",
       );
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await triggeredGif.process(input, NaN);
         },
@@ -313,7 +313,7 @@ Deno.test("TriggeredGif", async (t) => {
         "Invalid timeout",
       );
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await triggeredGif.process(input, 0);
         },
