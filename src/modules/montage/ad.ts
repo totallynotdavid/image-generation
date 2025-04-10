@@ -12,12 +12,12 @@ export class AdMontage extends BaseModule {
     const imageBuffer = await this.validateInput(input);
 
     const image = await Jimp.read(imageBuffer);
-    image.resize(230, 230);
+    image.resize({ w: 230, h: 230 });
 
     const bgPath = this.assetResolver.resolveAsset("ad.png");
     const background = await Jimp.read(bgPath);
     background.composite(image, 150, 75);
 
-    return background.getBufferAsync(Jimp.MIME_PNG);
+    return background.getBuffer("image/png");
   }
 }

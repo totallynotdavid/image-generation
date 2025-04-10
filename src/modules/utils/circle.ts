@@ -12,7 +12,7 @@ export class CircleUtil extends BaseModule {
     const imageBuffer = await this.validateInput(input);
 
     const image = await Jimp.read(imageBuffer);
-    image.resize(480, 480);
+    image.resize({ w: 480, h: 480 });
     image.circle();
 
     return await image.getBuffer("image/png");
