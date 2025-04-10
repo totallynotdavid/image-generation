@@ -2,7 +2,11 @@ import { Canvas } from "canvas";
 import { ImageInput, ProcessedOutput } from "../../core/types.ts";
 import { BaseModule } from "../base-module.ts";
 import { AssetResolver } from "../../core/asset-resolver.ts";
+import { validateColorHex } from "../../utils/image-validator.ts";
 
+/**
+ * Configuration for the color utility
+ */
 interface ColorConfig {
   width: number;
   height: number;
@@ -15,6 +19,9 @@ const DEFAULT_CONFIG: ColorConfig = {
   defaultColor: "#FFFFFF",
 };
 
+/**
+ * Utility for creating solid color images
+ */
 export class ColorUtil extends BaseModule {
   private dimensions: { width: number; height: number };
   private defaultColor: string;
@@ -24,19 +31,39 @@ export class ColorUtil extends BaseModule {
     config?: Partial<ColorConfig>,
   ) {
     super(assetResolver);
-    this.dimensions = {
-      width: config?.width ?? DEFAULT_CONFIG.width,
-      height: config?.height ?? DEFAULT_CONFIG.height,
-    };
-    this.defaultColor = config?.defaultColor ?? DEFAULT_CONFIG.defaultColor;
+
+    const width = config?.width ?? DEFAULT_CONFIG.width;
+    const height = config?.height ?? DEFAULT_CONFIG.height;
+
+    if (
+      !Number.isInteger(width) || !Number.isInteger(height) || width <= 0 ||
+      height <= 0
+    ) {
+      throw new Error(`Invalid dimensions: width=${width}, height=${height}`);
+    }
+
+    const defaultColor = config?.defaultColor ?? DEFAULT_CONFIG.defaultColor;
+
+    if (!validateColorHex(defaultColor)) {
+      throw new Error(`Invalid default color format: ${defaultColor}`);
+    }
+
+    this.dimensions = { width, height };
+    this.defaultColor = defaultColor;
   }
 
+  /**
+   * Generates a solid color image
+   * @param input Unused parameter (maintained for interface compatibility)
+   * @param color Hex color string (defaults to the configured default color)
+   * @returns A promise resolving to a buffer containing the generated image
+   */
   process(
     _input?: ImageInput | ImageInput[],
     color: string = this.defaultColor,
   ): Promise<ProcessedOutput> {
-    // Validate color format
-    if (!/^#([A-Fa-f0-9]{3,4}){1,2}$/.test(color)) {
+    // Validate the color format
+    if (!validateColorHex(color)) {
       throw new Error(`Invalid color format: ${color}`);
     }
 
