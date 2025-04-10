@@ -2,6 +2,7 @@ import {
   assertEquals,
   assertExists,
   assertThrows,
+  assertRejects
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   cleanupTestAssets,
@@ -92,7 +93,7 @@ Deno.test("ImageProcessor", async (t) => {
       const processor = new ImageProcessorImpl();
       const input = createImageInput();
 
-      await assertThrows(
+      await assertRejects(
         async () => {
           await processor.processImage(input, "nonExistentModule");
         },
@@ -120,7 +121,7 @@ Deno.test("ImageProcessor", async (t) => {
         processor.registerModule("multiImage", multiImageModule);
 
         // Try to process an array with a single image module
-        await assertThrows(
+        await assertRejects(
           async () => {
             await processor.processImage([createImageInput()], "singleImage");
           },
@@ -129,7 +130,7 @@ Deno.test("ImageProcessor", async (t) => {
         );
 
         // Try to process a single image with a multi image module
-        await assertThrows(
+        await assertRejects(
           async () => {
             await processor.processImage(createImageInput(), "multiImage");
           },
