@@ -1,5 +1,5 @@
-import { Canvas } from "canvas";
-import { Jimp } from "jimp";
+import { Canvas, CanvasRenderingContext2D } from "canvas";
+import type { Jimp } from "jimp";
 import { Buffer } from "node:buffer";
 
 export type ImageInput = Buffer | string;
@@ -9,13 +9,13 @@ export interface ImageProcessor {
   processImage(
     input: ImageInput,
     moduleName: string,
-    ...args: any[]
+    ...args: unknown[]
   ): Promise<ProcessedOutput>;
   registerModule(name: string, module: ProcessingModule): void;
 }
 
 export interface ProcessingModule {
-  process(input: ImageInput, ...args: any[]): Promise<ProcessedOutput>;
+  process(input: ImageInput, ...args: unknown[]): Promise<ProcessedOutput>;
 }
 
 export interface CanvasData {
@@ -23,4 +23,4 @@ export interface CanvasData {
   ctx: CanvasRenderingContext2D;
 }
 
-export type JimpImage = Jimp;
+export type JimpImage = typeof Jimp;

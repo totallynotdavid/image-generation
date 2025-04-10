@@ -9,37 +9,40 @@ import { validateImage } from "../utils/image-validator.ts";
 export class ImageProcessorImpl implements ImageProcessor {
   private modules: Map<string, ProcessingModule> = new Map();
 
-  /**
-   * Register an image processing module
-   * @param name Module name
-   * @param module Processing module implementation
-   */
   registerModule(name: string, module: ProcessingModule): void {
-    this.modules.set(name.toLowerCase(), module);
+    const normalizedName = name.toLowerCase();
+    if (this.modules.has(normalizedName)) {
+      console.warn(`Overwriting existing module: ${normalizedName}`);
+    }
+    this.modules.set(normalizedName, module);
   }
 
-  /**
-   * Process an image using the specified module
-   * @param input Image input (URL or Buffer)
-   * @param moduleName Name of the module to use
-   * @param args Additional arguments for the module
-   * @returns Processed image as Buffer
-   */
-  async processImage(
+  async processImage<T extends unknown[] = unknown[]>(
     input: ImageInput,
     moduleName: string,
-    ...args: any[]
+    ...args: T
   ): Promise<ProcessedOutput> {
-    const module = this.modules.get(moduleName.toLowerCase());
+    const normalizedName = moduleName.toLowerCase();
+    const module = this.modules.get(normalizedName);
+
     if (!module) {
-      throw new Error(`Module not found: ${moduleName}`);
+      throw new Error(
+        `Module "${normalizedName}" not registered. Available modules: ${
+          Array.from(this.modules.keys()).join(", ")
+        }`,
+      );
     }
 
-    const validatedInput = await validateImage(input);
-    if (!validatedInput) {
-      throw new Error("Invalid image input");
+    try {
+      const validatedInput = await validateImage(input);
+      return await module.process(validatedInput, ...args);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Image processing failed in module "${normalizedName}": ${error.message}`,
+        );
+      }
+      throw new Error(`Unknown error occurred in module "${normalizedName}"`);
     }
-
-    return module.process(validatedInput, ...args);
   }
 }

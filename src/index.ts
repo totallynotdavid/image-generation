@@ -52,7 +52,7 @@ export function createProcessor(assetsPath?: string): ImageProcessor {
 
 /**
  * Process an image using a specified module
- * @param input Image input (URL or Buffer)
+ * @param input Image input (valid file path or image Buffer)
  * @param moduleName Name of the processing module to use
  * @param args Additional arguments for the module
  * @returns Processed image buffer
@@ -60,14 +60,18 @@ export function createProcessor(assetsPath?: string): ImageProcessor {
 export async function processImage(
   input: ImageInput,
   moduleName: string,
-  ...args: any[]
+  ...args: unknown[]
 ): Promise<ProcessedOutput> {
   const processor = createProcessor();
-  return processor.processImage(input, moduleName, ...args);
+  return await processor.processImage(input, moduleName, ...args);
 }
 
 // Export types for library users
-export * from "./core/types.ts";
+export type {
+  ImageInput,
+  ImageProcessor,
+  ProcessedOutput,
+} from "./core/types.ts";
 
 // Export default processor instance
 export default createProcessor();
