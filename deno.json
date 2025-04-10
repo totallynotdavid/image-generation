@@ -3,6 +3,7 @@
     "dev": "deno run --watch main.ts",
     "dev:example": "deno run --allow-ffi --allow-read --allow-write example.ts",
     "tidy": "deno fmt && deno lint",
+    "test": "deno test --allow-ffi --allow-read --allow-write",
     "llm": "bash utils/repo.sh"
   },
   "imports": {
