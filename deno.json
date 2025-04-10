@@ -1,7 +1,9 @@
 {
   "tasks": {
     "dev": "deno run --watch main.ts",
-    "dev:example": "deno run --allow-ffi --allow-read --allow-write example.ts"
+    "dev:example": "deno run --allow-ffi --allow-read --allow-write example.ts",
+    "tidy": "deno fmt && deno lint",
+    "llm": "bash utils/repo.sh"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
