@@ -35,6 +35,9 @@ export class ImageProcessorImpl implements ImageProcessor {
 
     try {
       const validatedInput = await validateImage(input);
+      if (!validatedInput) {
+        throw new Error("Invalid image input - validation returned null");
+      }
       return await module.process(validatedInput, ...args);
     } catch (error) {
       if (error instanceof Error) {

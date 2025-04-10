@@ -1,7 +1,11 @@
 import path from "node:path";
 import fs from "node:fs";
 
-import { dirname, fromFileUrl, join } from "https://deno.land/std/path/mod.ts";
+import {
+  dirname,
+  fromFileUrl,
+  join,
+} from "https://deno.land/std@0.224.0/path/mod.ts";
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
 
@@ -11,7 +15,6 @@ export class AssetResolver {
   constructor(assetsPath?: string) {
     this.basePath = assetsPath || join(__dirname, "..", "..", "assets");
 
-    // Ensure the assets directory exists
     if (!fs.existsSync(this.basePath)) {
       fs.mkdirSync(this.basePath, { recursive: true });
     }

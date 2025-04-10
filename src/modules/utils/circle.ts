@@ -15,6 +15,6 @@ export class CircleUtil extends BaseModule {
     image.resize(480, 480);
     image.circle();
 
-    return await image.getBufferAsync(Jimp.MIME_PNG);
+    return await image.getBuffer("image/png");
   }
 }

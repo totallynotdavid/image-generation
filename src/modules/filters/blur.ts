@@ -10,7 +10,6 @@ export class BlurFilter extends BaseModule {
    * @returns Processed image
    */
   async process(input: ImageInput, level?: number): Promise<ProcessedOutput> {
-    // Use the instance method validateInput which returns a Buffer
     const imageBuffer = await this.validateInput(input);
     const blurLevel = typeof level === "number" ? level : 5;
 
