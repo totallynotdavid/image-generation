@@ -2,7 +2,7 @@ import { Canvas } from "canvas";
 import { Jimp } from "jimp";
 import { Buffer } from "node:buffer";
 
-export type ImageInput = string | Buffer;
+export type ImageInput = Buffer | string;
 export type ProcessedOutput = Buffer;
 
 export interface ImageProcessor {
