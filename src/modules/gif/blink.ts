@@ -2,46 +2,57 @@ import { Canvas, loadImage } from "canvas";
 import GIFEncoder from "gifencoder";
 import { ImageInput, ProcessedOutput } from "../../core/types.ts";
 import { BaseModule } from "../base-module.ts";
-import { Buffer } from "node:buffer";
 
 export class BlinkGif extends BaseModule {
+  private static readonly CANVAS_SIZE = 480;
+
   /**
-   * Create a blinking GIF from multiple images
-   * @param delay Frame delay in ms
-   * @param images Array of image inputs
-   * @returns Processed GIF
+   * Creates a blinking GIF from multiple images
+   * @param input Primary image input
+   * @param args First argument: frame delay (ms), followed by additional images
+   * @returns GIF buffer
    */
   async process(
-    delay: number,
-    ...images: ImageInput[]
+    input: ImageInput,
+    ...args: unknown[]
   ): Promise<ProcessedOutput> {
-    if (!images || images.length < 2) {
-      throw new Error("You must provide at least two images.");
+    const [delay, ...additionalImages] = args;
+
+    if (typeof delay !== "number" || delay <= 0) {
+      throw new TypeError(`Invalid delay: ${delay}. Expected positive number.`);
+    }
+    if (additionalImages.length === 0) {
+      throw new Error(
+        "At least two images are required for the blinking effect.",
+      );
     }
 
-    if (isNaN(delay)) {
-      throw new Error("You must provide a valid delay.");
-    }
+    const allImages = [input, ...(additionalImages as ImageInput[])];
 
-    // Validate all images
-    const validatedImages: Buffer[] = [];
-    for (const image of images) {
-      validatedImages.push(await this.validateInput(image));
-    }
+    const validatedImages = await Promise.all(
+      allImages.map((img) => this.validateInput(img)),
+    );
 
-    const encoder = new GIFEncoder(480, 480);
+    const encoder = new GIFEncoder(
+      BlinkGif.CANVAS_SIZE,
+      BlinkGif.CANVAS_SIZE,
+    );
+
     encoder.start();
     encoder.setRepeat(0);
     encoder.setDelay(delay);
-    encoder.setTransparent();
+    encoder.setTransparent(true);
 
-    const canvas = new Canvas(480, 480);
+    const canvas = new Canvas(
+      BlinkGif.CANVAS_SIZE,
+      BlinkGif.CANVAS_SIZE,
+    );
     const ctx = canvas.getContext("2d");
 
     for (const imageBuffer of validatedImages) {
-      const base = await loadImage(imageBuffer);
-      ctx.clearRect(0, 0, 480, 480);
-      ctx.drawImage(base, 0, 0, 480, 480);
+      const image = await loadImage(imageBuffer);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       encoder.addFrame(ctx);
     }
 
