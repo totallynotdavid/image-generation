@@ -5,5 +5,5 @@ async function applyBlur(imageUrl: string) {
   return blurredImage;
 }
 
-const blurredImage = await applyBlur("input.png");
-await Deno.writeFile("output.png", blurredImage);
+const blurredImage = await applyBlur("example/input.png");
+await Deno.writeFile("example/output.png", blurredImage);
