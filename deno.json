@@ -4,8 +4,7 @@
     "dev:example": "deno run --allow-ffi --allow-read --allow-write example.ts",
     "tidy": "deno fmt && deno lint",
     "test": "deno test --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts",
-    "llm": "bash utils/repo.sh",
-    "npm:setup": "deno cache --node-modules-dir npm:canvas@3.1.0 npm:gifencoder@2.0.1 npm:jimp@1.6.0 --reload"
+    "llm": "bash utils/repo.sh"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1"
