@@ -2,61 +2,25 @@ name: Deno CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
-
-env:
-  DENO_DIR: .deno_cache
+    branches: [main]
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.canary }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        deno-version: [v2.x]
-        canary: [false]
-        include:
-          - deno-version: canary
-            os: ubuntu-latest
-            canary: true
+    runs-on: ubuntu-latest
+
+    env:
+      DENO_DIR: .deno_cache
 
     steps:
-      - name: Configure Git for Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          git config --system core.autocrlf false
-          git config --system core.eol lf
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Deno
+      - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: ${{ matrix.deno-version }}
-
-      # Install system dependencies for canvas on Ubuntu
-      - name: Install canvas dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-
-      # Install system dependencies for canvas on macOS
-      - name: Install canvas dependencies (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install pkg-config cairo pango libpng jpeg giflib librsvg
-
-      # For Windows, we need to install additional tools
-      - name: Install canvas dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          npm install -g windows-build-tools
+          deno-version: v2.x
 
       - name: Cache Deno dependencies
         uses: actions/cache@v4
@@ -66,7 +30,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deno-
 
-      # Install npm dependencies with script execution permission
       - name: Install npm dependencies
         run: deno task npm:setup
 
@@ -76,16 +39,14 @@ jobs:
       - name: Lint code
         run: deno lint
 
-      - name: Run tests
-        run: deno test --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts
+      - name: Run tests with coverage
+        run: deno test --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
 
       - name: Generate coverage report
-        if: matrix.os == 'ubuntu-latest' && matrix.deno-version == 'v2.x'
-        run: deno coverage --lcov cov/ > cov.lcov
+        run: deno coverage --lcov coverage > coverage.lcov
 
       - name: Upload coverage to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.deno-version == 'v2.x'
         uses: codecov/codecov-action@v3
         with:
-          file: cov.lcov
+          file: ./coverage.lcov
           fail_ci_if_error: false
