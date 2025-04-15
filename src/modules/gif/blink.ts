@@ -5,6 +5,7 @@ import { MultiImageBaseModule } from '../base-module.ts';
 
 export class BlinkGif extends MultiImageBaseModule {
     private static readonly CANVAS_SIZE = 480;
+    private static readonly ENABLE_TRANSPARENCY = true;
 
     async process(
         inputs: ImageInput[],
@@ -32,7 +33,7 @@ export class BlinkGif extends MultiImageBaseModule {
         encoder.start();
         encoder.setRepeat(0);
         encoder.setDelay(delay);
-        encoder.setTransparent(true);
+        encoder.setTransparent(BlinkGif.ENABLE_TRANSPARENCY);
 
         const canvas = new Canvas(BlinkGif.CANVAS_SIZE, BlinkGif.CANVAS_SIZE);
         const ctx = canvas.getContext('2d');
