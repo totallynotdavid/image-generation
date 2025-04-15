@@ -13,7 +13,7 @@ export class AssetResolver {
     private basePath: string;
 
     constructor(assetsPath?: string) {
-        this.basePath = assetsPath || join(__dirname, '..', '..', 'assets');
+        this.basePath = assetsPath || join(__dirname, '..', 'assets');
 
         if (!fs.existsSync(this.basePath)) {
             fs.mkdirSync(this.basePath, { recursive: true });
