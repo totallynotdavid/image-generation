@@ -20,12 +20,12 @@ import { Buffer } from "node:buffer";
 Deno.test("GayFilter", async (t) => {
   try {
     await t.step("should apply gay filter effect", async () => {
+      cleanupTestAssets();
       const resolver = createTestAssetResolver();
-      // Create gay.png asset
       saveTestAsset("gay.png", await createImageInput());
 
       const filter = new GayFilter(resolver);
-      const input = await createImageInput(); // Await the image input
+      const input = await createImageInput();
       const output = await filter.process(input);
 
       assertExists(output);
@@ -35,6 +35,7 @@ Deno.test("GayFilter", async (t) => {
     await t.step(
       "should throw error when gay.png asset is missing",
       async () => {
+        cleanupTestAssets();
         const resolver = createTestAssetResolver();
         // Intentionally not creating the gay.png asset
 
@@ -61,7 +62,7 @@ Deno.test("GreyscaleFilter", async (t) => {
       const resolver = createTestAssetResolver();
       const filter = new GreyscaleFilter(resolver);
 
-      const input = await createImageInput(); // Await the image input
+      const input = await createImageInput();
       const output = await filter.process(input);
 
       assertExists(output);
@@ -101,7 +102,7 @@ Deno.test("InvertFilter", async (t) => {
       const resolver = createTestAssetResolver();
       const filter = new InvertFilter(resolver);
 
-      const input = await createImageInput(); // Await the image input
+      const input = await createImageInput();
       const output = await filter.process(input);
 
       assertExists(output);
@@ -118,7 +119,7 @@ Deno.test("SepiaFilter", async (t) => {
       const resolver = createTestAssetResolver();
       const filter = new SepiaFilter(resolver);
 
-      const input = await createImageInput(); // Await the image input
+      const input = await createImageInput();
       const output = await filter.process(input);
 
       assertExists(output);
@@ -135,7 +136,7 @@ Deno.test("CircleUtil", async (t) => {
       const resolver = createTestAssetResolver();
       const circleUtil = new CircleUtil(resolver);
 
-      const input = await createImageInput(); // Await the image input
+      const input = await createImageInput();
       const output = await circleUtil.process(input);
 
       assertExists(output);
@@ -156,7 +157,7 @@ Deno.test("BlinkGif", async (t) => {
 
         // Create an array of 3 test images
         const inputs = [
-          await createImageInput(), // Await each image input
+          await createImageInput(),
           await createImageInput(),
           await createImageInput(),
         ];
@@ -173,7 +174,7 @@ Deno.test("BlinkGif", async (t) => {
       const blinkGif = new BlinkGif(resolver);
 
       // Create array with only 1 image
-      const inputs = [await createImageInput()]; // Await the image input
+      const inputs = [await createImageInput()];
 
       await assertRejects(
         async () => {
@@ -189,7 +190,7 @@ Deno.test("BlinkGif", async (t) => {
       const blinkGif = new BlinkGif(resolver);
 
       const inputs = [
-        await createImageInput(), // Await each image input
+        await createImageInput(),
         await createImageInput(),
         await createImageInput(),
       ];

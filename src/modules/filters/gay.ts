@@ -1,6 +1,6 @@
 import { Canvas, loadImage } from 'canvas';
 import { ImageInput, ProcessedOutput } from '../../core/types.ts';
-import { SingleImageBaseModule } from '../base-module.ts'; // Changed to SingleImageBaseModule
+import { SingleImageBaseModule } from '../base-module.ts';
 
 export class GayFilter extends SingleImageBaseModule {
     private static readonly IMAGE_SIZE = 480;
