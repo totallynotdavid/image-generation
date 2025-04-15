@@ -12,6 +12,8 @@ jobs:
 
     env:
       DENO_DIR: .deno_cache
+      # Skip test files in the npm packages
+      DENO_SKIP_TEST_PATTERNS: "@jimp/,npm:"
 
     steps:
       - name: Checkout repository
@@ -36,9 +38,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
-      # Instead of using npm directly, we'll use Deno's npm compatibility
+      # Use --no-check flag to skip type checking of npm modules
       - name: Setup npm packages with Deno
-        run: deno task npm:setup
+        run: deno cache --node-modules-dir --no-check npm:canvas@3.1.0 npm:gifencoder@2.0.1 npm:jimp@1.6.0 --reload
 
       - name: Check formatting
         run: deno fmt --check
@@ -46,8 +48,9 @@ jobs:
       - name: Lint code
         run: deno lint
 
+      # Modify the test command to ignore npm modules
       - name: Run tests with coverage
-        run: deno test --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
+        run: deno test --no-check=npm: --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
 
       - name: Generate coverage report
         run: deno coverage --lcov coverage > coverage.lcov
