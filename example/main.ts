@@ -52,7 +52,6 @@ async function testAllModules() {
   const adMontage = await processImage(inputImage, "ad");
   await Deno.writeFile("example/output/ad.png", adMontage);
 
-  // Test utility modules
   console.log("Testing utility modules...");
 
   const circleImage = await processImage(inputImage, "circle");
