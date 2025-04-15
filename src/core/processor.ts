@@ -47,9 +47,9 @@ export class ImageProcessorImpl implements ImageProcessor {
 
     if (!module) {
       throw new Error(
-        `Module "${normalizedName}" not registered. Available modules: ${
-          Array.from(this.modules.keys()).join(", ")
-        }`,
+        `Module "${normalizedName}" not registered. Available modules: ${Array.from(
+          this.modules.keys(),
+        ).join(", ")}`,
       );
     }
 
@@ -101,9 +101,11 @@ function isSingleImageModule(
     }
   }
 
-  return "process" in module &&
+  return (
+    "process" in module &&
     typeof module.process === "function" &&
-    !isMultiImageModule(module);
+    !isMultiImageModule(module)
+  );
 }
 
 /**

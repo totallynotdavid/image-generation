@@ -26,17 +26,16 @@ export class ColorUtil extends BaseModule {
   private dimensions: { width: number; height: number };
   private defaultColor: string;
 
-  constructor(
-    assetResolver: AssetResolver,
-    config?: Partial<ColorConfig>,
-  ) {
+  constructor(assetResolver: AssetResolver, config?: Partial<ColorConfig>) {
     super(assetResolver);
 
     const width = config?.width ?? DEFAULT_CONFIG.width;
     const height = config?.height ?? DEFAULT_CONFIG.height;
 
     if (
-      !Number.isInteger(width) || !Number.isInteger(height) || width <= 0 ||
+      !Number.isInteger(width) ||
+      !Number.isInteger(height) ||
+      width <= 0 ||
       height <= 0
     ) {
       throw new Error(`Invalid dimensions: width=${width}, height=${height}`);

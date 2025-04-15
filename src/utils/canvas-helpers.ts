@@ -10,7 +10,9 @@ import { CanvasData } from "../core/types.ts";
  */
 export function createCanvas(width: number, height: number): CanvasData {
   if (
-    !Number.isInteger(width) || !Number.isInteger(height) || width <= 0 ||
+    !Number.isInteger(width) ||
+    !Number.isInteger(height) ||
+    width <= 0 ||
     height <= 0
   ) {
     throw new Error(`Invalid canvas dimensions: ${width}x${height}`);

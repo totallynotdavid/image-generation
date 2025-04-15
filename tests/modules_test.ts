@@ -204,10 +204,7 @@ Deno.test("BlinkGif", async (t) => {
       const resolver = createTestAssetResolver();
       const blinkGif = new BlinkGif(resolver);
 
-      const inputs = [
-        await createImageInput(),
-        await createImageInput(),
-      ];
+      const inputs = [await createImageInput(), await createImageInput()];
 
       await assertRejects(
         async () => {

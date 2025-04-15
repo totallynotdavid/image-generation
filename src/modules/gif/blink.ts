@@ -22,20 +22,14 @@ export class BlinkGif extends MultiImageBaseModule {
 
     const validatedImages = await this.validateMultipleInputs(inputs);
 
-    const encoder = new GIFEncoder(
-      BlinkGif.CANVAS_SIZE,
-      BlinkGif.CANVAS_SIZE,
-    );
+    const encoder = new GIFEncoder(BlinkGif.CANVAS_SIZE, BlinkGif.CANVAS_SIZE);
 
     encoder.start();
     encoder.setRepeat(0);
     encoder.setDelay(delay);
     encoder.setTransparent(true);
 
-    const canvas = new Canvas(
-      BlinkGif.CANVAS_SIZE,
-      BlinkGif.CANVAS_SIZE,
-    );
+    const canvas = new Canvas(BlinkGif.CANVAS_SIZE, BlinkGif.CANVAS_SIZE);
     const ctx = canvas.getContext("2d");
 
     for (const imageBuffer of validatedImages) {

@@ -95,8 +95,10 @@ export abstract class BaseModule implements ProcessingModule {
 /**
  * Base abstract class for modules that process a single image
  */
-export abstract class SingleImageBaseModule extends BaseModule
-  implements SingleImageModule {
+export abstract class SingleImageBaseModule
+  extends BaseModule
+  implements SingleImageModule
+{
   abstract override process(
     input: ImageInput,
     ...args: unknown[]
@@ -124,8 +126,10 @@ export abstract class SingleImageBaseModule extends BaseModule
 /**
  * Base abstract class for modules that process multiple images
  */
-export abstract class MultiImageBaseModule extends BaseModule
-  implements MultiImageModule {
+export abstract class MultiImageBaseModule
+  extends BaseModule
+  implements MultiImageModule
+{
   protected _acceptsMultipleImages = true;
 
   abstract override process(
