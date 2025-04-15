@@ -48,7 +48,7 @@ jobs:
         run: deno test tests --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=cov
 
       - name: Generate coverage report
-        run: deno coverage --lcov coverage > coverage.lcov
+        run: deno coverage --lcov cov > coverage.lcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
