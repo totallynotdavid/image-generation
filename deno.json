@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts",
-    "dev:example": "deno run --allow-ffi --allow-read --allow-write example.ts",
+    "dev": "deno run --allow-ffi --allow-read --watch src/index.ts",
+    "dev:example": "deno run --allow-ffi --allow-read --allow-write example/main.ts",
     "tidy": "deno fmt && deno lint",
     "test": "deno test --allow-ffi --allow-read --allow-write --allow-scripts",
     "llm": "bash utils/repo.sh"
