@@ -9,9 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     env:
       DENO_DIR: .deno_cache
-      DENO_SKIP_TEST_PATTERNS: "**/.deno_cache/**"
 
     steps:
       - name: Checkout repository
@@ -45,7 +45,7 @@ jobs:
         run: deno lint
 
       - name: Run tests with coverage
-        run: deno test tests --no-check --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
+        run: deno test tests --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
 
       - name: Generate coverage report
         run: deno coverage --lcov coverage > coverage.lcov
