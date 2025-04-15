@@ -1,4 +1,4 @@
-name: 🚓 Análisis de código
+name: CodeQL
 
 on:
   workflow_dispatch:
@@ -8,7 +8,6 @@ on:
 
 jobs:
   analyze:
-    name: Analizar
     runs-on: ubuntu-latest
     permissions:
       actions: read
