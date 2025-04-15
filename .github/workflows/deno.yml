@@ -39,6 +39,25 @@ jobs:
         with:
           deno-version: ${{ matrix.deno-version }}
 
+      # Install system dependencies for canvas on Ubuntu
+      - name: Install canvas dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+
+      # Install system dependencies for canvas on macOS
+      - name: Install canvas dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install pkg-config cairo pango libpng jpeg giflib librsvg
+
+      # For Windows, we need to install additional tools
+      - name: Install canvas dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          npm install -g windows-build-tools
+
       - name: Cache Deno dependencies
         uses: actions/cache@v4
         with:
@@ -47,6 +66,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deno-
 
+      # Install npm dependencies with script execution permission
+      - name: Install npm dependencies
+        run: deno task npm:setup
+
       - name: Check formatting
         run: deno fmt --check
 
@@ -54,7 +77,7 @@ jobs:
         run: deno lint
 
       - name: Run tests
-        run: deno test --allow-all --coverage=cov/
+        run: deno test --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts
 
       - name: Generate coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.deno-version == 'v2.x'
