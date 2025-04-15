@@ -9,10 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     env:
       DENO_DIR: .deno_cache
-      DENO_SKIP_TEST_PATTERNS: "**/.deno_cache/npm/**"
+      DENO_SKIP_TEST_PATTERNS: "**/.deno_cache/**"
 
     steps:
       - name: Checkout repository
@@ -31,13 +30,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deno-
 
-      # Install system dependencies required for canvas
       - name: Install system dependencies for canvas
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
-      # Use --no-check flag to skip type checking of npm modules
       - name: Setup npm packages with Deno
         run: deno cache --node-modules-dir --no-check npm:canvas@3.1.0 npm:gifencoder@2.0.1 npm:jimp@1.6.0 --reload
 
@@ -47,9 +44,8 @@ jobs:
       - name: Lint code
         run: deno lint
 
-      # Run tests with coverage
       - name: Run tests with coverage
-        run: "deno test --no-check --exclude=.deno_cache --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage"
+        run: deno test --no-check --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
 
       - name: Generate coverage report
         run: deno coverage --lcov coverage > coverage.lcov
