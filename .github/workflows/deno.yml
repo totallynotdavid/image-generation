@@ -12,7 +12,7 @@ jobs:
 
     env:
       DENO_DIR: .deno_cache
-      DENO_SKIP_TEST_PATTERNS: "**/npm/**,**/@jimp/**,**/registry.npmjs.org/**"
+      DENO_SKIP_TEST_PATTERNS: "**/.deno_cache/npm/**"
 
     steps:
       - name: Checkout repository
