@@ -45,7 +45,7 @@ jobs:
         run: deno lint
 
       - name: Run tests with coverage
-        run: deno test --no-check --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
+        run: deno test tests --no-check --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=coverage
 
       - name: Generate coverage report
         run: deno coverage --lcov coverage > coverage.lcov
