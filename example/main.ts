@@ -1,74 +1,70 @@
-import { processImage } from "../src/index.ts";
+import { 
+  greyscale, 
+  color,
+  circle,
+  blink,
+  transform
+} from '../src/index.ts';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { writeFile } from 'node:fs/promises';
 
-async function testAllModules() {
-  const inputImage = "example/input-1.jpg";
-  const inputImage2 = "example/input-2.jpg";
-  const inputImage3 = "example/input-3.jpg";
-  const inputImage4 = "example/input-4.jpg";
-  const inputImage5 = "example/input-5.jpg";
-  const inputImage6 = "example/input-6.jpg";
-  const inputImage7 = "example/input-7.jpg";
-  const inputImage8 = "example/input-8.jpg";
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-  console.log("Testing filter modules...");
-
-  const blurredImage = await processImage(inputImage, "blur", 5);
-  await Deno.writeFile("example/output/blur.png", blurredImage);
-
-  const greyscaleImage = await processImage(inputImage, "greyscale");
-  await Deno.writeFile("example/output/greyscale.png", greyscaleImage);
-
-  const invertedImage = await processImage(inputImage, "invert");
-  await Deno.writeFile("example/output/invert.png", invertedImage);
-
-  const sepiaImage = await processImage(inputImage, "sepia");
-  await Deno.writeFile("example/output/sepia.png", sepiaImage);
-
-  const gayImage = await processImage(inputImage, "gay");
-  await Deno.writeFile("example/output/gay.png", gayImage);
-
-  console.log("Testing GIF modules...");
-
-  const blinkGif = await processImage(
-    [
-      inputImage,
-      inputImage2,
-      inputImage3,
-      inputImage4,
-      inputImage5,
-      inputImage6,
-      inputImage7,
-      inputImage8,
-    ],
-    "blink",
-  );
-  await Deno.writeFile("example/output/blink.gif", blinkGif);
-
-  const triggeredGif = await processImage(inputImage, "triggered");
-  await Deno.writeFile("example/output/triggered.gif", triggeredGif);
-
-  console.log("Testing montage module...");
-
-  const adMontage = await processImage(inputImage, "ad");
-  await Deno.writeFile("example/output/ad.png", adMontage);
-
-  console.log("Testing utility modules...");
-
-  const circleImage = await processImage(inputImage, "circle");
-  await Deno.writeFile("example/output/circle.png", circleImage);
-
-  const colorImage = await processImage(inputImage, "color", "#FF0000");
-  await Deno.writeFile("example/output/color.png", colorImage);
-
-  console.log("All modules tested successfully!");
+async function saveOutput(data: Uint8Array, filename: string) {
+  const outputPath = join(__dirname, 'output', filename);
+  await writeFile(outputPath, data);
+  console.log(`Saved to ${outputPath}`);
 }
 
-try {
-  await Deno.mkdir("example/output", { recursive: true });
-} catch (error) {
-  if (!(error instanceof Deno.errors.AlreadyExists)) {
-    throw error;
+async function run() {
+  try {
+    const input1 = join(__dirname, 'input-1.jpg');
+    const input2 = join(__dirname, 'input-2.jpg');
+
+    const colored = await color({
+      input: input1,
+      options: {
+        hex: "#ff0000",
+        blendMode: "overlay"
+      }
+    });
+    await saveOutput(colored, 'red-overlay.png');
+    console.log("Color transform complete", colored.length);
+
+    const blinked = await blink({
+      inputs: [input1, input2],
+      options: {
+        delay: 200,
+        loop: false
+      }
+    });
+    await saveOutput(blinked, 'blink-animation.gif');
+    console.log("Blink transform complete", blinked.length);
+
+    const grey = await greyscale({ input: input1 });
+    await saveOutput(grey, 'greyscale.png');
+    console.log("Greyscale transform complete", grey.length);
+
+    const circled = await circle({
+      input: input1,
+      options: {
+        borderColor: "#00ff00",
+        borderWidth: 2
+      }
+    });
+    await saveOutput(circled, 'circle-border.png');
+    console.log("Circle transform complete", circled.length);
+
+    const dynamic = await transform("color", { 
+      input: input1,
+      options: { hex: "#fff" }
+    });
+    await saveOutput(dynamic, 'white-overlay.png');
+    console.log("Dynamic transform complete", dynamic.length);
+  } catch (error) {
+    console.error("Error:", error);
   }
 }
 
-await testAllModules();
+run();
