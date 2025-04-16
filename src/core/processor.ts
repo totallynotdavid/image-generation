@@ -8,7 +8,7 @@ import { validators } from '../validation/schemas.ts';
 import { ProcessingError, TransformNotFoundError } from '../errors.ts';
 
 /**
- * Core processor that manages transform handlers and processes transform requests
+ * Manages transform handlers and processes transform requests
  */
 class Processor {
     private handlers: Partial<
@@ -54,7 +54,6 @@ class Processor {
             throw new TransformNotFoundError(String(type));
         }
 
-        // Validate input parameters if a validator exists
         const validator = validators[type];
         if (validator) {
             validator(params);
@@ -63,7 +62,6 @@ class Processor {
         try {
             return await handler(params);
         } catch (error: unknown) {
-            // Handle errors that aren't already our custom error types
             if (
                 error instanceof Error &&
                 !(error.name.includes('ImageTransform'))
@@ -80,5 +78,4 @@ class Processor {
     }
 }
 
-// Export a singleton instance for the application
 export const processor = new Processor();

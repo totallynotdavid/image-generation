@@ -5,21 +5,18 @@ import {
 } from '../types/transforms.ts';
 import { processor } from '../core/processor.ts';
 import { PluginExistsError } from '../errors.ts';
+import { validators } from '../validation/schemas.ts';
 
 /**
  * Plugin interface for extending the transform system
  */
 export interface Plugin<K extends keyof TransformMap = keyof TransformMap> {
-    /** Unique name for the transform type */
     name: K;
-    /** Handler function that performs the transformation */
     handler: (params: TransformParams<K>) => Promise<TransformResult>;
-    /** Optional validator function for validating parameters */
     validator?: (params: TransformParams<K>) => void;
 }
 
-// Store registered plugins
-const plugins = new Map<string, Plugin<any>>();
+const plugins = new Map<string, Plugin<keyof TransformMap>>();
 
 /**
  * Register a new transform plugin
@@ -36,16 +33,14 @@ export function registerPlugin<K extends keyof TransformMap>(
         throw new PluginExistsError(pluginKey);
     }
 
-    // Register the plugin in our registry
-    plugins.set(pluginKey, plugin);
+    plugins.set(pluginKey, plugin as unknown as Plugin<keyof TransformMap>);
 
-    // Register the handler with the processor
     processor.registerHandler(name, handler);
 
-    // If the plugin has a validator, register it (handled in validator registration)
     if (validator) {
-        // Note: validator registration would be handled in the validation system
-        // This is currently handled by explicitly importing validators
+        validators[name] = validator as (
+            params: TransformParams<keyof TransformMap>,
+        ) => void;
     }
 }
 
