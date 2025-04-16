@@ -7,7 +7,7 @@ import { processor } from '../core/processor.ts';
 import { parseHexColor, validateImagePath } from '../validation/utils.ts';
 import { ProcessingError } from '../errors.ts';
 import { Buffer } from 'node:buffer';
-import sharp from 'npm:sharp@0.34.1';
+import sharp from 'sharp';
 
 /**
  * Apply a color tint to an image

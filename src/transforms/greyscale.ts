@@ -2,7 +2,7 @@ import { SingleImageTransform, TransformResult } from '../types/transforms.ts';
 import { processor } from '../core/processor.ts';
 import { validateImagePath } from '../validation/utils.ts';
 import { ProcessingError } from '../errors.ts';
-import sharp from 'npm:sharp@0.34.1';
+import sharp from 'sharp';
 
 /**
  * Convert an image to grayscale
