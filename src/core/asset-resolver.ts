@@ -1,5 +1,5 @@
-import { exists } from 'https://deno.land/std@0.224.0/fs/mod.ts';
-import { join } from 'https://deno.land/std@0.224.0/path/mod.ts';
+import { join } from '@std/path/join';
+import { exists } from '@std/fs/exists';
 import { FileSystemError } from '../errors.ts';
 
 /**
