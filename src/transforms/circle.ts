@@ -5,9 +5,15 @@ import {
 } from '../types/transforms.ts';
 import { processor } from '../core/processor.ts';
 import { validateImagePath } from '../validation/utils.ts';
-import sharp from 'sharp';
+import { ProcessingError } from '../errors.ts';
 import { Buffer } from 'node:buffer';
+import sharp from 'npm:sharp@0.34.1';
 
+/**
+ * Apply a circular mask to an image, optionally with a border
+ * @param params Transform parameters
+ * @returns Transformed image data as Uint8Array
+ */
 export async function circle(
     params: SingleImageTransform<TransformMap['circle']>,
 ): Promise<TransformResult> {
@@ -18,85 +24,72 @@ export async function circle(
         borderWidth = 0,
     } = options || {};
 
-    const inputBuffer = await validateImagePath(input);
+    try {
+        const inputBuffer = await validateImagePath(input);
 
-    const metadata = await sharp(inputBuffer).metadata();
-    const { width = 0, height = 0 } = metadata;
+        // Get image metadata
+        const metadata = await sharp(inputBuffer).metadata();
+        const width = metadata.width || 0;
+        const height = metadata.height || 0;
 
-    const size = Math.min(width, height);
-    const circleRadius = size / 2;
-    const borderRadius = circleRadius - (borderWidth / 2);
+        if (width === 0 || height === 0) {
+            throw new ProcessingError('Invalid image dimensions');
+        }
 
-    const maskBuffer = await sharp({
-        create: {
-            width: size,
-            height: size,
-            channels: 4,
-            background: { r: 0, g: 0, b: 0, alpha: 0 },
-        },
-    })
-        .composite([{
-            input: Buffer.from(
-                `<svg width="${size}" height="${size}">
-              <circle cx="${size / 2}" cy="${
-                    size / 2
-                }" r="${circleRadius}" fill="white"/>
-          </svg>`,
-            ),
-        }])
-        .raw()
-        .toBuffer();
+        // Calculate circle dimensions
+        const size = Math.min(width, height);
+        const circleRadius = size / 2;
+        const borderRadius = circleRadius - (borderWidth / 2);
 
-    const output = await sharp(inputBuffer)
-        .resize(size, size, {
-            fit: 'cover',
-            position: 'center',
-        })
-        .ensureAlpha()
-        .raw()
-        .toBuffer();
-
-    const outputBuffer = Buffer.alloc(output.length);
-    for (let i = 0; i < output.length; i += 4) {
-        const maskAlpha = maskBuffer[i + 3] / 255;
-        outputBuffer[i] = output[i]; // R
-        outputBuffer[i + 1] = output[i + 1]; // G
-        outputBuffer[i + 2] = output[i + 2]; // B
-        outputBuffer[i + 3] = Math.round(output[i + 3] * maskAlpha); // A
-    }
-
-    let finalOutput = sharp(outputBuffer, {
-        raw: {
-            width: size,
-            height: size,
-            channels: 4,
-        },
-    });
-
-    if (borderWidth > 0) {
-        const borderSvg = `
-      <svg width="${size}" height="${size}">
-          <circle
-              cx="${size / 2}"
-              cy="${size / 2}"
-              r="${borderRadius}"
-              fill="none"
-              stroke="${borderColor}"
-              stroke-width="${borderWidth}"
-          />
+        // Create circular mask SVG
+        const circleMask = `<svg width="${size}" height="${size}">
+        <circle cx="${size / 2}" cy="${
+            size / 2
+        }" r="${circleRadius}" fill="white"/>
       </svg>`;
 
-        finalOutput = finalOutput.composite([{
-            input: Buffer.from(borderSvg),
-            blend: 'over',
-        }]);
+        // Create a pipeline for processing the image
+        let pipeline = sharp(inputBuffer)
+            .resize(size, size, {
+                fit: 'cover',
+                position: 'center',
+            })
+            .composite([{
+                input: Buffer.from(circleMask),
+                blend: 'dest-in',
+            }]);
+
+        // Add border if specified
+        if (borderWidth > 0) {
+            const borderSvg = `<svg width="${size}" height="${size}">
+          <circle
+            cx="${size / 2}"
+            cy="${size / 2}" 
+            r="${borderRadius}"
+            fill="none"
+            stroke="${borderColor}"
+            stroke-width="${borderWidth}"
+          />
+        </svg>`;
+
+            pipeline = pipeline.composite([{
+                input: Buffer.from(borderSvg),
+                blend: 'over',
+            }]);
+        }
+
+        // Generate output
+        const processedBuffer = await pipeline.png().toBuffer();
+        return new Uint8Array(processedBuffer);
+    } catch (error: unknown) {
+        throw new ProcessingError(
+            `Failed to apply circle transform: ${
+                error instanceof Error ? error.message : 'Unknown error'
+            }`,
+            error instanceof Error ? error : undefined,
+        );
     }
-
-    const processedBuffer = await finalOutput
-        .png()
-        .toBuffer();
-
-    return new Uint8Array(processedBuffer);
 }
 
+// Register the transform handler
 processor.registerHandler('circle', circle);

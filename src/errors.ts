@@ -1,19 +1,21 @@
-// errors/index.ts
 /**
- * Base error class for all image transform errors
+ * Base error class for all image transformation errors
  */
 export class ImageTransformError extends Error {
     readonly code: string;
+    override readonly cause?: Error;
 
-    constructor(code: string, message: string) {
+    /**
+     * Creates a new image transform error
+     * @param code Error code
+     * @param message Error message
+     * @param cause Optional underlying cause
+     */
+    constructor(code: string, message: string, cause?: Error) {
         super(`[${code}] ${message}`);
         this.code = code;
         this.name = this.constructor.name;
-
-        // Properly capture stack trace in Node.js
-        if (Error.captureStackTrace) {
-            Error.captureStackTrace(this, this.constructor);
-        }
+        this.cause = cause;
     }
 }
 
@@ -27,7 +29,7 @@ export class MissingParameterError extends ImageTransformError {
 }
 
 /**
- * Thrown when an invalid hex color is provided
+ * Thrown when an invalid hex color value is provided
  */
 export class InvalidHexError extends ImageTransformError {
     constructor(hex: string) {
@@ -36,7 +38,7 @@ export class InvalidHexError extends ImageTransformError {
 }
 
 /**
- * Thrown when fewer than the minimum number of images are provided
+ * Thrown when not enough images are provided for a multi-image transform
  */
 export class MinimumImagesError extends ImageTransformError {
     constructor(minRequired: number) {
@@ -48,13 +50,13 @@ export class MinimumImagesError extends ImageTransformError {
  * Thrown when an invalid image is provided
  */
 export class InvalidImageError extends ImageTransformError {
-    constructor(message: string = 'Invalid image provided') {
-        super('INVALID_IMAGE', message);
+    constructor(message = 'Invalid image provided', cause?: Error) {
+        super('INVALID_IMAGE', message, cause);
     }
 }
 
 /**
- * Thrown when an invalid option value is provided
+ * Thrown when an invalid option is provided
  */
 export class InvalidOptionError extends ImageTransformError {
     constructor(option: string, message: string) {
@@ -63,7 +65,7 @@ export class InvalidOptionError extends ImageTransformError {
 }
 
 /**
- * Thrown when a transform is not found
+ * Thrown when a requested transform is not found
  */
 export class TransformNotFoundError extends ImageTransformError {
     constructor(transform: string) {
@@ -72,29 +74,26 @@ export class TransformNotFoundError extends ImageTransformError {
 }
 
 /**
- * Thrown when image processing fails
+ * Thrown when processing an image fails
  */
 export class ProcessingError extends ImageTransformError {
     constructor(message: string, cause?: Error) {
-        super('PROCESSING_ERROR', message);
-        if (cause && 'cause' in Error) {
-            Object.defineProperty(this, 'cause', { value: cause });
-        }
+        super('PROCESSING_ERROR', message, cause);
     }
 }
 
 /**
- * Thrown when there's an issue with the file system
+ * Thrown when a filesystem operation fails
  */
 export class FileSystemError extends ImageTransformError {
-    constructor(message: string, path?: string) {
+    constructor(message: string, path?: string, cause?: Error) {
         const pathInfo = path ? ` (${path})` : '';
-        super('FS_ERROR', `${message}${pathInfo}`);
+        super('FS_ERROR', `${message}${pathInfo}`, cause);
     }
 }
 
 /**
- * Thrown when a plugin with the same name is already registered
+ * Thrown when trying to register a plugin that already exists
  */
 export class PluginExistsError extends ImageTransformError {
     constructor(name: string) {
