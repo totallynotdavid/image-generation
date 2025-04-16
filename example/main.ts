@@ -36,7 +36,7 @@ async function run() {
       inputs: [input1, input2],
       options: {
         delay: 200,
-        loop: false
+        loop: true
       }
     });
     await saveOutput(blinked, 'blink-animation.gif');
@@ -49,8 +49,8 @@ async function run() {
     const circled = await circle({
       input: input1,
       options: {
-        borderColor: "#00ff00",
-        borderWidth: 2
+        borderColor: "#ff0000",
+        borderWidth: 8
       }
     });
     await saveOutput(circled, 'circle-border.png');
