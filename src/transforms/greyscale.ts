@@ -1,4 +1,3 @@
-// transforms/greyscale.ts
 import { SingleImageTransform, TransformResult } from '../types/transforms.ts';
 import { processor } from '../core/processor.ts';
 import { validateImagePath } from '../validation/utils.ts';
