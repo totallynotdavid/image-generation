@@ -17,7 +17,7 @@ type Validator<K extends keyof TransformMap> = (
  * Registry of validators for each transform type
  */
 export const validators: {
-    [K in keyof TransformMap]?: Validator<K>;
+    [K in keyof TransformMap]: Validator<K>;
 } = {
     /**
      * Validator for color transform
