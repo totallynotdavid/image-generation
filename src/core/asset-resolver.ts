@@ -58,38 +58,60 @@ export class AssetResolver {
 
         await this.initializePromise;
 
-        const assetPath = isAbsolute(assetName)
-            ? assetName
-            : join(this.basePath, assetName);
-
         try {
-            const fileInfo = await Deno.stat(assetPath);
-
-            if (!fileInfo.isFile) {
-                throw new FileSystemError(
-                    `Asset exists but is not a file: ${assetName}`,
-                    assetPath,
-                );
+            const fileInfo = await Deno.stat(assetName);
+            if (fileInfo.isFile) {
+                return assetName;
             }
-
-            return assetPath;
+            throw new FileSystemError(
+                `Asset exists but is not a file: ${assetName}`,
+                assetName,
+            );
         } catch (error) {
             if (error instanceof Deno.errors.NotFound) {
-                throw new FileSystemError(
-                    `Asset not found: ${assetName}`,
-                    assetPath,
-                );
-            }
+                const assetPath = isAbsolute(assetName)
+                    ? assetName
+                    : join(this.basePath, assetName);
 
-            if (error instanceof FileSystemError) {
-                throw error;
-            }
+                try {
+                    const fileInfo = await Deno.stat(assetPath);
 
+                    if (!fileInfo.isFile) {
+                        throw new FileSystemError(
+                            `Asset exists but is not a file: ${assetName}`,
+                            assetPath,
+                        );
+                    }
+
+                    return assetPath;
+                } catch (error) {
+                    if (error instanceof Deno.errors.NotFound) {
+                        throw new FileSystemError(
+                            `Asset not found: ${assetName}`,
+                            assetPath,
+                        );
+                    }
+
+                    if (error instanceof FileSystemError) {
+                        throw error;
+                    }
+
+                    throw new FileSystemError(
+                        `Failed to access asset '${assetName}': ${
+                            error instanceof Error
+                                ? error.message
+                                : 'unknown error'
+                        }`,
+                        assetPath,
+                        error instanceof Error ? error : undefined,
+                    );
+                }
+            }
             throw new FileSystemError(
                 `Failed to access asset '${assetName}': ${
                     error instanceof Error ? error.message : 'unknown error'
                 }`,
-                assetPath,
+                assetName,
                 error instanceof Error ? error : undefined,
             );
         }

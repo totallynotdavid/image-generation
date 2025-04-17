@@ -13,7 +13,8 @@ async function saveOutput(data: Uint8Array, filename: string) {
 
 async function run() {
     try {
-        const input1 = join(__dirname, 'input-1.jpg');
+        // You can use relative paths or absolute paths for the input files
+        const input1 = './example/input-1.jpg';
         const input2 = join(__dirname, 'input-2.jpg');
 
         const colored = await color({
