@@ -45,7 +45,7 @@ export async function blink(
         for (const buffer of processedBuffers) {
             const img = new Image();
             img.src = `data:image/png;base64,${buffer.toString('base64')}`;
-            
+
             ctx.clearRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
             encoder.addFrame(ctx);
