@@ -1,4 +1,5 @@
 import {
+    AssetResolutionConfig,
     TransformHandler,
     TransformMap,
     TransformParams,
@@ -17,13 +18,30 @@ export class Processor {
         Record<keyof TransformMap, TransformHandler<keyof TransformMap>>
     > = {};
     private assetResolver: AssetResolver;
+    private assetConfig: AssetResolutionConfig;
 
-    constructor(assetsPath?: string) {
+    constructor(assetsPath?: string, config?: Partial<AssetResolutionConfig>) {
         this.assetResolver = new AssetResolver(assetsPath);
+        this.assetConfig = {
+            mode: 'warn',
+            logWarnings: true,
+            ...config,
+        };
     }
 
     public getAssetResolver(): AssetResolver {
         return this.assetResolver;
+    }
+
+    public setAssetConfig(config: Partial<AssetResolutionConfig>): void {
+        this.assetConfig = {
+            ...this.assetConfig,
+            ...config,
+        };
+    }
+
+    public getAssetConfig(): AssetResolutionConfig {
+        return this.assetConfig;
     }
 
     public registerHandler<K extends keyof TransformMap>(
@@ -39,6 +57,31 @@ export class Processor {
 
     public hasHandler<K extends keyof TransformMap>(type: K): boolean {
         return !!this.handlers[type];
+    }
+
+    private async handleAssetResolution(input: string): Promise<string> {
+        try {
+            return await this.assetResolver.resolveAsset(input);
+        } catch (error) {
+            if (
+                error instanceof Error &&
+                error.message.includes('Asset not found')
+            ) {
+                const message = `Asset not found: ${input}`;
+
+                if (this.assetConfig.mode === 'strict') {
+                    throw new ProcessingError(message);
+                }
+
+                if (this.assetConfig.logWarnings) {
+                    const logger = this.assetConfig.logger || console.warn;
+                    logger(message);
+                }
+
+                return input;
+            }
+            throw error;
+        }
     }
 
     public async process<K extends keyof TransformMap>(
@@ -57,36 +100,11 @@ export class Processor {
         }
 
         if ('input' in params && typeof params.input === 'string') {
-            try {
-                params.input = await this.assetResolver.resolveAsset(
-                    params.input,
-                );
-            } catch (error) {
-                if (
-                    !(error instanceof Error &&
-                        error.message.includes('Asset not found'))
-                ) {
-                    throw error;
-                }
-            }
+            params.input = await this.handleAssetResolution(params.input);
         } else if ('inputs' in params && Array.isArray(params.inputs)) {
-            const resolvedInputs = [];
-            for (const input of params.inputs) {
-                try {
-                    resolvedInputs.push(
-                        await this.assetResolver.resolveAsset(input),
-                    );
-                } catch (error) {
-                    if (
-                        !(error instanceof Error &&
-                            error.message.includes('Asset not found'))
-                    ) {
-                        throw error;
-                    }
-                    resolvedInputs.push(input);
-                }
-            }
-            params.inputs = resolvedInputs;
+            params.inputs = await Promise.all(
+                params.inputs.map((input) => this.handleAssetResolution(input)),
+            );
         }
 
         try {

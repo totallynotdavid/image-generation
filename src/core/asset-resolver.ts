@@ -1,4 +1,5 @@
 import { join } from '@std/path/join';
+import { isAbsolute } from '@std/path/is-absolute';
 import { exists } from '@std/fs/exists';
 import { FileSystemError } from '../errors.ts';
 
@@ -57,7 +58,9 @@ export class AssetResolver {
 
         await this.initializePromise;
 
-        const assetPath = join(this.basePath, assetName);
+        const assetPath = isAbsolute(assetName)
+            ? assetName
+            : join(this.basePath, assetName);
 
         try {
             const fileInfo = await Deno.stat(assetPath);

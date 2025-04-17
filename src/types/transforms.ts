@@ -77,3 +77,15 @@ export type TransformHandler<K extends keyof TransformMap> = (
  * Standard result type for all transforms
  */
 export type TransformResult = Uint8Array;
+
+/**
+ * Configuration for asset resolution behavior
+ */
+export type AssetResolutionConfig = {
+    /** How to handle unresolved assets */
+    mode: 'strict' | 'warn' | 'silent';
+    /** Whether to log warnings for unresolved assets */
+    logWarnings?: boolean;
+    /** Custom logger function for warnings */
+    logger?: (message: string) => void;
+};
