@@ -11,7 +11,7 @@
     "dev": "deno run --allow-ffi --allow-read --watch src/index.ts",
     "dev:example": "deno run --allow-read --allow-write --allow-env --allow-ffi example/main.ts",
     "tidy": "deno fmt && deno lint",
-    "test": "deno test --allow-ffi --allow-read --allow-write --allow-scripts",
+    "test": "deno test --allow-ffi --allow-read --allow-write --allow-scripts --reporter=junit --junit-path=./report.xml",
     "llm": "bash utils/repo.sh"
   },
   "imports": {
