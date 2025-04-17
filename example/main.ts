@@ -1,9 +1,8 @@
 import { blink, circle, color, greyscale, transform } from '../src/index.ts';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { writeFile } from 'node:fs/promises';
+import { dirname, fromFileUrl, join } from 'jsr:@std/path';
+import { writeFile } from 'jsr:@std/fs/unstable-write-file';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = dirname(fromFileUrl(import.meta.url));
 
 async function saveOutput(data: Uint8Array, filename: string) {
     const outputPath = join(__dirname, 'output', filename);
