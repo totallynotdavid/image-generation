@@ -1,4 +1,12 @@
 {
+  "name": "@dv/image-generation",
+  "version": "1.0.0",
+  "description": "A TypeScript library for image transformations built with Deno",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/totallynotdavid/image-generation"
+  },
   "tasks": {
     "dev": "deno run --allow-ffi --allow-read --watch src/index.ts",
     "dev:example": "deno run --allow-read --allow-write --allow-env --allow-ffi example/main.ts",
