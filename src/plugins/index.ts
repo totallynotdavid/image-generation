@@ -19,6 +19,13 @@ export interface Plugin<K extends keyof TransformMap = keyof TransformMap> {
 const plugins = new Map<string, Plugin<keyof TransformMap>>();
 
 /**
+ * Clear all registered plugins (for testing purposes)
+ */
+export function clearPlugins(): void {
+    plugins.clear();
+}
+
+/**
  * Register a new transform plugin
  * @param plugin Plugin configuration
  * @throws {PluginExistsError} If a plugin with the same name is already registered

@@ -28,6 +28,14 @@ export class Processor {
     }
 
     /**
+     * Unregister a transform handler
+     * @param type Transform type
+     */
+    public unregisterHandler<K extends keyof TransformMap>(type: K): void {
+        delete this.handlers[type];
+    }
+
+    /**
      * Check if a transform handler is registered
      * @param type Transform type
      * @returns True if handler exists
