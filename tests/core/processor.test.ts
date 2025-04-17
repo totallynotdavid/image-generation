@@ -1,11 +1,8 @@
 import { assertEquals, assertRejects } from '@std/assert';
-import { Processor } from '../../src/core/processor.ts';
-import { ProcessingError, TransformNotFoundError } from '../../src/errors.ts';
-import {
-    TransformHandler,
-    TransformParams,
-} from '../../src/types/transforms.ts';
-import { validators } from '../../src/validation/schemas.ts';
+import { Processor } from '@/core/processor.ts';
+import { ProcessingError, TransformNotFoundError } from '@/errors.ts';
+import { TransformHandler, TransformParams } from '@/types/transforms.ts';
+import { validators } from '@/validation/schemas.ts';
 
 // Create a clean processor instance for each test to avoid state bleeding
 let testProcessor: Processor;

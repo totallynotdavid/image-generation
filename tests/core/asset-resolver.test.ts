@@ -2,8 +2,8 @@ import { assertEquals, assertRejects, assertThrows } from 'jsr:@std/assert';
 import { join } from 'jsr:@std/path/join';
 import { exists } from 'jsr:@std/fs/exists';
 import { assertSpyCalls, spy } from 'jsr:@std/testing/mock';
-import { AssetResolver } from '../../src/core/asset-resolver.ts';
-import { FileSystemError } from '../../src/errors.ts';
+import { AssetResolver } from '@/core/asset-resolver.ts';
+import { FileSystemError } from '@/errors.ts';
 
 /**
  * Helper function to clean up test directories

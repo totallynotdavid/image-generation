@@ -2,8 +2,8 @@ import {
     SingleImageTransform,
     TransformMap,
     TransformResult,
-} from '../types/transforms.ts';
-import { validateImagePath } from '../validation/utils.ts';
+} from '@/types/transforms.ts';
+import { validateImagePath } from '@/validation/utils.ts';
 import { Buffer } from 'node:buffer';
 import sharp, { Blend } from 'npm:sharp';
 

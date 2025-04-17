@@ -1,10 +1,10 @@
 import { assertEquals, assertThrows } from '@std/assert';
-import { validators } from '../../src/validation/schemas.ts';
+import { validators } from '@/validation/schemas.ts';
 import {
     InvalidOptionError,
     MinimumImagesError,
     MissingParameterError,
-} from '../../src/errors.ts';
+} from '@/errors.ts';
 
 Deno.test('validators.color - validates hex color parameter', () => {
     // Valid color parameters

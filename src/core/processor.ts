@@ -4,14 +4,14 @@ import {
     TransformMap,
     TransformParams,
     TransformResult,
-} from '../types/transforms.ts';
-import { validators } from '../validation/schemas.ts';
+} from '@/types/transforms.ts';
+import { validators } from '@/validation/schemas.ts';
 import {
     ImageTransformError,
     ProcessingError,
     TransformNotFoundError,
-} from '../errors.ts';
-import { AssetResolver } from './asset-resolver.ts';
+} from '@/errors.ts';
+import { AssetResolver } from '@/core/asset-resolver.ts';
 
 export class Processor {
     private handlers: Partial<

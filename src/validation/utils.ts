@@ -1,4 +1,4 @@
-import { InvalidHexError, InvalidImageError } from '../errors.ts';
+import { InvalidHexError, InvalidImageError } from '@/errors.ts';
 
 export function validateHex(hex: string): void {
     const hexRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;

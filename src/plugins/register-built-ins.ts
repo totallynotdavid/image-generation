@@ -1,9 +1,9 @@
-import { registerPlugin } from './index.ts';
-import { greyscale } from '../transforms/greyscale.ts';
-import { color } from '../transforms/color.ts';
-import { circle } from '../transforms/circle.ts';
-import { blink } from '../transforms/blink.ts';
-import { validators } from '../validation/schemas.ts';
+import { registerPlugin } from '@/plugins/index.ts';
+import { greyscale } from '@/transforms/greyscale.ts';
+import { color } from '@/transforms/color.ts';
+import { circle } from '@/transforms/circle.ts';
+import { blink } from '@/transforms/blink.ts';
+import { validators } from '@/validation/schemas.ts';
 
 registerPlugin({
     name: 'greyscale',

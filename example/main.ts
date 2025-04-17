@@ -1,4 +1,4 @@
-import { blink, circle, color, greyscale, transform } from '../src/index.ts';
+import { blink, circle, color, greyscale, transform } from '@/index.ts';
 import { dirname, fromFileUrl, join } from 'jsr:@std/path';
 import { writeFile } from 'jsr:@std/fs/unstable-write-file';
 

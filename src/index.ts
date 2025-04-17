@@ -1,13 +1,13 @@
-import { processor } from './core/processor.ts';
+import { processor } from '@/core/processor.ts';
 import {
     TransformMap,
     TransformParams,
     TransformResult,
-} from './types/transforms.ts';
+} from '@/types/transforms.ts';
 
-import './plugins/register-built-ins.ts';
+import '@/plugins/register-built-ins.ts';
 
-export * from './plugins/index.ts';
+export * from '@/plugins/index.ts';
 
 export function transform<K extends keyof TransformMap>(
     type: K,
@@ -46,9 +46,9 @@ export type {
     TransformMap,
     TransformParams,
     TransformResult,
-} from './types/transforms.ts';
+} from '@/types/transforms.ts';
 
-export * from './errors.ts';
+export * from '@/errors.ts';
 
-export { AssetResolver } from './core/asset-resolver.ts';
-export { Processor } from './core/processor.ts';
+export { AssetResolver } from '@/core/asset-resolver.ts';
+export { Processor } from '@/core/processor.ts';

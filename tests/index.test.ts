@@ -8,8 +8,8 @@ import {
     color,
     greyscale,
     transform,
-} from '../src/index.ts';
-import { processor } from '../src/core/processor.ts';
+} from '@/index.ts';
+import { processor } from '@/core/processor.ts';
 import sharp from 'npm:sharp';
 
 async function createTestImageFile(path: string): Promise<void> {

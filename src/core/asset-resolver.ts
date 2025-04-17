@@ -1,7 +1,7 @@
 import { join } from 'jsr:@std/path/join';
 import { isAbsolute } from 'jsr:@std/path/is-absolute';
 import { exists } from 'jsr:@std/fs/exists';
-import { FileSystemError } from '../errors.ts';
+import { FileSystemError } from '@/errors.ts';
 
 /**
  * Resolves asset paths within a configured directory

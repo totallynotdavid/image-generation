@@ -2,9 +2,9 @@ import {
     MultiImageTransform,
     TransformMap,
     TransformResult,
-} from '../types/transforms.ts';
-import { validateImagePath } from '../validation/utils.ts';
-import { ProcessingError } from '../errors.ts';
+} from '@/types/transforms.ts';
+import { validateImagePath } from '@/validation/utils.ts';
+import { ProcessingError } from '@/errors.ts';
 import sharp from 'npm:sharp';
 import GIFEncoder from 'npm:gifencoder';
 import { createCanvas, Image } from 'npm:canvas';

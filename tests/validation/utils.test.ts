@@ -4,8 +4,8 @@ import {
     parseHexColor,
     validateHex,
     validateImagePath,
-} from '../../src/validation/utils.ts';
-import { InvalidHexError, InvalidImageError } from '../../src/errors.ts';
+} from '@/validation/utils.ts';
+import { InvalidHexError, InvalidImageError } from '@/errors.ts';
 
 Deno.test('validateHex - accepts valid hex colors', () => {
     // Test valid 3-character hex

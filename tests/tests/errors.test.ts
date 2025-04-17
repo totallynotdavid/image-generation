@@ -10,7 +10,7 @@ import {
     PluginExistsError,
     ProcessingError,
     TransformNotFoundError,
-} from '../../src/errors.ts';
+} from '@/errors.ts';
 
 Deno.test('ImageTransformError - correctly initializes base error class', () => {
     const error = new ImageTransformError('TEST_CODE', 'Test message');

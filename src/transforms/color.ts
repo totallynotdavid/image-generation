@@ -2,9 +2,9 @@ import {
     SingleImageTransform,
     TransformMap,
     TransformResult,
-} from '../types/transforms.ts';
-import { parseHexColor, validateImagePath } from '../validation/utils.ts';
-import { ProcessingError } from '../errors.ts';
+} from '@/types/transforms.ts';
+import { parseHexColor, validateImagePath } from '@/validation/utils.ts';
+import { ProcessingError } from '@/errors.ts';
 import { Buffer } from 'node:buffer';
 import sharp from 'npm:sharp';
 

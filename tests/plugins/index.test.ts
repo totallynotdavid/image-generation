@@ -5,11 +5,11 @@ import {
     getPlugin,
     Plugin,
     registerPlugin,
-} from '../../src/plugins/index.ts';
-import { PluginExistsError } from '../../src/errors.ts';
-import { processor } from '../../src/core/processor.ts';
-import { validators } from '../../src/validation/schemas.ts';
-import { TransformResult } from '../../src/types/transforms.ts';
+} from '@/plugins/index.ts';
+import { PluginExistsError } from '@/errors.ts';
+import { processor } from '@/core/processor.ts';
+import { validators } from '@/validation/schemas.ts';
+import { TransformResult } from '@/types/transforms.ts';
 
 // Helper function to clean up plugins between tests
 function cleanupPlugins(): void {

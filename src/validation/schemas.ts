@@ -1,10 +1,10 @@
-import { TransformMap, TransformParams } from '../types/transforms.ts';
-import { validateHex } from './utils.ts';
+import { TransformMap, TransformParams } from '@/types/transforms.ts';
+import { validateHex } from '@/validation/utils.ts';
 import {
     InvalidOptionError,
     MinimumImagesError,
     MissingParameterError,
-} from '../errors.ts';
+} from '@/errors.ts';
 
 /**
  * Validator function type for transform parameters

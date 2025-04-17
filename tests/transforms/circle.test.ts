@@ -1,7 +1,7 @@
 import { assertEquals, assertExists, assertRejects } from 'jsr:@std/assert';
 import { join } from 'jsr:@std/path/join';
-import { circle } from '../../src/transforms/circle.ts';
-import { InvalidImageError } from '../../src/errors.ts';
+import { circle } from '@/transforms/circle.ts';
+import { InvalidImageError } from '@/errors.ts';
 import sharp from 'npm:sharp';
 
 async function createTestImage(path: string): Promise<void> {

@@ -2,10 +2,10 @@ import {
     TransformMap,
     TransformParams,
     TransformResult,
-} from '../types/transforms.ts';
-import { processor } from '../core/processor.ts';
-import { PluginExistsError } from '../errors.ts';
-import { validators } from '../validation/schemas.ts';
+} from '@/types/transforms.ts';
+import { processor } from '@/core/processor.ts';
+import { PluginExistsError } from '@/errors.ts';
+import { validators } from '@/validation/schemas.ts';
 
 /**
  * Plugin interface for extending the transform system
