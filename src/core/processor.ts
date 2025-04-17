@@ -10,20 +10,22 @@ import {
     ProcessingError,
     TransformNotFoundError,
 } from '../errors.ts';
+import { AssetResolver } from './asset-resolver.ts';
 
-/**
- * Manages transform handlers and processes transform requests
- */
 export class Processor {
     private handlers: Partial<
         Record<keyof TransformMap, TransformHandler<keyof TransformMap>>
     > = {};
+    private assetResolver: AssetResolver;
 
-    /**
-     * Register a transform handler
-     * @param type Transform type
-     * @param handler Transform handler function
-     */
+    constructor(assetsPath?: string) {
+        this.assetResolver = new AssetResolver(assetsPath);
+    }
+
+    public getAssetResolver(): AssetResolver {
+        return this.assetResolver;
+    }
+
     public registerHandler<K extends keyof TransformMap>(
         type: K,
         handler: TransformHandler<K>,
@@ -31,31 +33,14 @@ export class Processor {
         this.handlers[type] = handler as TransformHandler<keyof TransformMap>;
     }
 
-    /**
-     * Unregister a transform handler
-     * @param type Transform type
-     */
     public unregisterHandler<K extends keyof TransformMap>(type: K): void {
         delete this.handlers[type];
     }
 
-    /**
-     * Check if a transform handler is registered
-     * @param type Transform type
-     * @returns True if handler exists
-     */
     public hasHandler<K extends keyof TransformMap>(type: K): boolean {
         return !!this.handlers[type];
     }
 
-    /**
-     * Process a transform request
-     * @param type Transform type
-     * @param params Transform parameters
-     * @returns Transform result
-     * @throws {TransformNotFoundError} If no handler is registered for the transform type
-     * @throws {ProcessingError} If processing fails
-     */
     public async process<K extends keyof TransformMap>(
         type: K,
         params: TransformParams<K>,
@@ -69,6 +54,39 @@ export class Processor {
         const validator = validators[type];
         if (validator) {
             validator(params);
+        }
+
+        if ('input' in params && typeof params.input === 'string') {
+            try {
+                params.input = await this.assetResolver.resolveAsset(
+                    params.input,
+                );
+            } catch (error) {
+                if (
+                    !(error instanceof Error &&
+                        error.message.includes('Asset not found'))
+                ) {
+                    throw error;
+                }
+            }
+        } else if ('inputs' in params && Array.isArray(params.inputs)) {
+            const resolvedInputs = [];
+            for (const input of params.inputs) {
+                try {
+                    resolvedInputs.push(
+                        await this.assetResolver.resolveAsset(input),
+                    );
+                } catch (error) {
+                    if (
+                        !(error instanceof Error &&
+                            error.message.includes('Asset not found'))
+                    ) {
+                        throw error;
+                    }
+                    resolvedInputs.push(input);
+                }
+            }
+            params.inputs = resolvedInputs;
         }
 
         try {
@@ -89,9 +107,6 @@ export class Processor {
         }
     }
 
-    /**
-     * Reset all handlers (for testing)
-     */
     public reset(): void {
         this.handlers = {};
     }

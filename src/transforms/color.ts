@@ -3,17 +3,11 @@ import {
     TransformMap,
     TransformResult,
 } from '../types/transforms.ts';
-import { processor } from '../core/processor.ts';
 import { parseHexColor, validateImagePath } from '../validation/utils.ts';
 import { ProcessingError } from '../errors.ts';
 import { Buffer } from 'node:buffer';
 import sharp from 'sharp';
 
-/**
- * Apply a color tint to an image
- * @param params Transform parameters
- * @returns Transformed image data as Uint8Array
- */
 export async function color(
     params: SingleImageTransform<TransformMap['color']>,
 ): Promise<TransformResult> {
@@ -30,7 +24,6 @@ export async function color(
 
         let outputBuffer: Buffer;
 
-        // Apply different color transformations based on blend mode
         if (blendMode === 'overlay') {
             outputBuffer = await sharp(inputBuffer)
                 .tint({ r, g, b })
@@ -45,7 +38,6 @@ export async function color(
                 .tint({ r, g, b })
                 .toBuffer();
         } else {
-            // This should never happen due to validation, but just in case
             throw new ProcessingError(`Unsupported blend mode: ${blendMode}`);
         }
 
@@ -59,6 +51,3 @@ export async function color(
         );
     }
 }
-
-// Register the transform handler
-processor.registerHandler('color', color);

@@ -5,68 +5,39 @@ import {
     TransformResult,
 } from './types/transforms.ts';
 
-import './transforms/greyscale.ts';
-import './transforms/color.ts';
-import './transforms/circle.ts';
-import './transforms/blink.ts';
+import './plugins/register-built-ins.ts';
 
 export * from './plugins/index.ts';
 
-/**
- * Apply grayscale transformation to an image
- * @param params Transform parameters
- * @returns Transformed image data
- */
-export function greyscale(
-    params: TransformParams<'greyscale'>,
-): Promise<TransformResult> {
-    return processor.process('greyscale', params);
-}
-
-/**
- * Apply color tint transformation to an image
- * @param params Transform parameters
- * @returns Transformed image data
- */
-export function color(
-    params: TransformParams<'color'>,
-): Promise<TransformResult> {
-    return processor.process('color', params);
-}
-
-/**
- * Apply circle mask transformation to an image
- * @param params Transform parameters
- * @returns Transformed image data
- */
-export function circle(
-    params: TransformParams<'circle'>,
-): Promise<TransformResult> {
-    return processor.process('circle', params);
-}
-
-/**
- * Create an animated blink GIF from multiple images
- * @param params Transform parameters
- * @returns Transformed image data
- */
-export function blink(
-    params: TransformParams<'blink'>,
-): Promise<TransformResult> {
-    return processor.process('blink', params);
-}
-
-/**
- * Generic transform function for any registered transform
- * @param type Transform type
- * @param params Transform parameters
- * @returns Transformed image data
- */
 export function transform<K extends keyof TransformMap>(
     type: K,
     params: TransformParams<K>,
 ): Promise<TransformResult> {
     return processor.process(type, params);
+}
+
+export function greyscale(
+    params: TransformParams<'greyscale'>,
+): Promise<TransformResult> {
+    return transform('greyscale', params);
+}
+
+export function color(
+    params: TransformParams<'color'>,
+): Promise<TransformResult> {
+    return transform('color', params);
+}
+
+export function circle(
+    params: TransformParams<'circle'>,
+): Promise<TransformResult> {
+    return transform('circle', params);
+}
+
+export function blink(
+    params: TransformParams<'blink'>,
+): Promise<TransformResult> {
+    return transform('blink', params);
 }
 
 export type {
@@ -80,3 +51,4 @@ export type {
 export * from './errors.ts';
 
 export { AssetResolver } from './core/asset-resolver.ts';
+export { Processor } from './core/processor.ts';

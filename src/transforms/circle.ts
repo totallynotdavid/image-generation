@@ -3,16 +3,10 @@ import {
     TransformMap,
     TransformResult,
 } from '../types/transforms.ts';
-import { processor } from '../core/processor.ts';
 import { validateImagePath } from '../validation/utils.ts';
 import { Buffer } from 'node:buffer';
 import sharp, { Blend } from 'sharp';
 
-/**
- * Apply a circular mask to an image, optionally with a border
- * @param params Transform parameters
- * @returns Transformed image data as Uint8Array
- */
 export async function circle(
     params: SingleImageTransform<TransformMap['circle']>,
 ): Promise<TransformResult> {
@@ -72,5 +66,3 @@ export async function circle(
     const processedBuffer = await pipeline.png().toBuffer();
     return new Uint8Array(processedBuffer);
 }
-
-processor.registerHandler('circle', circle);

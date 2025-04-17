@@ -3,7 +3,6 @@ import {
     TransformMap,
     TransformResult,
 } from '../types/transforms.ts';
-import { processor } from '../core/processor.ts';
 import { validateImagePath } from '../validation/utils.ts';
 import { ProcessingError } from '../errors.ts';
 import sharp from 'sharp';
@@ -11,11 +10,6 @@ import GIFEncoder from 'gifencoder';
 import { createCanvas, loadImage } from 'canvas';
 import { Buffer } from 'node:buffer';
 
-/**
- * Creates an animated GIF from multiple images
- * @param params Transform parameters
- * @returns Transformed image data as Uint8Array
- */
 export async function blink(
     params: MultiImageTransform<TransformMap['blink']>,
 ): Promise<TransformResult> {
@@ -67,5 +61,3 @@ export async function blink(
         );
     }
 }
-
-processor.registerHandler('blink', blink);

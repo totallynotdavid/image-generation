@@ -25,15 +25,12 @@ export const validators: {
     color: (params) => {
         const { options } = params as TransformParams<'color'>;
 
-        // Check required hex parameter
         if (!options?.hex) {
             throw new MissingParameterError('hex');
         }
 
-        // Validate hex format
         validateHex(options.hex);
 
-        // Validate blend mode if provided
         if (
             options.blendMode !== undefined &&
             !['overlay', 'softlight'].includes(options.blendMode)
@@ -51,12 +48,10 @@ export const validators: {
     circle: (params) => {
         const { options } = params as TransformParams<'circle'>;
 
-        // Validate optional border color
         if (options?.borderColor !== undefined) {
             validateHex(options.borderColor);
         }
 
-        // Validate optional border width
         if (options?.borderWidth !== undefined) {
             if (
                 typeof options.borderWidth !== 'number' ||
@@ -76,12 +71,10 @@ export const validators: {
     blink: (params) => {
         const { inputs, options } = params as TransformParams<'blink'>;
 
-        // Check minimum number of images
         if (!inputs || inputs.length < 2) {
             throw new MinimumImagesError(2);
         }
 
-        // Validate optional delay
         if (options?.delay !== undefined) {
             if (typeof options.delay !== 'number' || options.delay < 0) {
                 throw new InvalidOptionError(
@@ -91,7 +84,6 @@ export const validators: {
             }
         }
 
-        // Validate optional loop setting
         if (options?.loop !== undefined && typeof options.loop !== 'boolean') {
             throw new InvalidOptionError('loop', 'Must be a boolean value');
         }
@@ -101,7 +93,6 @@ export const validators: {
      * Validator for greyscale transform
      */
     greyscale: (params) => {
-        // Just ensure input exists - validation of file path happens in transform
         const { input } = params as TransformParams<'greyscale'>;
         if (!input || typeof input !== 'string') {
             throw new MissingParameterError('input');
