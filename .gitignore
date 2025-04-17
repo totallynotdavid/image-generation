@@ -8,3 +8,7 @@ cov
 *.png
 *.gif
 *.jpg
+
+# Re-include example files
+!/example/**/*.png
+!/example/**/*.gif

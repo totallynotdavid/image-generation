@@ -1,15 +1,17 @@
-# Image Transform Library
+# [pkg]: image-generation
+
+[![CodeQL](https://github.com/totallynotdavid/image-generation/actions/workflows/codeql.yml/badge.svg)](https://github.com/totallynotdavid/image-generation/actions/workflows/codeql.yml) [![Deno CI](https://github.com/totallynotdavid/image-generation/actions/workflows/deno.yml/badge.svg)](https://github.com/totallynotdavid/image-generation/actions/workflows/deno.yml)
 
 A TypeScript/Deno image processing library providing powerful, production-ready transformations with an extensible plugin architecture. Process images with built-in effects or develop custom plugins to meet your specific needs.
 
 This library offers a modern, type-safe approach to image manipulation, perfect for:
 
 - Creating visual effects for social media bots
-- Adding image transformations to messaging applications (e.g. stickers)
+- Adding image transformations to messaging applications (e.g., stickers)
 - Building custom image processing pipelines
 - Generating dynamic visual content
 
-Originally built for a WhatsApp bot I mantain ([check it out](https://github.com/totallynotdavid/WhatsAppBot)) and inspired by [discord-image-generation](https://www.npmjs.com/package/discord-image-generation), this library has been completely rebuilt with TypeScript for better type safety and platform independence.
+Originally built for a WhatsApp bot ([check it out](https://github.com/totallynotdavid/WhatsAppBot)) and inspired by [discord-image-generation](https://www.npmjs.com/package/discord-image-generation), this library has been completely rebuilt with TypeScript for better type safety and platform independence.
 
 ## Features
 
@@ -20,29 +22,31 @@ Originally built for a WhatsApp bot I mantain ([check it out](https://github.com
 
 ## Transformation Gallery
 
-| Transformation  | Description                                    | Example Usage                                                                |
-| --------------- | ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Greyscale**   | Convert images to black and white              | `await greyscale({ input: "image.png" })`                                    |
-| **Color Tint**  | Apply color overlay with blend modes           | `await color({ input: "image.png", options: { hex: "#ff5500" } })`           |
-| **Circle Crop** | Crop images into circles with optional borders | `await circle({ input: "image.png", options: { borderWidth: 5 } })`          |
-| **Animation**   | Create GIF animations from image sequences     | `await blink({ inputs: ["img1.png", "img2.png"], options: { delay: 200 } })` |
+| Transformation  | Description                                    | Example Usage                                                                | Result                                           |
+| --------------- | ---------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| **Greyscale**   | Convert images to black and white              | `await greyscale({ input: "image.png" })`                                    | ![greyscale](example/output/greyscale.png)       |
+| **Color Tint**  | Apply color overlay with blend modes           | `await color({ input: "image.png", options: { hex: "#ff5500" } })`           | ![color-tint](example/output/red-overlay.png)    |
+| **Circle Crop** | Crop images into circles with optional borders | `await circle({ input: "image.png", options: { borderWidth: 5 } })`          | ![circle-crop](example/output/circle-border.png) |
+| **Animation**   | Create GIF animations from image sequences     | `await blink({ inputs: ["img1.png", "img2.png"], options: { delay: 200 } })` | ![animation](example/output/blink-animation.gif) |
 
-## Installation
+The cat in the image examples is [@rexiecat](https://www.instagram.com/rexiecat/). Give them some love.
 
-For projects using Deno, just run:
+## Getting Started
+
+### Installation & Usage
+
+For projects using Deno, simply add the package:
 
 ```bash
 deno add @dv/image-generation
 ```
 
-For Node.js Projects (via npm): _Coming soon_
-
-## Basic Usage
+Node.js support via npm is coming soon.
 
 Import the transformations you need and apply them to your images:
 
 ```typescript
-import { greyscale, color, circle } from "@dv/image-generation";
+import { greyscale } from "@dv/image-generation";
 
 const greyImage = await greyscale({
   input: "./photos/profile.png",
@@ -57,21 +61,35 @@ When running with Deno, you'll need these permissions:
 deno run --allow-read --allow-write your-script.ts
 ```
 
-## Usage Examples
+## Examples
+
+The library provides several ways to transform images, from simple single-image operations to complex multi-step pipelines.
 
 ### Single Image Transformations
 
+Most transformations operate on a single input image, producing a modified output that can be saved or passed along in your pipeline.
+
+For example, to apply a color tint with blend mode to an image:
+
 ```typescript
-// Apply a color tint
+import { color } from "@dv/image-generation";
+
 const tintedImage = await color({
   input: "./input.jpg",
   options: {
     hex: "#FF99CC",
-    blendMode: "softlight", // Options: 'overlay' or 'softlight'
+    blendMode: "softlight",
   },
 });
+```
 
-// Create a circular avatar with border
+For the `hex` parameter, you can use either 6-digit or 3-digit hex codes. The `blendMode` parameter accepts either `softlight` or `overlay`. See the documentation for complete parameter options.
+
+To create a circular avatar with a border:
+
+```typescript
+import { circle } from "@dv/image-generation";
+
 const avatarImage = await circle({
   input: "./photos/profile.png",
   options: {
@@ -83,10 +101,11 @@ const avatarImage = await circle({
 
 ### Multi-Image Processing
 
-For transformations that work with multiple images, use the `inputs` parameter:
+Some transformations like animations require multiple input images. For these, use the `inputs` parameter instead of `input`:
 
 ```typescript
-// Create an animation from multiple frames
+import { blink } from "@dv/image-generation";
+
 const animatedImage = await blink({
   inputs: ["frame1.png", "frame2.png", "frame3.png"],
   options: {
@@ -96,20 +115,20 @@ const animatedImage = await blink({
 });
 ```
 
-### Transformation Chaining
+### Building Transformation Pipelines
 
-Combine multiple transformations to create complex effects:
+The real power of this library comes from combining transformations. You can chain them to create complex effects by passing the output of one transformation as the input to another. For example, you could do:
 
 ```typescript
 import { blink, circle, greyscale } from "@dv/image-generation";
 
-// Process each frame individually
+const inputFrames = ["frame1.png", "frame2.png"];
+
+// Create a processing pipeline for each frame
 const processedFrames = await Promise.all(
-  ["frame1.png", "frame2.png"].map(async (img) => {
-    // First convert to greyscale
+  inputFrames.map(async (img) => {
     const grey = await greyscale({ input: img });
 
-    // Then crop into a circle
     return circle({
       input: grey,
       options: { borderWidth: 3, borderColor: "#ffffff" },
@@ -117,16 +136,31 @@ const processedFrames = await Promise.all(
   }),
 );
 
-// Create animation from processed frames
+// Combine processed frames into an animation
 const animation = await blink({
   inputs: processedFrames,
   options: { delay: 300 },
 });
+
+await Deno.writeFile("./output/animated-avatars.gif", animation);
 ```
 
-## Developer Guide
+This example shows how to create a more complex workflow:
 
-To set up your environment, just follow these steps:
+1. Load multiple image frames
+2. Convert each to greyscale (we use the `greyscale` function for this)
+3. Crop each into a circle with border (for this, we use the `circle` function)
+4. Combine them into an animated GIF (using `blink`)
+
+Each transformation returns a buffer that can be passed directly as input to the next transformation, making it easy to create sophisticated image processing chains without saving intermediate files.
+
+## For Developers
+
+The library is designed to be both user-friendly and developer-friendly. If you're interested in contributing or extending the library with your own transformations, this section will help you get started.
+
+### Setting Up Your Environment
+
+To set up your development environment:
 
 1. Clone the repository:
 
@@ -153,16 +187,16 @@ To set up your environment, just follow these steps:
 
    You can see the results in `example/output`.
 
-### Available Development Commands
+The repo includes several useful development commands:
 
-| Command                 | Description                          |
-| ----------------------- | ------------------------------------ |
-| `deno task dev`         | Run development mode with hot reload |
-| `deno task dev:example` | Execute the example code             |
-| `deno task tidy`        | Format code and run linter           |
-| `deno task test`        | Run the test suite                   |
+- `deno task dev` - Run development mode with hot reload
+- `deno task dev:example` - Execute the example code
+- `deno task tidy` - Format code and run linter
+- `deno task test` - Run the test suite
 
 ### Project Structure
+
+The codebase is organized to make it easy to understand and extend:
 
 ```
 src/
@@ -186,9 +220,11 @@ src/
     └── utils.ts
 ```
 
-## Contributing
+If you're looking to understand how transformations work, start by exploring the `transforms` directory, which contains all the built-in effects.
 
-Contributions are welcome! Here's how to add a new transformation:
+### Contributing
+
+Contributions are welcome! If you'd like to add a new transformation or improve an existing one, here's how:
 
 1. Create a new file in `src/transforms/` for your transformation
 2. Define the transform parameters in `src/types/transforms.ts`
@@ -196,7 +232,7 @@ Contributions are welcome! Here's how to add a new transformation:
 4. Register your plugin in `src/plugins/register-built-ins.ts`
 5. Add tests and documentation
 
-Before submitting:
+Before submitting a pull request:
 
 - Run `deno task tidy` to ensure code formatting and linting pass
 - Make sure all tests pass with `deno task test`
