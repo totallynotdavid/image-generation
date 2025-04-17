@@ -1,8 +1,8 @@
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
+import { assertEquals, assertExists, assertRejects } from 'jsr:@std/assert';
+import { join } from 'jsr:@std/path/join';
 import { ProcessingError } from '../../src/errors.ts';
-import { join } from '@std/path/join';
-import sharp from 'sharp';
 import { blink } from '../../src/transforms/blink.ts';
+import sharp from 'npm:sharp';
 
 async function createTestImage(
     path: string,

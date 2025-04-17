@@ -1,8 +1,8 @@
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
+import { assertEquals, assertExists, assertRejects } from 'jsr:@std/assert';
+import { join } from 'jsr:@std/path/join';
 import { color } from '../../src/transforms/color.ts';
 import { ProcessingError } from '../../src/errors.ts';
-import { join } from '@std/path/join';
-import sharp from 'sharp';
+import sharp from 'npm:sharp';
 
 async function createTestImage(path: string): Promise<void> {
     // Create a simple 10x10 black PNG

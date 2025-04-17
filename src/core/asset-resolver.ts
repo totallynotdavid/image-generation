@@ -1,6 +1,6 @@
-import { join } from '@std/path/join';
-import { isAbsolute } from '@std/path/is-absolute';
-import { exists } from '@std/fs/exists';
+import { join } from 'jsr:@std/path/join';
+import { isAbsolute } from 'jsr:@std/path/is-absolute';
+import { exists } from 'jsr:@std/fs/exists';
 import { FileSystemError } from '../errors.ts';
 
 /**

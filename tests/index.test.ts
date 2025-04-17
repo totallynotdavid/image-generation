@@ -1,4 +1,6 @@
-import { assertEquals, assertExists } from '@std/assert';
+import { assertEquals, assertExists } from 'jsr:@std/assert';
+import { join } from 'jsr:@std/path/join';
+import { assertSpyCalls, spy } from 'jsr:@std/testing/mock';
 import {
     AssetResolver,
     blink,
@@ -8,9 +10,7 @@ import {
     transform,
 } from '../src/index.ts';
 import { processor } from '../src/core/processor.ts';
-import { join } from '@std/path/join';
-import { assertSpyCalls, spy } from '@std/testing/mock';
-import sharp from 'sharp';
+import sharp from 'npm:sharp';
 
 async function createTestImageFile(path: string): Promise<void> {
     // Create a 1x1 white PNG image

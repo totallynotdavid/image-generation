@@ -1,11 +1,11 @@
-import { assertEquals, assertRejects, assertThrows } from '@std/assert';
+import { assertEquals, assertRejects, assertThrows } from 'jsr:@std/assert';
+import { join } from 'jsr:@std/path/join';
 import {
     parseHexColor,
     validateHex,
     validateImagePath,
 } from '../../src/validation/utils.ts';
 import { InvalidHexError, InvalidImageError } from '../../src/errors.ts';
-import { join } from '@std/path/join';
 
 Deno.test('validateHex - accepts valid hex colors', () => {
     // Test valid 3-character hex
@@ -97,11 +97,11 @@ Deno.test('validateImagePath - accepts valid image files', async () => {
                 0x0D,
                 0x0A,
                 0x1A,
-                0x0A, // More PNG data
+                0x0A,
                 0x00,
                 0x00,
                 0x00,
-                0x0D, // etc
+                0x0D,
             ]),
         );
 
@@ -112,11 +112,11 @@ Deno.test('validateImagePath - accepts valid image files', async () => {
                 0xFF,
                 0xD8, // JPEG signature
                 0xFF,
-                0xE0, // More JPEG data
+                0xE0,
                 0x00,
                 0x10,
                 0x4A,
-                0x46, // etc
+                0x46,
             ]),
         );
 
@@ -129,11 +129,11 @@ Deno.test('validateImagePath - accepts valid image files', async () => {
                 0x46,
                 0x38, // GIF signature
                 0x39,
-                0x61, // More GIF data
+                0x61,
                 0x0A,
                 0x00,
                 0x0A,
-                0x00, // etc
+                0x00,
             ]),
         );
 
@@ -146,7 +146,6 @@ Deno.test('validateImagePath - accepts valid image files', async () => {
         assertEquals(jpegResult instanceof Uint8Array, true);
         assertEquals(gifResult instanceof Uint8Array, true);
     } finally {
-        // Clean up
         await Deno.remove(testDir, { recursive: true });
     }
 });
@@ -182,7 +181,6 @@ Deno.test('validateImagePath - rejects invalid image formats', async () => {
             'File does not appear to be a valid image',
         );
     } finally {
-        // Clean up
         await Deno.remove(testDir, { recursive: true });
     }
 });
@@ -205,7 +203,6 @@ Deno.test('validateImagePath - rejects files that are too small', async () => {
             'File too small to be a valid image',
         );
     } finally {
-        // Clean up
         await Deno.remove(testDir, { recursive: true });
     }
 });
@@ -217,7 +214,6 @@ Deno.test('validateImagePath - handles file read errors', async () => {
     await Deno.mkdir(testDir, { recursive: true });
     await Deno.writeFile(testFile, new Uint8Array([0x89, 0x50, 0x4E, 0x47]));
 
-    // Mock Deno.readFile to throw an error
     const originalReadFile = Deno.readFile;
     Deno.readFile = async () => {
         throw new Error('Permission denied');
@@ -232,10 +228,8 @@ Deno.test('validateImagePath - handles file read errors', async () => {
             'Failed to read image from path',
         );
     } finally {
-        // Restore original function
         Deno.readFile = originalReadFile;
 
-        // Clean up
         await Deno.remove(testDir, { recursive: true });
     }
 });
