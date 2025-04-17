@@ -5,7 +5,7 @@ import {
     TransformResult,
 } from '../types/transforms.ts';
 import { validators } from '../validation/schemas.ts';
-import { ProcessingError, TransformNotFoundError } from '../errors.ts';
+import { ProcessingError, TransformNotFoundError, ImageTransformError } from '../errors.ts';
 
 /**
  * Manages transform handlers and processes transform requests
@@ -70,10 +70,7 @@ export class Processor {
         try {
             return await handler(params);
         } catch (error: unknown) {
-            if (
-                error instanceof Error &&
-                !error.name.includes('ImageTransform')
-            ) {
+            if (error instanceof Error && !(error instanceof ImageTransformError)) {
                 throw new ProcessingError(
                     `Failed to process ${
                         String(type)
