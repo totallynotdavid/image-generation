@@ -1,65 +1,54 @@
-import { ImageProcessorImpl } from './core/processor.ts';
-import { AssetResolver } from './core/asset-resolver.ts';
-import { ImageInput, ImageProcessor, ProcessedOutput } from './core/types.ts';
+import { processor } from './core/processor.ts';
+import {
+    TransformMap,
+    TransformParams,
+    TransformResult,
+} from './types/transforms.ts';
 
-import { BlurFilter } from './modules/filters/blur.ts';
-import { GreyscaleFilter } from './modules/filters/greyscale.ts';
-import { InvertFilter } from './modules/filters/invert.ts';
-import { SepiaFilter } from './modules/filters/sepia.ts';
-import { GayFilter } from './modules/filters/gay.ts';
+import './plugins/register-built-ins.ts';
 
-import { BlinkGif } from './modules/gif/blink.ts';
-import { TriggeredGif } from './modules/gif/triggered.ts';
+export * from './plugins/index.ts';
 
-import { AdMontage } from './modules/montage/ad.ts';
-
-import { CircleUtil } from './modules/utils/circle.ts';
-import { ColorUtil } from './modules/utils/color.ts';
-
-export function createProcessor(assetsPath?: string): ImageProcessor {
-    const assetResolver = new AssetResolver(assetsPath);
-    const processor = new ImageProcessorImpl();
-
-    // Register all modules
-    processor.registerModule('blur', new BlurFilter(assetResolver));
-    processor.registerModule('greyscale', new GreyscaleFilter(assetResolver));
-    processor.registerModule('invert', new InvertFilter(assetResolver));
-    processor.registerModule('sepia', new SepiaFilter(assetResolver));
-    processor.registerModule('gay', new GayFilter(assetResolver));
-
-    processor.registerModule('blink', new BlinkGif(assetResolver));
-    processor.registerModule('triggered', new TriggeredGif(assetResolver));
-
-    processor.registerModule('ad', new AdMontage(assetResolver));
-
-    processor.registerModule('circle', new CircleUtil(assetResolver));
-    processor.registerModule('color', new ColorUtil(assetResolver));
-
-    return processor;
+export function transform<K extends keyof TransformMap>(
+    type: K,
+    params: TransformParams<K>,
+): Promise<TransformResult> {
+    return processor.process(type, params);
 }
 
-/**
- * Processes an image using the specified module
- * @param input - Image input (file path, Buffer, or array of these)
- * @param moduleName - Name of the module to use
- * @param args - Additional arguments for the module
- * @returns Processed image as Buffer
- */
-export async function processImage(
-    input: ImageInput | ImageInput[],
-    moduleName: string,
-    ...args: unknown[]
-): Promise<ProcessedOutput> {
-    const processor = createProcessor();
-    return await processor.processImage(input, moduleName, ...args);
+export function greyscale(
+    params: TransformParams<'greyscale'>,
+): Promise<TransformResult> {
+    return transform('greyscale', params);
+}
+
+export function color(
+    params: TransformParams<'color'>,
+): Promise<TransformResult> {
+    return transform('color', params);
+}
+
+export function circle(
+    params: TransformParams<'circle'>,
+): Promise<TransformResult> {
+    return transform('circle', params);
+}
+
+export function blink(
+    params: TransformParams<'blink'>,
+): Promise<TransformResult> {
+    return transform('blink', params);
 }
 
 export type {
-    ImageInput,
-    ImageProcessor,
-    MultiImageModule,
-    ProcessedOutput,
-    SingleImageModule,
-} from './core/types.ts';
+    MultiImageTransform,
+    SingleImageTransform,
+    TransformMap,
+    TransformParams,
+    TransformResult,
+} from './types/transforms.ts';
 
-export default createProcessor();
+export * from './errors.ts';
+
+export { AssetResolver } from './core/asset-resolver.ts';
+export { Processor } from './core/processor.ts';

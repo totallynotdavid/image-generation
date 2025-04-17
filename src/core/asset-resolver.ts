@@ -1,40 +1,97 @@
-import path from 'node:path';
-import fs from 'node:fs';
+import { join } from '@std/path/join';
+import { isAbsolute } from '@std/path/is-absolute';
+import { exists } from '@std/fs/exists';
+import { FileSystemError } from '../errors.ts';
 
-import {
-    dirname,
-    fromFileUrl,
-    join,
-} from 'https://deno.land/std@0.224.0/path/mod.ts';
-
-const __dirname = dirname(fromFileUrl(import.meta.url));
-
+/**
+ * Resolves asset paths within a configured directory
+ */
 export class AssetResolver {
     private basePath: string;
+    private initializePromise: Promise<void>;
 
+    /**
+     * Creates a new asset resolver
+     * @param assetsPath Optional custom path for assets directory
+     * @throws {TypeError} If assetsPath is provided but not a string
+     */
     constructor(assetsPath?: string) {
-        this.basePath = assetsPath || join(__dirname, '..', 'assets');
+        if (assetsPath !== undefined && typeof assetsPath !== 'string') {
+            throw new TypeError('Assets path must be a string if provided');
+        }
 
-        if (!fs.existsSync(this.basePath)) {
-            fs.mkdirSync(this.basePath, { recursive: true });
+        this.basePath = assetsPath || join(Deno.cwd(), 'assets');
+        this.initializePromise = this.ensureBasePathExists();
+    }
+
+    /**
+     * Ensures the base assets directory exists
+     * @private
+     */
+    private async ensureBasePathExists(): Promise<void> {
+        try {
+            if (!await exists(this.basePath)) {
+                await Deno.mkdir(this.basePath, { recursive: true });
+            }
+        } catch (error) {
+            throw new FileSystemError(
+                `Failed to create assets directory: ${
+                    error instanceof Error ? error.message : 'unknown error'
+                }`,
+                this.basePath,
+                error instanceof Error ? error : undefined,
+            );
         }
     }
 
     /**
-     * Resolves an asset path and ensures it exists
-     * @param assetName The name of the asset to resolve
-     * @returns The full path to the asset
-     * @throws Error if the asset cannot be found
+     * Resolves an asset name to its full path
+     * @param assetName Name of the asset to resolve
+     * @returns Full path to the asset
+     * @throws {FileSystemError} If asset cannot be found or accessed
+     * @throws {TypeError} If assetName is not a string or is empty
      */
-    resolveAsset(assetName: string): string {
-        if (!assetName || typeof assetName !== 'string') {
-            throw new Error('Asset name must be a non-empty string');
+    public async resolveAsset(assetName: string): Promise<string> {
+        if (typeof assetName !== 'string' || assetName.trim() === '') {
+            throw new TypeError('Asset name must be a non-empty string');
         }
 
-        const assetPath = path.join(this.basePath, assetName);
-        if (!fs.existsSync(assetPath)) {
-            throw new Error(`Asset not found: ${assetName}`);
+        await this.initializePromise;
+
+        const assetPath = isAbsolute(assetName)
+            ? assetName
+            : join(this.basePath, assetName);
+
+        try {
+            const fileInfo = await Deno.stat(assetPath);
+
+            if (!fileInfo.isFile) {
+                throw new FileSystemError(
+                    `Asset exists but is not a file: ${assetName}`,
+                    assetPath,
+                );
+            }
+
+            return assetPath;
+        } catch (error) {
+            if (error instanceof Deno.errors.NotFound) {
+                throw new FileSystemError(
+                    `Asset not found: ${assetName}`,
+                    assetPath,
+                );
+            }
+
+            if (error instanceof FileSystemError) {
+                throw error;
+            }
+
+            throw new FileSystemError(
+                `Failed to access asset '${assetName}': ${
+                    error instanceof Error ? error.message : 'unknown error'
+                }`,
+                assetPath,
+                error instanceof Error ? error : undefined,
+            );
         }
-        return assetPath;
     }
 }
