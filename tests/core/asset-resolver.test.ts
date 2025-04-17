@@ -1,8 +1,4 @@
-import {
-    assertEquals,
-    assertRejects,
-    assertThrows,
-} from '@std/assert';
+import { assertEquals, assertRejects, assertThrows } from '@std/assert';
 import { AssetResolver } from '../../src/core/asset-resolver.ts';
 import { FileSystemError } from '../../src/errors.ts';
 import { join } from '@std/path/join';

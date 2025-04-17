@@ -10,7 +10,7 @@ import { ProcessingError, TransformNotFoundError } from '../errors.ts';
 /**
  * Manages transform handlers and processes transform requests
  */
-class Processor {
+export class Processor {
     private handlers: Partial<
         Record<keyof TransformMap, TransformHandler<keyof TransformMap>>
     > = {};
@@ -33,7 +33,7 @@ class Processor {
      * @returns True if handler exists
      */
     public hasHandler<K extends keyof TransformMap>(type: K): boolean {
-        return this.handlers[type] !== undefined;
+        return !!this.handlers[type];
     }
 
     /**
@@ -64,7 +64,7 @@ class Processor {
         } catch (error: unknown) {
             if (
                 error instanceof Error &&
-                !(error.name.includes('ImageTransform'))
+                !error.name.includes('ImageTransform')
             ) {
                 throw new ProcessingError(
                     `Failed to process ${
@@ -75,6 +75,13 @@ class Processor {
             }
             throw error;
         }
+    }
+
+    /**
+     * Reset all handlers (for testing)
+     */
+    public reset(): void {
+        this.handlers = {};
     }
 }
 
