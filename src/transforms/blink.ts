@@ -7,7 +7,7 @@ import { validateImagePath } from '../validation/utils.ts';
 import { ProcessingError } from '../errors.ts';
 import sharp from 'npm:sharp';
 import GIFEncoder from 'npm:gifencoder';
-import { createCanvas, loadImage } from 'npm:canvas';
+import { createCanvas, Image } from 'npm:canvas';
 
 export async function blink(
     params: MultiImageTransform<TransformMap['blink']>,
@@ -43,13 +43,11 @@ export async function blink(
         const ctx = canvas.getContext('2d');
 
         for (const buffer of processedBuffers) {
-            const blob = new Blob([buffer]);
-            const url = URL.createObjectURL(blob);
-            const image = await loadImage(url);
-            URL.revokeObjectURL(url);
-
+            const img = new Image();
+            img.src = `data:image/png;base64,${buffer.toString('base64')}`;
+            
             ctx.clearRect(0, 0, width, height);
-            ctx.drawImage(image, 0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
             encoder.addFrame(ctx);
         }
 
