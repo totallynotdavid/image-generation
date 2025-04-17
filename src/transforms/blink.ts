@@ -5,7 +5,6 @@ import {
 } from '../types/transforms.ts';
 import { validateImagePath } from '../validation/utils.ts';
 import { ProcessingError } from '../errors.ts';
-import { Buffer } from 'node:buffer';
 import sharp from 'npm:sharp';
 import GIFEncoder from 'npm:gifencoder';
 import { createCanvas, loadImage } from 'npm:canvas';
@@ -44,7 +43,11 @@ export async function blink(
         const ctx = canvas.getContext('2d');
 
         for (const buffer of processedBuffers) {
-            const image = await loadImage(Buffer.from(buffer));
+            const blob = new Blob([buffer]);
+            const url = URL.createObjectURL(blob);
+            const image = await loadImage(url);
+            URL.revokeObjectURL(url);
+
             ctx.clearRect(0, 0, width, height);
             ctx.drawImage(image, 0, 0, width, height);
             encoder.addFrame(ctx);
