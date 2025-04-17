@@ -61,6 +61,12 @@ When running with Deno, you'll need these permissions:
 deno run --allow-read --allow-write your-script.ts
 ```
 
+If you’d rather not write a script just to test things, you can run:
+
+```bash
+deno task dev:example
+```
+
 ## Examples
 
 The library provides several ways to transform images, from simple single-image operations to complex multi-step pipelines.
@@ -200,22 +206,22 @@ The codebase is organized to make it easy to understand and extend:
 
 ```
 src/
-├── core/               # Core processing components
-│   ├── asset-resolver.ts   # Asset path resolution
-│   └── processor.ts        # Core processing logic
-├── errors.ts           # Custom error definitions
-├── index.ts            # Main exports
-├── plugins/            # Plugin system
+├── core/                       # Core processing components
+│   ├── asset-resolver.ts       # Asset path resolution
+│   └── processor.ts            # Core processing logic
+├── errors.ts                   # Custom error definitions
+├── index.ts                    # Main exports
+├── plugins/                    # Plugin system
 │   ├── index.ts
 │   └── register-built-ins.ts
-├── transforms/         # Built-in transformations
+├── transforms/                 # Built-in transformations
 │   ├── blink.ts
 │   ├── circle.ts
 │   ├── color.ts
 │   └── greyscale.ts
-├── types/              # Type definitions
+├── types/                      # Type definitions
 │   └── transforms.ts
-└── validation/         # Parameter validation
+└── validation/                 # Parameter validation
     ├── schemas.ts
     └── utils.ts
 ```
