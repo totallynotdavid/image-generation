@@ -8,29 +8,21 @@ import {
     transform,
 } from '../src/index.ts';
 import { processor } from '../src/core/processor.ts';
-import { TransformParams } from '../src/types/transforms.ts';
 import { join } from '@std/path/join';
 import { assertSpyCalls, spy } from '@std/testing/mock';
+import sharp from 'sharp';
 
-// Helper function to create an image file for testing
 async function createTestImageFile(path: string): Promise<void> {
-    await Deno.writeFile(
-        path,
-        new Uint8Array([
-            0x89,
-            0x50,
-            0x4E,
-            0x47, // PNG header
-            0x0D,
-            0x0A,
-            0x1A,
-            0x0A,
-            0x00,
-            0x00,
-            0x00,
-            0x0D, // etc
-        ]),
-    );
+    // Create a 1x1 white PNG image
+    const image = sharp({
+        create: {
+            width: 1,
+            height: 1,
+            channels: 4,
+            background: { r: 255, g: 255, b: 255, alpha: 1 },
+        },
+    });
+    await image.png().toFile(path);
 }
 
 Deno.test('greyscale - calls processor.process with correct parameters', async () => {
@@ -45,7 +37,6 @@ Deno.test('greyscale - calls processor.process with correct parameters', async (
     try {
         await greyscale({ input: testFile });
 
-        // Verify processor.process was called with the correct parameters
         assertSpyCalls(processSpy, 1);
         assertEquals(processSpy.calls[0].args[0], 'greyscale');
         assertEquals(processSpy.calls[0].args[1], { input: testFile });
@@ -73,7 +64,6 @@ Deno.test('color - calls processor.process with correct parameters', async () =>
             },
         });
 
-        // Verify processor.process was called with the correct parameters
         assertSpyCalls(processSpy, 1);
         assertEquals(processSpy.calls[0].args[0], 'color');
         assertEquals(processSpy.calls[0].args[1], {
@@ -107,7 +97,6 @@ Deno.test('circle - calls processor.process with correct parameters', async () =
             },
         });
 
-        // Verify processor.process was called with the correct parameters
         assertSpyCalls(processSpy, 1);
         assertEquals(processSpy.calls[0].args[0], 'circle');
         assertEquals(processSpy.calls[0].args[1], {
@@ -143,7 +132,6 @@ Deno.test('blink - calls processor.process with correct parameters', async () =>
             },
         });
 
-        // Verify processor.process was called with the correct parameters
         assertSpyCalls(processSpy, 1);
         assertEquals(processSpy.calls[0].args[0], 'blink');
         assertEquals(processSpy.calls[0].args[1], {
@@ -171,7 +159,6 @@ Deno.test('transform - calls processor.process with correct parameters', async (
     try {
         await transform('greyscale', { input: testFile });
 
-        // Verify processor.process was called with the correct parameters
         assertSpyCalls(processSpy, 1);
         assertEquals(processSpy.calls[0].args[0], 'greyscale');
         assertEquals(processSpy.calls[0].args[1], { input: testFile });
@@ -182,6 +169,5 @@ Deno.test('transform - calls processor.process with correct parameters', async (
 });
 
 Deno.test('exports - exports all required types and classes', () => {
-    // Check that AssetResolver is exported
     assertExists(AssetResolver);
 });
