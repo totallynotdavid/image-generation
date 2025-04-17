@@ -5,7 +5,7 @@ import {
 } from '../types/transforms.ts';
 import { parseHexColor, validateImagePath } from '../validation/utils.ts';
 import { ProcessingError } from '../errors.ts';
-import { Buffer } from 'jsr:@std/io';
+import { Buffer } from 'node:buffer';
 import sharp from 'npm:sharp';
 
 export async function color(
