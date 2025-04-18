@@ -25,7 +25,7 @@ await build({
             url: 'https://github.com/totallynotdavid/image-generation/issues',
         },
         devDependencies: {
-            '@types/node': '22.14.0',
+            '@types/node': '22.14.1',
             '@types/gifencoder': '^2.0.3',
         },
     },
