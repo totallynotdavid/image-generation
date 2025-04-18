@@ -116,7 +116,9 @@ export class Processor {
             ) {
                 throw new ProcessingError(
                     `Failed to process ${
-                        String(type)
+                        String(
+                            type,
+                        )
                     } transform: ${error.message}`,
                     error,
                 );

@@ -15,7 +15,9 @@ async function createTestImage(
             channels: 4,
             background: { ...color, alpha: 1 },
         },
-    }).png().toBuffer();
+    })
+        .png()
+        .toBuffer();
 
     await Deno.writeFile(path, imageBuffer);
 }

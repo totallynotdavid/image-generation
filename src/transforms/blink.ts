@@ -30,8 +30,9 @@ export async function blink(
             }),
         );
 
-        const { width = 480, height = 480 } = await sharp(processedBuffers[0])
-            .metadata();
+        const { width = 480, height = 480 } = await sharp(
+            processedBuffers[0],
+        ).metadata();
 
         const encoder = new GIFEncoder(width, height);
         encoder.start();

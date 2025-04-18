@@ -13,7 +13,9 @@ async function createTestImage(path: string): Promise<void> {
             channels: 4,
             background: { r: 0, g: 0, b: 0, alpha: 1 },
         },
-    }).png().toBuffer();
+    })
+        .png()
+        .toBuffer();
 
     await Deno.writeFile(path, imageBuffer);
 }
@@ -41,28 +43,31 @@ Deno.test('color - successfully applies overlay color transform', async () => {
     }
 });
 
-Deno.test('color - successfully applies softlight color transform', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
+Deno.test(
+    'color - successfully applies softlight color transform',
+    async () => {
+        const testDir = join(Deno.cwd(), 'test-images');
+        const testImage = join(testDir, 'test.png');
 
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage);
+        await Deno.mkdir(testDir, { recursive: true });
+        await createTestImage(testImage);
 
-    try {
-        const result = await color({
-            input: testImage,
-            options: {
-                hex: '#00ff00', // Green
-                blendMode: 'softlight',
-            },
-        });
+        try {
+            const result = await color({
+                input: testImage,
+                options: {
+                    hex: '#00ff00', // Green
+                    blendMode: 'softlight',
+                },
+            });
 
-        assertExists(result);
-        assertEquals(result instanceof Uint8Array, true);
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
-});
+            assertExists(result);
+            assertEquals(result instanceof Uint8Array, true);
+        } finally {
+            await Deno.remove(testDir, { recursive: true });
+        }
+    },
+);
 
 Deno.test('color - throws with unsupported blend mode', async () => {
     const testDir = join(Deno.cwd(), 'test-images');

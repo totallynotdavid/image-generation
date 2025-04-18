@@ -12,14 +12,17 @@ import {
     TransformNotFoundError,
 } from '@/errors.ts';
 
-Deno.test('ImageTransformError - correctly initializes base error class', () => {
-    const error = new ImageTransformError('TEST_CODE', 'Test message');
+Deno.test(
+    'ImageTransformError - correctly initializes base error class',
+    () => {
+        const error = new ImageTransformError('TEST_CODE', 'Test message');
 
-    assertEquals(error.code, 'TEST_CODE');
-    assertEquals(error.message, '[TEST_CODE] Test message');
-    assertEquals(error.name, 'ImageTransformError');
-    assertEquals(error.cause, undefined);
-});
+        assertEquals(error.code, 'TEST_CODE');
+        assertEquals(error.message, '[TEST_CODE] Test message');
+        assertEquals(error.name, 'ImageTransformError');
+        assertEquals(error.cause, undefined);
+    },
+);
 
 Deno.test('ImageTransformError - handles cause parameter', () => {
     const cause = new Error('Original error');
@@ -93,23 +96,32 @@ Deno.test('TransformNotFoundError - correctly formats error message', () => {
     assertEquals(error.name, 'TransformNotFoundError');
 });
 
-Deno.test('ProcessingError - correctly formats error message and handles cause', () => {
-    const cause = new Error('Original error');
-    const error = new ProcessingError('Failed to process image', cause);
+Deno.test(
+    'ProcessingError - correctly formats error message and handles cause',
+    () => {
+        const cause = new Error('Original error');
+        const error = new ProcessingError('Failed to process image', cause);
 
-    assertEquals(error.code, 'PROCESSING_ERROR');
-    assertEquals(error.message, '[PROCESSING_ERROR] Failed to process image');
-    assertEquals(error.cause, cause);
-    assertEquals(error.name, 'ProcessingError');
-});
+        assertEquals(error.code, 'PROCESSING_ERROR');
+        assertEquals(
+            error.message,
+            '[PROCESSING_ERROR] Failed to process image',
+        );
+        assertEquals(error.cause, cause);
+        assertEquals(error.name, 'ProcessingError');
+    },
+);
 
-Deno.test('FileSystemError - correctly formats error message without path', () => {
-    const error = new FileSystemError('Access denied');
+Deno.test(
+    'FileSystemError - correctly formats error message without path',
+    () => {
+        const error = new FileSystemError('Access denied');
 
-    assertEquals(error.code, 'FS_ERROR');
-    assertEquals(error.message, '[FS_ERROR] Access denied');
-    assertEquals(error.name, 'FileSystemError');
-});
+        assertEquals(error.code, 'FS_ERROR');
+        assertEquals(error.message, '[FS_ERROR] Access denied');
+        assertEquals(error.name, 'FileSystemError');
+    },
+);
 
 Deno.test('FileSystemError - correctly formats error message with path', () => {
     const error = new FileSystemError('Access denied', '/path/to/file');

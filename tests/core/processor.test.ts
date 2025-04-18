@@ -41,16 +41,19 @@ Deno.test('Processor - registerHandler registers a transform handler', () => {
     teardown();
 });
 
-Deno.test('Processor - hasHandler returns false for unregistered handler', () => {
-    setup();
+Deno.test(
+    'Processor - hasHandler returns false for unregistered handler',
+    () => {
+        setup();
 
-    const hasHandler = testProcessor.hasHandler(
-        'nonexistent' as TestTransformType,
-    );
-    assertEquals(hasHandler, false);
+        const hasHandler = testProcessor.hasHandler(
+            'nonexistent' as TestTransformType,
+        );
+        assertEquals(hasHandler, false);
 
-    teardown();
-});
+        teardown();
+    },
+);
 
 Deno.test('Processor - process executes registered handler', async () => {
     setup();
@@ -87,88 +90,94 @@ Deno.test('Processor - process throws for unregistered transform', async () => {
     teardown();
 });
 
-Deno.test('Processor - process validates params if validator exists', async () => {
-    setup();
+Deno.test(
+    'Processor - process validates params if validator exists',
+    async () => {
+        setup();
 
-    const mockValidationFn = () => {
-        throw new Error('Validation failed');
-    };
+        const mockValidationFn = () => {
+            throw new Error('Validation failed');
+        };
 
-    const originalGreyscaleValidator = validators['greyscale'];
+        const originalGreyscaleValidator = validators['greyscale'];
 
-    (validators as Record<string, unknown>)['greyscale'] = mockValidationFn;
+        (validators as Record<string, unknown>)['greyscale'] = mockValidationFn;
 
-    const mockHandler: TransformHandler<'greyscale'> = async () => {
-        return new Uint8Array([1, 2, 3]);
-    };
+        const mockHandler: TransformHandler<'greyscale'> = async () => {
+            return new Uint8Array([1, 2, 3]);
+        };
 
-    testProcessor.registerHandler('greyscale', mockHandler);
+        testProcessor.registerHandler('greyscale', mockHandler);
 
-    await assertRejects(
-        async () => {
-            await testProcessor.process(
-                'greyscale',
-                { input: 'test.png' } as TransformParams<'greyscale'>,
-            );
-        },
-        Error,
-        'Validation failed',
-    );
+        await assertRejects(
+            async () => {
+                await testProcessor.process('greyscale', {
+                    input: 'test.png',
+                } as TransformParams<'greyscale'>);
+            },
+            Error,
+            'Validation failed',
+        );
 
-    if (originalGreyscaleValidator) {
-        (validators as Record<string, unknown>)['greyscale'] =
-            originalGreyscaleValidator;
-    } else {
-        (validators as Record<string, unknown>)['greyscale'] = undefined;
-    }
+        if (originalGreyscaleValidator) {
+            (validators as Record<string, unknown>)['greyscale'] =
+                originalGreyscaleValidator;
+        } else {
+            (validators as Record<string, unknown>)['greyscale'] = undefined;
+        }
 
-    teardown();
-});
+        teardown();
+    },
+);
 
-Deno.test('Processor - process wraps non-ImageTransformError errors', async () => {
-    setup();
+Deno.test(
+    'Processor - process wraps non-ImageTransformError errors',
+    async () => {
+        setup();
 
-    const mockHandler: TransformHandler<'greyscale'> = async () => {
-        throw new Error('Something went wrong');
-    };
+        const mockHandler: TransformHandler<'greyscale'> = async () => {
+            throw new Error('Something went wrong');
+        };
 
-    testProcessor.registerHandler('greyscale', mockHandler);
+        testProcessor.registerHandler('greyscale', mockHandler);
 
-    await assertRejects(
-        async () => {
-            await testProcessor.process(
-                'greyscale',
-                { input: 'test.png' } as TransformParams<'greyscale'>,
-            );
-        },
-        ProcessingError,
-        'Failed to process greyscale transform',
-    );
+        await assertRejects(
+            async () => {
+                await testProcessor.process('greyscale', {
+                    input: 'test.png',
+                } as TransformParams<'greyscale'>);
+            },
+            ProcessingError,
+            'Failed to process greyscale transform',
+        );
 
-    teardown();
-});
+        teardown();
+    },
+);
 
-Deno.test('Processor - process passes through ImageTransformError errors', async () => {
-    setup();
+Deno.test(
+    'Processor - process passes through ImageTransformError errors',
+    async () => {
+        setup();
 
-    const mockHandler: TransformHandler<'greyscale'> = async () => {
-        const error = new Error('Custom error');
-        error.name = 'ImageTransformError';
-        throw error;
-    };
+        const mockHandler: TransformHandler<'greyscale'> = async () => {
+            const error = new Error('Custom error');
+            error.name = 'ImageTransformError';
+            throw error;
+        };
 
-    testProcessor.registerHandler('greyscale', mockHandler);
+        testProcessor.registerHandler('greyscale', mockHandler);
 
-    await assertRejects(
-        async () => {
-            await testProcessor.process(
-                'greyscale',
-                { input: 'test.png' } as TransformParams<'greyscale'>,
-            );
-        },
-        Error,
-        'Custom error',
-    );
+        await assertRejects(
+            async () => {
+                await testProcessor.process('greyscale', {
+                    input: 'test.png',
+                } as TransformParams<'greyscale'>);
+            },
+            Error,
+            'Custom error',
+        );
 
-    teardown();
-});
+        teardown();
+    },
+);

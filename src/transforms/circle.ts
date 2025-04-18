@@ -56,10 +56,12 @@ export async function circle(
                 blend: 'dest-in' as Blend,
             },
             ...(border
-                ? [{
-                    input: border,
-                    blend: 'over' as Blend,
-                }]
+                ? [
+                    {
+                        input: border,
+                        blend: 'over' as Blend,
+                    },
+                ]
                 : []),
         ]);
 

@@ -13,55 +13,63 @@ async function createTestImage(path: string): Promise<void> {
             channels: 4,
             background: { r: 0, g: 0, b: 0, alpha: 1 },
         },
-    }).png().toBuffer();
+    })
+        .png()
+        .toBuffer();
 
     await Deno.writeFile(path, imageBuffer);
 }
 
-Deno.test('circle - successfully creates circle image without border', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
+Deno.test(
+    'circle - successfully creates circle image without border',
+    async () => {
+        const testDir = join(Deno.cwd(), 'test-images');
+        const testImage = join(testDir, 'test.png');
 
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage);
+        await Deno.mkdir(testDir, { recursive: true });
+        await createTestImage(testImage);
 
-    try {
-        const result = await circle({
-            input: testImage,
-            options: {
-                borderWidth: 0,
-            },
-        });
+        try {
+            const result = await circle({
+                input: testImage,
+                options: {
+                    borderWidth: 0,
+                },
+            });
 
-        assertExists(result);
-        assertEquals(result instanceof Uint8Array, true);
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
-});
+            assertExists(result);
+            assertEquals(result instanceof Uint8Array, true);
+        } finally {
+            await Deno.remove(testDir, { recursive: true });
+        }
+    },
+);
 
-Deno.test('circle - successfully creates circle image with border', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
+Deno.test(
+    'circle - successfully creates circle image with border',
+    async () => {
+        const testDir = join(Deno.cwd(), 'test-images');
+        const testImage = join(testDir, 'test.png');
 
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage);
+        await Deno.mkdir(testDir, { recursive: true });
+        await createTestImage(testImage);
 
-    try {
-        const result = await circle({
-            input: testImage,
-            options: {
-                borderWidth: 2,
-                borderColor: '#ff0000', // Red border
-            },
-        });
+        try {
+            const result = await circle({
+                input: testImage,
+                options: {
+                    borderWidth: 2,
+                    borderColor: '#ff0000', // Red border
+                },
+            });
 
-        assertExists(result);
-        assertEquals(result instanceof Uint8Array, true);
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
-});
+            assertExists(result);
+            assertEquals(result instanceof Uint8Array, true);
+        } finally {
+            await Deno.remove(testDir, { recursive: true });
+        }
+    },
+);
 
 Deno.test('circle - propagates validation errors', async () => {
     await assertRejects(

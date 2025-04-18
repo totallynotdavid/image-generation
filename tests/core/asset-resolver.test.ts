@@ -14,26 +14,29 @@ async function cleanupTestDir(path: string): Promise<void> {
     }
 }
 
-Deno.test('AssetResolver - creates assets directory if not exists', async () => {
-    const testPath = join(Deno.cwd(), 'test-assets');
-    await cleanupTestDir(testPath);
-
-    try {
-        const resolver = new AssetResolver(testPath);
-        await resolver.resolveAsset('dummy.txt').catch(() => {
-            // We expect this to fail, but we want to ensure initialization happens
-        });
-
-        const dirExists = await exists(testPath);
-        assertEquals(
-            dirExists,
-            true,
-            'Directory should be created during initialization',
-        );
-    } finally {
+Deno.test(
+    'AssetResolver - creates assets directory if not exists',
+    async () => {
+        const testPath = join(Deno.cwd(), 'test-assets');
         await cleanupTestDir(testPath);
-    }
-});
+
+        try {
+            const resolver = new AssetResolver(testPath);
+            await resolver.resolveAsset('dummy.txt').catch(() => {
+                // We expect this to fail, but we want to ensure initialization happens
+            });
+
+            const dirExists = await exists(testPath);
+            assertEquals(
+                dirExists,
+                true,
+                'Directory should be created during initialization',
+            );
+        } finally {
+            await cleanupTestDir(testPath);
+        }
+    },
+);
 
 Deno.test('AssetResolver - uses default path if none provided', async () => {
     const defaultPath = join(Deno.cwd(), 'assets');
@@ -92,7 +95,7 @@ Deno.test('AssetResolver - correctly resolves existing asset', async () => {
         await Deno.mkdir(testPath, { recursive: true });
         await Deno.writeFile(
             fullPath,
-            new Uint8Array([0x89, 0x50, 0x4E, 0x47]),
+            new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
         ); // PNG header
 
         const resolver = new AssetResolver(testPath);
@@ -221,25 +224,28 @@ Deno.test('AssetResolver - handles file system errors properly', async () => {
     }
 });
 
-Deno.test('AssetResolver - throws if asset is a directory not a file', async () => {
-    const testPath = join(Deno.cwd(), 'test-assets');
-    const testDir = 'test-dir';
-    const fullPath = join(testPath, testDir);
-    await cleanupTestDir(testPath);
-
-    try {
-        await Deno.mkdir(testPath, { recursive: true });
-        await Deno.mkdir(fullPath, { recursive: true });
-
-        const resolver = new AssetResolver(testPath);
-
-        const error = await assertRejects(
-            () => resolver.resolveAsset(testDir),
-            FileSystemError,
-        );
-
-        assertEquals(error.message.includes('not a file'), true);
-    } finally {
+Deno.test(
+    'AssetResolver - throws if asset is a directory not a file',
+    async () => {
+        const testPath = join(Deno.cwd(), 'test-assets');
+        const testDir = 'test-dir';
+        const fullPath = join(testPath, testDir);
         await cleanupTestDir(testPath);
-    }
-});
+
+        try {
+            await Deno.mkdir(testPath, { recursive: true });
+            await Deno.mkdir(fullPath, { recursive: true });
+
+            const resolver = new AssetResolver(testPath);
+
+            const error = await assertRejects(
+                () => resolver.resolveAsset(testDir),
+                FileSystemError,
+            );
+
+            assertEquals(error.message.includes('not a file'), true);
+        } finally {
+            await cleanupTestDir(testPath);
+        }
+    },
+);

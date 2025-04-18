@@ -7,9 +7,11 @@ export function validateHex(hex: string): void {
     }
 }
 
-export function parseHexColor(
-    hex: string,
-): { r: number; g: number; b: number } {
+export function parseHexColor(hex: string): {
+    r: number;
+    g: number;
+    b: number;
+} {
     validateHex(hex);
 
     const cleanHex = hex.replace('#', '');
@@ -41,11 +43,11 @@ export async function validateImagePath(path: string): Promise<Uint8Array> {
 
         const isPNG = fileData[0] === 0x89 &&
             fileData[1] === 0x50 &&
-            fileData[2] === 0x4E &&
+            fileData[2] === 0x4e &&
             fileData[3] === 0x47;
 
-        const isJPEG = fileData[0] === 0xFF &&
-            fileData[1] === 0xD8;
+        const isJPEG = fileData[0] === 0xff &&
+            fileData[1] === 0xd8;
 
         const isGIF = fileData[0] === 0x47 &&
             fileData[1] === 0x49 &&

@@ -119,6 +119,12 @@ Deno.test('getAllPlugins - returns array of all registered plugins', () => {
     const plugins = getAllPlugins();
 
     assertEquals(plugins.length >= 2, true);
-    assertEquals(plugins.some((p) => p.name === 'greyscale'), true);
-    assertEquals(plugins.some((p) => p.name === 'blink'), true);
+    assertEquals(
+        plugins.some((p) => p.name === 'greyscale'),
+        true,
+    );
+    assertEquals(
+        plugins.some((p) => p.name === 'blink'),
+        true,
+    );
 });

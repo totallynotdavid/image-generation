@@ -92,16 +92,16 @@ Deno.test('validateImagePath - accepts valid image files', async () => {
             new Uint8Array([
                 0x89,
                 0x50,
-                0x4E,
+                0x4e,
                 0x47, // PNG signature
-                0x0D,
-                0x0A,
-                0x1A,
-                0x0A,
+                0x0d,
+                0x0a,
+                0x1a,
+                0x0a,
                 0x00,
                 0x00,
                 0x00,
-                0x0D,
+                0x0d,
             ]),
         );
 
@@ -109,13 +109,13 @@ Deno.test('validateImagePath - accepts valid image files', async () => {
         await Deno.writeFile(
             jpegFile,
             new Uint8Array([
-                0xFF,
-                0xD8, // JPEG signature
-                0xFF,
-                0xE0,
+                0xff,
+                0xd8, // JPEG signature
+                0xff,
+                0xe0,
                 0x00,
                 0x10,
-                0x4A,
+                0x4a,
                 0x46,
             ]),
         );
@@ -130,9 +130,9 @@ Deno.test('validateImagePath - accepts valid image files', async () => {
                 0x38, // GIF signature
                 0x39,
                 0x61,
-                0x0A,
+                0x0a,
                 0x00,
-                0x0A,
+                0x0a,
                 0x00,
             ]),
         );
@@ -212,7 +212,7 @@ Deno.test('validateImagePath - handles file read errors', async () => {
     const testFile = join(testDir, 'test.png');
 
     await Deno.mkdir(testDir, { recursive: true });
-    await Deno.writeFile(testFile, new Uint8Array([0x89, 0x50, 0x4E, 0x47]));
+    await Deno.writeFile(testFile, new Uint8Array([0x89, 0x50, 0x4e, 0x47]));
 
     const originalReadFile = Deno.readFile;
     Deno.readFile = async () => {
