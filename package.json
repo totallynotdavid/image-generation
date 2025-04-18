@@ -1,5 +1,5 @@
 {
-    "name": "image-generation",
+    "name": "@totallynotdavid/image-generation",
     "version": "1.0.0",
     "description": "Image generation project using Deno",
     "private": true,
