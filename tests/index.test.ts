@@ -1,6 +1,6 @@
-import { assertEquals, assertExists } from 'jsr:@std/assert';
-import { join } from 'jsr:@std/path/join';
-import { assertSpyCalls, spy } from 'jsr:@std/testing/mock';
+import { join } from 'jsr:@std/path@1.0.8';
+import { assertEquals, assertExists } from 'jsr:@std/assert@1.0.12';
+import { assertSpyCalls, spy } from 'jsr:@std/testing@1.0.11/mock';
 import {
     AssetResolver,
     blink,

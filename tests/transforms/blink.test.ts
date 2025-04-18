@@ -1,5 +1,9 @@
-import { assertEquals, assertExists, assertRejects } from 'jsr:@std/assert';
-import { join } from 'jsr:@std/path/join';
+import { join } from 'jsr:@std/path@1.0.8';
+import {
+    assertEquals,
+    assertExists,
+    assertRejects,
+} from 'jsr:@std/assert@1.0.12';
 import { ProcessingError } from '@/errors.ts';
 import { blink } from '@/transforms/blink.ts';
 import sharp from 'npm:sharp@0.34.1';
