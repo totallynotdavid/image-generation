@@ -1,4 +1,4 @@
-# [pkg]: image-generation
+# [pkg]: image-generation [![JSR](https://jsr.io/badges/@dv/image-generation)](https://jsr.io/@dv/image-generation)
 
 [![CodeQL](https://github.com/totallynotdavid/image-generation/actions/workflows/codeql.yml/badge.svg)](https://github.com/totallynotdavid/image-generation/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/totallynotdavid/image-generation/graph/badge.svg?token=Z9K6TC9HFO)](https://codecov.io/gh/totallynotdavid/image-generation)
