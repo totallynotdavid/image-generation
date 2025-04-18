@@ -7,9 +7,10 @@
         "url": "git+https://github.com/totallynotdavid/image-generation.git"
     },
     "tasks": {
+        "clean": "rm -rf build assets custom-assets node_modules",
         "dev": "deno run --allow-ffi --allow-read --watch src/index.ts",
         "dev:example": "deno run --allow-read --allow-write --allow-env --allow-ffi example/main.ts",
-        "tidy": "deno fmt && deno lint",
+        "tidy": "deno fmt . && deno lint src/ example/",
         "test": "deno test --allow-ffi --allow-read --allow-write --allow-scripts --junit-path=./report.xml",
         "llm": "bash utils/repo.sh",
         "build:npm": "deno run -A build_npm.ts"
