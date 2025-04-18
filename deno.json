@@ -1,6 +1,6 @@
 {
     "name": "@dv/image-generation",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A TypeScript library for image transformations built with Deno",
     "license": "MIT",
     "exports": "./src/index.ts",
@@ -18,13 +18,15 @@
         "build:npm": "deno run -A build_npm.ts"
     },
     "imports": {
-        "@std/assert": "jsr:@std/assert@^1.0.12",
-        "@std/fs": "jsr:@std/fs@^1.0.16",
-        "@std/io": "jsr:@std/io@^0.225.2",
-        "@std/path": "jsr:@std/path@^1.0.8",
-        "@std/testing": "jsr:@std/testing@^1.0.11",
-        "@deno/dnt": "jsr:@deno/dnt@^0.41.3",
+        "@std/assert": "jsr:@std/assert@1.0.12",
+        "@std/fs": "jsr:@std/fs@1.0.16",
+        "@std/path": "jsr:@std/path@1.0.8",
+        "@std/testing": "jsr:@std/testing@1.0.11",
+        "@deno/dnt": "jsr:@deno/dnt@0.41.3",
         "@/": "./src/"
+    },
+    "publish": {
+        "include": ["src", "license", "readme.md"]
     },
     "nodeModulesDir": "auto",
     "fmt": {
@@ -33,10 +35,10 @@
         "indentWidth": 4,
         "semiColons": true,
         "singleQuote": true,
-        "include": ["src/"]
+        "include": ["src/", "example/", "tests/", ".github/", "readme.md"]
     },
     "lint": {
-        "include": ["src/**/*.ts"],
+        "include": ["src/**/*.ts", "example/**/*.ts"],
         "rules": {
             "tags": ["recommended"],
             "include": [

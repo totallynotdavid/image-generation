@@ -1,9 +1,5 @@
-import { join } from 'jsr:@std/path@1.0.8';
-import {
-    assertEquals,
-    assertRejects,
-    assertThrows,
-} from 'jsr:@std/assert@1.0.12';
+import { join } from '@std/path';
+import { assertEquals, assertRejects, assertThrows } from '@std/assert';
 import {
     parseHexColor,
     validateHex,

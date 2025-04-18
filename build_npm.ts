@@ -1,4 +1,4 @@
-import { build, emptyDir } from 'jsr:@deno/dnt@0.41.3';
+import { build, emptyDir } from '@deno/dnt';
 
 await emptyDir('./build');
 
@@ -7,9 +7,9 @@ await build({
     importMap: './deno.json',
     test: false,
     outDir: './build',
+    packageManager: 'pnpm',
     shims: {
         deno: true,
-        timers: true,
     },
     package: {
         name: '@totallynotdavid/image-generation',
@@ -25,7 +25,7 @@ await build({
             url: 'https://github.com/totallynotdavid/image-generation/issues',
         },
         devDependencies: {
-            '@types/node': '^20.0.0',
+            '@types/node': '22.14.1',
             '@types/gifencoder': '^2.0.3',
         },
     },

@@ -1,9 +1,5 @@
-import { join } from 'jsr:@std/path@1.0.8';
-import {
-    assertEquals,
-    assertExists,
-    assertRejects,
-} from 'jsr:@std/assert@1.0.12';
+import { join } from '@std/path';
+import { assertEquals, assertExists, assertRejects } from '@std/assert';
 import { circle } from '@/transforms/circle.ts';
 import { InvalidImageError } from '@/errors.ts';
 import sharp from 'npm:sharp@0.34.1';

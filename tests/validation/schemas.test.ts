@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from '@std/assert';
+import { assertThrows } from '@std/assert';
 import { validators } from '@/validation/schemas.ts';
 import {
     InvalidOptionError,
