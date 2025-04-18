@@ -4,13 +4,13 @@ import { writeFile } from 'jsr:@std/fs/unstable-write-file';
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
 
-async function saveOutput(data: Uint8Array, filename: string) {
+async function saveOutput(data: Uint8Array, filename: string): Promise<void> {
     const outputPath = join(__dirname, 'output', filename);
     await writeFile(outputPath, data);
     console.log(`Saved to ${outputPath}`);
 }
 
-async function run() {
+async function run(): Promise<void> {
     try {
         // You can use relative paths or absolute paths for the input files
         const input1 = './example/input-1.jpg';
