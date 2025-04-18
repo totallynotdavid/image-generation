@@ -207,7 +207,13 @@ To set up your development environment:
    irm https://deno.land/install.ps1 | iex
    ```
 
-3. Run the example to verify your setup:
+3. Install dependencies:
+
+   ```bash
+   deno install --allow-scripts
+   ```
+
+4. Run the example to verify your setup:
 
    ```bash
    deno task dev:example
