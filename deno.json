@@ -26,7 +26,8 @@
         "@/": "./src/"
     },
     "publish": {
-        "include": ["src", "license", "readme.md"]
+        "include": ["src", "license", "readme.md"],
+        "exclude": ["src/assets"]
     },
     "nodeModulesDir": "auto",
     "fmt": {
