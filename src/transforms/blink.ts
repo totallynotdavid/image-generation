@@ -5,9 +5,9 @@ import {
 } from '@/types/transforms.ts';
 import { validateImagePath } from '@/validation/utils.ts';
 import { ProcessingError } from '@/errors.ts';
-import sharp from 'npm:sharp';
-import GIFEncoder from 'npm:gifencoder';
-import { createCanvas, Image } from 'npm:canvas';
+import sharp from 'npm:sharp@0.34.1';
+import GIFEncoder from 'npm:gifencoder@2.0.1';
+import { createCanvas, Image } from 'npm:canvas@3.1.0';
 
 export async function blink(
     params: MultiImageTransform<TransformMap['blink']>,

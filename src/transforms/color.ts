@@ -6,7 +6,7 @@ import {
 import { parseHexColor, validateImagePath } from '@/validation/utils.ts';
 import { ProcessingError } from '@/errors.ts';
 import { Buffer } from 'node:buffer';
-import sharp from 'npm:sharp';
+import sharp from 'npm:sharp@0.34.1';
 
 export async function color(
     params: SingleImageTransform<TransformMap['color']>,

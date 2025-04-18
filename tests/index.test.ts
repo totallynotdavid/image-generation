@@ -10,7 +10,7 @@ import {
     transform,
 } from '@/index.ts';
 import { processor } from '@/core/processor.ts';
-import sharp from 'npm:sharp';
+import sharp from 'npm:sharp@0.34.1';
 
 async function createTestImageFile(path: string): Promise<void> {
     // Create a 1x1 white PNG image

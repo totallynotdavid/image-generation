@@ -5,7 +5,7 @@ import {
 } from '@/types/transforms.ts';
 import { validateImagePath } from '@/validation/utils.ts';
 import { Buffer } from 'node:buffer';
-import sharp, { Blend } from 'npm:sharp';
+import sharp, { Blend } from 'npm:sharp@0.34.1';
 
 export async function circle(
     params: SingleImageTransform<TransformMap['circle']>,

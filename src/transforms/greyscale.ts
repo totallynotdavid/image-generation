@@ -1,7 +1,7 @@
 import { SingleImageTransform, TransformResult } from '@/types/transforms.ts';
 import { validateImagePath } from '@/validation/utils.ts';
 import { ProcessingError } from '@/errors.ts';
-import sharp from 'npm:sharp';
+import sharp from 'npm:sharp@0.34.1';
 
 export async function greyscale(
     params: SingleImageTransform,
