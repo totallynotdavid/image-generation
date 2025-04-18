@@ -1,6 +1,6 @@
 {
     "name": "@totallynotdavid/image-generation",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Image generation project using Deno",
     "private": true,
     "dependencies": {
