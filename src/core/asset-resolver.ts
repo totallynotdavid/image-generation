@@ -1,5 +1,5 @@
 import { isAbsolute, join } from '@std/path';
-import { exists } from '@std/fs';
+import { exists } from '@std/fs/exists';
 import { FileSystemError } from '@/errors.ts';
 
 /**

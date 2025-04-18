@@ -7,14 +7,9 @@ await build({
     importMap: './deno.json',
     test: false,
     outDir: './build',
+    packageManager: 'pnpm',
     shims: {
         deno: true,
-    },
-    filterDiagnostic(diagnostic) {
-        if (diagnostic.file?.fileName.includes('@std/fs')) {
-            return false;
-        }
-        return true;
     },
     package: {
         name: '@totallynotdavid/image-generation',
@@ -30,7 +25,7 @@ await build({
             url: 'https://github.com/totallynotdavid/image-generation/issues',
         },
         devDependencies: {
-            '@types/node': '^20.0.0',
+            '@types/node': '22.14.0',
             '@types/gifencoder': '^2.0.3',
         },
     },
