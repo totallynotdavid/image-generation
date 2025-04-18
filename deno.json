@@ -25,6 +25,9 @@
         "@deno/dnt": "jsr:@deno/dnt@0.41.3",
         "@/": "./src/"
     },
+    "publish": {
+        "include": ["src", "license", "readme.md"]
+    },
     "nodeModulesDir": "auto",
     "fmt": {
         "useTabs": false,
@@ -32,10 +35,10 @@
         "indentWidth": 4,
         "semiColons": true,
         "singleQuote": true,
-        "include": ["src/"]
+        "include": ["src/", "example/", "tests/", ".github/", "readme.md"]
     },
     "lint": {
-        "include": ["src/**/*.ts"],
+        "include": ["src/**/*.ts", "example/**/*.ts"],
         "rules": {
             "tags": ["recommended"],
             "include": [

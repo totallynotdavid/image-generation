@@ -1,4 +1,4 @@
-import { build, emptyDir } from 'jsr:@deno/dnt@0.41.3';
+import { build, emptyDir } from "@deno/dnt";
 
 await emptyDir('./build');
 
@@ -9,7 +9,12 @@ await build({
     outDir: './build',
     shims: {
         deno: true,
-        timers: true,
+    },
+    filterDiagnostic(diagnostic) {
+        if (diagnostic.file?.fileName.includes('@std/fs')) {
+            return false;
+        }
+        return true;
     },
     package: {
         name: '@totallynotdavid/image-generation',
