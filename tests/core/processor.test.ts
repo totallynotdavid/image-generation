@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from 'jsr:@std/assert@1.0.12';
+import { assertEquals, assertRejects } from '@std/assert';
 import { Processor } from '@/core/processor.ts';
 import { ProcessingError, TransformNotFoundError } from '@/errors.ts';
 import { TransformHandler, TransformParams } from '@/types/transforms.ts';

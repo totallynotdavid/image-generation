@@ -1,8 +1,4 @@
-import {
-    assertEquals,
-    assertExists,
-    assertThrows,
-} from 'jsr:@std/assert@1.0.12';
+import { assertEquals, assertExists, assertThrows } from '@std/assert';
 import {
     clearPlugins,
     getAllPlugins,

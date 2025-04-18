@@ -1,11 +1,7 @@
-import { join } from 'jsr:@std/path@1.0.8';
-import { exists } from 'jsr:@std/fs@1.0.16';
-import {
-    assertEquals,
-    assertRejects,
-    assertThrows,
-} from 'jsr:@std/assert@1.0.12';
-import { assertSpyCalls, spy } from 'jsr:@std/testing@1.0.11/mock';
+import { join } from '@std/path';
+import { exists } from '@std/fs';
+import { assertEquals, assertRejects, assertThrows } from '@std/assert';
+import { assertSpyCalls, spy } from '@std/testing/mock';
 import { AssetResolver } from '@/core/asset-resolver.ts';
 import { FileSystemError } from '@/errors.ts';
 

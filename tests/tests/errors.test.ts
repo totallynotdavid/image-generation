@@ -1,4 +1,4 @@
-import { assertEquals } from 'jsr:@std/assert@1.0.12';
+import { assertEquals } from '@std/assert';
 import {
     FileSystemError,
     ImageTransformError,

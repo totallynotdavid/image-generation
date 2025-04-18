@@ -1,4 +1,4 @@
-import { assertThrows } from 'jsr:@std/assert@1.0.12';
+import { assertThrows } from '@std/assert';
 import { validators } from '@/validation/schemas.ts';
 import {
     InvalidOptionError,
