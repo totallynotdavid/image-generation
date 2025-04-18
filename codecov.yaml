@@ -1,0 +1,66 @@
+comment:
+    layout: 'condensed_header, diff, flags, components, condensed_files, condensed_footer'
+    behavior: default
+    require_base: true
+    require_head: true
+    hide_project_coverage: false
+
+component_management:
+    default_rules:
+        statuses:
+            - type: project
+              target: auto
+              branches:
+                  - '!master'
+    individual_components:
+        - component_id: core
+          name: Core
+          paths:
+              - src/core/**
+              - tests/core/**
+          statuses:
+              - type: project
+                target: auto
+              - type: patch
+                target: auto
+
+        - component_id: plugins
+          name: Plugins
+          paths:
+              - src/plugins/**
+              - tests/plugins/**
+
+        - component_id: transforms
+          name: Transforms
+          paths:
+              - src/transforms/**
+              - tests/transforms/**
+
+        - component_id: validation
+          name: Validation
+          paths:
+              - src/validation/**
+              - tests/validation/**
+
+        - component_id: types
+          name: Types
+          paths:
+              - src/types/**
+
+        - component_id: assets
+          name: Assets
+          paths:
+              - src/assets/**
+              - assets/**
+
+        - component_id: utils
+          name: Utils
+          paths:
+              - utils/**
+
+        - component_id: main
+          name: Main
+          paths:
+              - src/index.ts
+              - src/errors.ts
+              - tests/index.test.ts
