@@ -1,64 +1,64 @@
 name: Deno CI
 
 on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+    test:
+        runs-on: ubuntu-latest
 
-    env:
-      DENO_DIR: .deno_cache
+        env:
+            DENO_DIR: .deno_cache
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
 
-      - name: Set up Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
+            - name: Set up Deno
+              uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x
 
-      - name: Cache Deno dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.DENO_DIR }}
-          key: ${{ runner.os }}-deno-${{ hashFiles('deno.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-deno-
+            - name: Cache Deno dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ${{ env.DENO_DIR }}
+                  key: ${{ runner.os }}-deno-${{ hashFiles('deno.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-deno-
 
-      - name: Install system dependencies for canvas
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+            - name: Install system dependencies for canvas
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
-      - name: Setup npm packages with Deno
-        run: deno cache --node-modules-dir --no-check npm:canvas@3.1.0 npm:gifencoder@2.0.1 --reload
+            - name: Setup npm packages with Deno
+              run: deno cache --node-modules-dir --no-check npm:canvas@3.1.0 npm:gifencoder@2.0.1 --reload
 
-      - name: Check formatting
-        run: deno fmt --check
+            - name: Check formatting
+              run: deno fmt --check
 
-      - name: Lint code
-        run: deno lint
+            - name: Lint code
+              run: deno lint
 
-      - name: Run tests with coverage
-        run: deno test tests --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=cov
+            - name: Run tests with coverage
+              run: deno test tests --allow-ffi --allow-read --allow-write --allow-env --allow-net --allow-run --allow-scripts --coverage=cov
 
-      - name: Generate coverage report
-        run: deno coverage --lcov cov > coverage.lcov
+            - name: Generate coverage report
+              run: deno coverage --lcov cov > coverage.lcov
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./coverage.lcov
-          token: ${{ secrets.CODECOV_TOKEN }}
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./coverage.lcov
+                  token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
-        with:
-          files: ./coverage.lcov
-          token: ${{ secrets.CODECOV_TOKEN }}
+            - name: Upload test results to Codecov
+              if: ${{ !cancelled() }}
+              uses: codecov/test-results-action@v1
+              with:
+                  files: ./coverage.lcov
+                  token: ${{ secrets.CODECOV_TOKEN }}
