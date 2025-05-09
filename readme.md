@@ -30,7 +30,7 @@ and platform independence.
 - ⚙️ Robust parameter checking to prevent runtime errors
 - 🔍 Complete TypeScript definitions for better developer experience
 
-## Transformation Gallery
+## Transformation gallery
 
 | Transformation  | Description                                    | Example Usage                                                                | Result                                           |
 | --------------- | ---------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
@@ -42,9 +42,9 @@ and platform independence.
 The cat in the image examples is
 [@rexiecat](https://www.instagram.com/rexiecat/). Give them some love.
 
-## Getting Started
+## Getting started
 
-### Installation & Usage
+### Installation & basic usage
 
 For projects using Deno, simply add the package:
 
@@ -83,7 +83,7 @@ deno task dev:example
 The library provides several ways to transform images, from simple single-image
 operations to complex multi-step pipelines.
 
-### Single Image Transformations
+### Single image transformations
 
 Most transformations operate on a single input image, producing a modified
 output that can be saved or passed along in your pipeline.
@@ -120,7 +120,7 @@ const avatarImage = await circle({
 });
 ```
 
-### Multi-Image Processing
+### Multi-image processing
 
 Some transformations like animations require multiple input images. For these,
 use the `inputs` parameter instead of `input`:
@@ -137,7 +137,7 @@ const animatedImage = await blink({
 });
 ```
 
-### Building Transformation Pipelines
+### Building transformation pipelines
 
 The real power of this library comes from combining transformations. You can
 chain them to create complex effects by passing the output of one transformation
@@ -180,13 +180,13 @@ Each transformation returns a buffer that can be passed directly as input to the
 next transformation, making it easy to create sophisticated image processing
 chains without saving intermediate files.
 
-## For Developers
+## For developers
 
 The library is designed to be both user-friendly and developer-friendly. If
 you're interested in contributing or extending the library with your own
 transformations, this section will help you get started.
 
-### Setting Up Your Environment
+### Setting up your environment
 
 To set up your development environment:
 
@@ -228,7 +228,7 @@ The repo includes several useful development commands:
 - `deno task tidy` - Format code and run linter
 - `deno task test` - Run the test suite
 
-### Project Structure
+### Structure of the codebase
 
 The codebase is organized to make it easy to understand and extend:
 
