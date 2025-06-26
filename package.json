@@ -5,7 +5,7 @@
     "private": true,
     "dependencies": {
         "@types/node": "22.15.17",
-        "canvas": "3.1.0",
+        "canvas": "3.1.2",
         "gifencoder": "2.0.1",
         "sharp": "0.34.1",
         "typescript": "^5.8.3"
