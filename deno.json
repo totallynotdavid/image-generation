@@ -10,17 +10,17 @@
     },
     "tasks": {
         "clean": "rm -rf build assets coverage node_modules",
-        "dev": "deno run --allow-ffi --allow-read --watch src/index.ts",
-        "dev:example": "deno run --allow-read --allow-write --allow-net example/main.ts",
         "tidy": "deno fmt . && deno lint src/ example/",
+        "dev": "deno run --allow-read --allow-net --watch src/index.ts",
+        "dev:example": "deno run --allow-read --allow-write --allow-net example/main.ts",
         "test": "deno test --allow-read --allow-write --allow-net --junit-path=./report.xml",
-        "llm": "bash utils/repo.sh",
-        "build:npm": "deno run -A build_npm.ts"
+        "build:npm": "deno run -A build_npm.ts",
+        "llm": "bash utils/repo.sh"
     },
     "imports": {
         "@deno/dnt": "jsr:@deno/dnt@0.41.3",
-        "@std/encoding": "jsr:@std/encoding@^1.0.10",
         "@std/assert": "jsr:@std/assert@1.0.12",
+        "@std/encoding": "jsr:@std/encoding@^1.0.10",
         "@std/fs": "jsr:@std/fs@1.0.19",
         "@std/path": "jsr:@std/path@1.0.8",
         "@std/testing": "jsr:@std/testing@1.0.11",
