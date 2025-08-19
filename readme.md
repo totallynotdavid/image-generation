@@ -185,7 +185,10 @@ mise use -g deno@latest
 
 </details>
 
-Available tasks:
+<details>
+
+<summary>Available tasks in deno.json</summary>
+You can run the following tasks:
 
 - `deno task dev:example` - Run the example code
 - `deno task test` - Run tests (67 tests)
@@ -193,6 +196,8 @@ Available tasks:
   [deno.json](deno.json)
 - `deno task build:npm` - Build the library for npm. It uses the
   [build_npm.ts](build_npm.ts) script
+
+</details>
 
 Then, you can run the example to verify everything works. The results are saved
 in `example/output`.
