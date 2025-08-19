@@ -36,9 +36,7 @@
     "jsr:@std/testing@1.0.11": "1.0.11",
     "jsr:@temelj/color@0.7": "0.7.0",
     "jsr:@ts-morph/bootstrap@0.24": "0.24.0",
-    "jsr:@ts-morph/common@0.24": "0.24.0",
-    "npm:@types/node@24.3.0": "24.3.0",
-    "npm:typescript@^5.8.3": "5.9.2"
+    "jsr:@ts-morph/common@0.24": "0.24.0"
   },
   "jsr": {
     "@david/code-block-writer@13.0.3": {
@@ -182,21 +180,6 @@
       ]
     }
   },
-  "npm": {
-    "@types/node@24.3.0": {
-      "integrity": "sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==",
-      "dependencies": [
-        "undici-types"
-      ]
-    },
-    "typescript@5.9.2": {
-      "integrity": "sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==",
-      "bin": true
-    },
-    "undici-types@7.10.0": {
-      "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="
-    }
-  },
   "remote": {
     "https://deno.land/x/lz4@v0.1.2/mod.ts": "4decfc1a3569d03fd1813bd39128b71c8f082850fe98ecfdde20025772916582",
     "https://deno.land/x/lz4@v0.1.2/wasm.js": "b9c65605327ba273f0c76a6dc596ec534d4cda0f0225d7a94ebc606782319e46",
@@ -213,12 +196,6 @@
       "jsr:@std/path@1.0.8",
       "jsr:@std/testing@1.0.11",
       "jsr:@temelj/color@0.7"
-    ],
-    "packageJson": {
-      "dependencies": [
-        "npm:@types/node@24.3.0",
-        "npm:typescript@^5.8.3"
-      ]
-    }
+    ]
   }
 }

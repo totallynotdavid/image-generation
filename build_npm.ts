@@ -11,6 +11,7 @@ await build({
     shims: {
         deno: true,
     },
+    scriptModule: false,
     package: {
         name: '@totallynotdavid/image-generation',
         version: Deno.args[0]?.replace(/^v/, '') ?? '1.0.0',
