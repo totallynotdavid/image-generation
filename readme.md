@@ -22,8 +22,8 @@ Features:
 
 The package is a good fit for:
 
-- Social media or chat bots that need consistent image effects
-- Messaging applications that add image filters or overlays
+- Social media or chat bots that need consistent image effects.
+- Messaging applications that add image filters or overlays.
 
 ## Available transformations
 
@@ -96,9 +96,9 @@ const tintedImage = await color({
 
 The `color` transformation in particular supports three blend modes:
 
-- `tint`: Changes the hue while preserving lightness
-- `softlight`: Applies soft light blending for subtle effects
-- `wash`: Simple color overlay with opacity control
+- `tint`: Changes the hue while preserving lightness.
+- `softlight`: Applies soft light blending for subtle effects.
+- `wash`: Simple color overlay with opacity control.
 
 ### Multiple input processing
 
@@ -165,12 +165,12 @@ deno install --allow-scripts
 
 Available tasks:
 
-- `deno task dev:example` - Run the example code
-- `deno task test` - Run tests (67 tests)
+- `deno task dev:example` - Run the example code.
+- `deno task test` - Run tests (67 tests).
 - `deno task tidy` - Format and lint code using the rules set on
-  [deno.json](deno.json)
+  [deno.json](deno.json).
 - `deno task build:npm` - Build the library for npm. It uses the
-  [build_npm.ts](build_npm.ts) script
+  [build_npm.ts](build_npm.ts) script.
 
 Run the example to verify everything works:
 
