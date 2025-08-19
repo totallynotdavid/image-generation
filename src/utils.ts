@@ -18,7 +18,7 @@ function matchesSignature(data: Uint8Array, signature: Uint8Array): boolean {
 }
 
 async function validateImageFormat(path: string): Promise<void> {
-    let file: Deno.FsFile;
+    let file: Deno.FsFile | undefined;
     try {
         file = await Deno.open(path, { read: true });
         const header = new Uint8Array(8);
@@ -132,9 +132,4 @@ export function parseHexColor(
     }
 
     return { r, g, b };
-}
-
-export function hexToColor(hex: string): number {
-    const { r, g, b } = parseHexColor(hex);
-    return Image.rgbaToColor(r, g, b, 255);
 }

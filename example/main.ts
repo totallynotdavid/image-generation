@@ -20,10 +20,10 @@ async function run(): Promise<void> {
             input: input1,
             options: {
                 hex: '#ff0000',
-                blendMode: 'overlay',
+                blendMode: 'tint',
             },
         });
-        await saveOutput(colored, 'red-overlay.png');
+        await saveOutput(colored, 'red-tint.png');
         console.log('Color transform complete', colored.length);
 
         const blinked = await blink({

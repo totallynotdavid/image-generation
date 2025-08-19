@@ -5,8 +5,10 @@ export interface GreyscaleParams {
 export interface ColorParams {
     input: string;
     options: {
-        hex: string;
-        blendMode?: 'overlay' | 'softlight';
+        hex?: string;
+        blendMode?: 'tint' | 'softlight' | 'wash';
+        opacity?: number;
+        intensity?: number;
     };
 }
 
