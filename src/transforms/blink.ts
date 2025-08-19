@@ -52,15 +52,15 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         encoder.setQuality(10);
 
         for (const { data } of resizedBuffers) {
-            // convert raw buffer to ImageData format for GIF encoder
             const rgbaData = new Uint8ClampedArray(width * height * 4);
 
-            // convert to RGBA as sharp uses RGB by default
-            for (let i = 0, j = 0; i < data.length; i += 3, j += 4) {
-                rgbaData[j] = data[i]; // R
-                rgbaData[j + 1] = data[i + 1]; // G
-                rgbaData[j + 2] = data[i + 2]; // B
-                rgbaData[j + 3] = 255; // A
+            let i = 0;
+            let j = 0;
+            while (i < data.length) {
+                rgbaData[j++] = data[i++]; // R
+                rgbaData[j++] = data[i++]; // G
+                rgbaData[j++] = data[i++]; // B
+                rgbaData[j++] = 255; // A
             }
 
             encoder.addFrame(rgbaData);
