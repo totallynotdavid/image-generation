@@ -1,4 +1,3 @@
-// FILE: tests/transforms/blink.test.ts
 import {
     assert,
     assertInstanceOf,
