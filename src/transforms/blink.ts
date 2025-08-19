@@ -1,7 +1,11 @@
 import { Frame, GIF, Image } from '@matmen/imagescript';
 import { BlinkParams, TransformResult } from '@/types.ts';
 import { resolveAsset } from '@/utils.ts';
-import { ProcessingError, throwProcessingError } from '@/errors.ts';
+import {
+    InvalidImageError,
+    ProcessingError,
+    throwProcessingError,
+} from '@/errors.ts';
 
 export async function blink(params: BlinkParams): Promise<TransformResult> {
     const { inputs, options } = params;
@@ -52,6 +56,9 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
 
         return await gif.encode();
     } catch (error) {
+        if (error instanceof InvalidImageError) {
+            throw error;
+        }
         throwProcessingError(error, 'Failed to create blink animation');
     }
 }

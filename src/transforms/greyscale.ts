@@ -1,6 +1,6 @@
 import { GreyscaleParams, TransformResult } from '@/types.ts';
 import { loadImage, resolveAsset } from '@/utils.ts';
-import { throwProcessingError } from '@/errors.ts';
+import { InvalidImageError, throwProcessingError } from '@/errors.ts';
 
 export async function greyscale(
     params: GreyscaleParams,
@@ -13,6 +13,9 @@ export async function greyscale(
 
         return await greyImage.encode();
     } catch (error) {
+        if (error instanceof InvalidImageError) {
+            throw error;
+        }
         throwProcessingError(error, 'Failed to apply grayscale transform');
     }
 }
