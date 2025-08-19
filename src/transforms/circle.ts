@@ -70,6 +70,10 @@ async function createCircleWithBorder(
     const { red: r, green: g, blue: b } = color;
     const borderColorRGBA = Image.rgbaToColor(r, g, b, 255);
 
+    if (borderWidth >= size / 2) {
+        throw new ProcessingError('Border width too large for image size');
+    }
+
     const borderSize = size + (borderWidth * 2);
     const borderedImage = new Image(borderSize, borderSize);
 
@@ -77,10 +81,6 @@ async function createCircleWithBorder(
 
     const borderRadius = borderSize / 2;
     const innerRadius = borderRadius - borderWidth;
-
-    if (innerRadius <= 0) {
-        throw new ProcessingError('Border width too large for image size');
-    }
 
     borderedImage.drawCircle(
         borderRadius,
