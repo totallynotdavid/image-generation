@@ -22,8 +22,8 @@ Features:
 
 The package is a good fit for:
 
-- Social media or chat bots that need consistent image effects.
-- Messaging applications that add image filters or overlays.
+- Social media or chat bots that need consistent image effects
+- Messaging applications that add image filters or overlays
 
 ## Available transformations
 
