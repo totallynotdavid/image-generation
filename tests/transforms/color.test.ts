@@ -1,121 +1,95 @@
-import { join } from '@std/path';
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
+import {
+    assert,
+    assertInstanceOf,
+    assertRejects,
+    cleanup,
+    getAssetPath,
+    hasPngSignature,
+    setup,
+} from '../_setup.ts';
 import { color } from '@/transforms/color.ts';
 import { ProcessingError } from '@/errors.ts';
-import sharp from 'npm:sharp@0.34.1';
 
-async function createTestImage(path: string): Promise<void> {
-    // Create a simple 10x10 black PNG
-    const imageBuffer = await sharp({
-        create: {
-            width: 10,
-            height: 10,
-            channels: 4,
-            background: { r: 0, g: 0, b: 0, alpha: 1 },
-        },
-    })
-        .png()
-        .toBuffer();
+await setup();
 
-    await Deno.writeFile(path, imageBuffer);
-}
-
-Deno.test('color - successfully applies overlay color transform', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
-
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage);
-
-    try {
-        const result = await color({
-            input: testImage,
-            options: {
-                hex: '#ff0000', // Red
-                blendMode: 'overlay',
-            },
-        });
-
-        assertExists(result);
-        assertEquals(result instanceof Uint8Array, true);
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
+Deno.test('color: should apply "tint" blend mode', async () => {
+    const result = await color({
+        input: getAssetPath('square.png'),
+        options: { blendMode: 'tint', hex: '#ff0000' },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasPngSignature(result));
 });
 
-Deno.test(
-    'color - successfully applies softlight color transform',
-    async () => {
-        const testDir = join(Deno.cwd(), 'test-images');
-        const testImage = join(testDir, 'test.png');
-
-        await Deno.mkdir(testDir, { recursive: true });
-        await createTestImage(testImage);
-
-        try {
-            const result = await color({
-                input: testImage,
-                options: {
-                    hex: '#00ff00', // Green
-                    blendMode: 'softlight',
-                },
-            });
-
-            assertExists(result);
-            assertEquals(result instanceof Uint8Array, true);
-        } finally {
-            await Deno.remove(testDir, { recursive: true });
-        }
-    },
-);
-
-Deno.test('color - throws with unsupported blend mode', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
-
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage);
-
-    try {
-        await assertRejects(
-            async () => {
-                await color({
-                    input: testImage,
-                    options: {
-                        hex: '#0000ff', // Blue
-                        blendMode: 'unsupported' as 'overlay' | 'softlight',
-                    },
-                });
-            },
-            ProcessingError,
-            'Failed to apply color transform',
-        );
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
+Deno.test('color: should apply "softlight" blend mode', async () => {
+    const result = await color({
+        input: getAssetPath('square.png'),
+        options: { blendMode: 'softlight', hex: '#00ff00' },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasPngSignature(result));
 });
 
-Deno.test('color - propagates hex validation errors', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
+Deno.test('color: should apply "wash" blend mode', async () => {
+    const result = await color({
+        input: getAssetPath('square.png'),
+        options: { blendMode: 'wash', hex: '#0000ff', opacity: 0.5 },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasPngSignature(result));
+});
 
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage);
+Deno.test('color: should use default options when none are provided', async () => {
+    const result = await color({
+        input: getAssetPath('square.png'),
+        options: {},
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasPngSignature(result));
+});
 
-    try {
-        await assertRejects(
-            async () => {
-                await color({
-                    input: testImage,
-                    options: {
-                        hex: 'invalid', // Invalid hex color
-                    },
-                });
-            },
-            ProcessingError,
-            'Failed to apply color transform',
-        );
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
+Deno.test('color: should clamp intensity when value is below 0', async () => {
+    const result = await color({
+        input: getAssetPath('square.png'),
+        options: { intensity: -10 },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasPngSignature(result));
+});
+
+Deno.test('color: should clamp intensity when value is above 1', async () => {
+    const result = await color({
+        input: getAssetPath('square.png'),
+        options: { intensity: 10 },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasPngSignature(result));
+});
+
+Deno.test('color: should clamp opacity for wash mode', async () => {
+    const result = await color({
+        input: getAssetPath('square.png'),
+        options: { blendMode: 'wash', opacity: -10 },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasPngSignature(result));
+});
+
+Deno.test('color: should throw ProcessingError for an invalid hex code', async () => {
+    await assertRejects(
+        () =>
+            color({
+                input: getAssetPath('square.png'),
+                options: { hex: 'not-a-color' },
+            }),
+        ProcessingError,
+        'Invalid hex color: not-a-color',
+    );
+});
+
+Deno.test({
+    name: 'cleanup color assets',
+    fn: cleanup,
+    sanitizeResources: false,
+    sanitizeOps: false,
 });

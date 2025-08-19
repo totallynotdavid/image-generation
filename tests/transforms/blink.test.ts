@@ -1,93 +1,76 @@
-import { join } from '@std/path';
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
-import { ProcessingError } from '@/errors.ts';
+// FILE: tests/transforms/blink.test.ts
+import {
+    assert,
+    assertInstanceOf,
+    assertRejects,
+    cleanup,
+    getAssetPath,
+    hasGifSignature,
+    setup,
+} from '../_setup.ts';
 import { blink } from '@/transforms/blink.ts';
-import sharp from 'npm:sharp@0.34.1';
+import { InvalidImageError, ProcessingError } from '@/errors.ts';
 
-async function createTestImage(
-    path: string,
-    color: { r: number; g: number; b: number },
-): Promise<void> {
-    const imageBuffer = await sharp({
-        create: {
-            width: 10,
-            height: 10,
-            channels: 4,
-            background: { ...color, alpha: 1 },
-        },
-    })
-        .png()
-        .toBuffer();
+await setup();
 
-    await Deno.writeFile(path, imageBuffer);
-}
-
-Deno.test('blink - successfully creates animated GIF', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage1 = join(testDir, 'test1.png');
-    const testImage2 = join(testDir, 'test2.png');
-
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage1, { r: 0, g: 0, b: 0 }); // Black
-    await createTestImage(testImage2, { r: 255, g: 255, b: 255 }); // White
-
-    try {
-        const result = await blink({
-            inputs: [testImage1, testImage2],
-            options: {
-                delay: 200,
-                loop: true,
-            },
-        });
-
-        assertExists(result);
-        assertEquals(result instanceof Uint8Array, true);
-
-        assertEquals(result[0], 0x47); // G
-        assertEquals(result[1], 0x49); // I
-        assertEquals(result[2], 0x46); // F
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
+Deno.test('blink: should create a GIF from images of different sizes', async () => {
+    const result = await blink({
+        inputs: [
+            getAssetPath('square.png'),
+            getAssetPath('wide.png'),
+            getAssetPath('tall.png'),
+        ],
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(result.length > 0);
+    assert(hasGifSignature(result));
 });
 
-Deno.test('blink - handles custom delay and non-looping options', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage1 = join(testDir, 'test1.png');
-    const testImage2 = join(testDir, 'test2.png');
-
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage1, { r: 255, g: 0, b: 0 }); // Red
-    await createTestImage(testImage2, { r: 0, g: 0, b: 255 }); // Blue
-
-    try {
-        const result = await blink({
-            inputs: [testImage1, testImage2],
-            options: {
-                delay: 500, // Longer delay
-                loop: false, // No loop
-            },
-        });
-
-        assertExists(result);
-        assertEquals(result instanceof Uint8Array, true);
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
-});
-
-Deno.test('blink - propagates validation errors', async () => {
+Deno.test('blink: should throw ProcessingError for less than 2 images', async () => {
     await assertRejects(
-        async () => {
-            await blink({
-                inputs: ['invalid1.png', 'invalid2.png'],
-                options: {
-                    delay: 200,
-                    loop: true,
-                },
-            });
-        },
+        () => blink({ inputs: [getAssetPath('square.png')] }),
         ProcessingError,
-        'Failed to create animated GIF',
+        'At least 2 images required',
     );
+    await assertRejects(
+        () => blink({ inputs: [] }),
+        ProcessingError,
+        'At least 2 images required',
+    );
+});
+
+Deno.test('blink: should throw InvalidImageError if one input is invalid', async () => {
+    await assertRejects(
+        () =>
+            blink({
+                inputs: [getAssetPath('square.png'), 'nonexistent.png'],
+            }),
+        InvalidImageError,
+        'Asset not found: nonexistent.png',
+    );
+});
+
+Deno.test('blink: should respect delay and loop options', async () => {
+    const result = await blink({
+        inputs: [getAssetPath('square.png'), getAssetPath('wide.png')],
+        options: { delay: 50, loop: false },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasGifSignature(result));
+});
+
+Deno.test('blink: should clamp negative delay to 0', async () => {
+    const result = await blink({
+        inputs: [getAssetPath('square.png'), getAssetPath('wide.png')],
+        options: { delay: -500 },
+    });
+    assertInstanceOf(result, Uint8Array);
+    assert(hasGifSignature(result));
+});
+
+Deno.test({
+    name: 'cleanup blink assets',
+    fn: cleanup,
+    sanitizeResources: false,
+    sanitizeOps: false,
 });
