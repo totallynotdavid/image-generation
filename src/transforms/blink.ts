@@ -1,7 +1,7 @@
 import { Frame, GIF, Image } from '@matmen/imagescript';
 import { BlinkParams, TransformResult } from '@/types.ts';
 import { resolveAsset } from '@/utils.ts';
-import { ProcessingError } from '@/errors.ts';
+import { ProcessingError, throwProcessingError } from '@/errors.ts';
 
 export async function blink(params: BlinkParams): Promise<TransformResult> {
     const { inputs, options } = params;
@@ -52,11 +52,6 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
 
         return await gif.encode();
     } catch (error) {
-        throw new ProcessingError(
-            `Failed to create blink animation: ${
-                error instanceof Error ? error.message : 'unknown error'
-            }`,
-            error instanceof Error ? error : undefined,
-        );
+        throwProcessingError(error, 'Failed to create blink animation');
     }
 }

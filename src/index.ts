@@ -9,12 +9,12 @@ export type {
     ColorParams,
     GreyscaleParams,
     TransformResult,
-} from './types.ts';
+} from '@/types.ts';
 
 export {
     ImageTransformError,
     InvalidImageError,
     ProcessingError,
-} from './errors.ts';
+} from '@/errors.ts';
 
-export { resolveAsset } from './utils.ts';
+export { resolveAsset } from '@/utils.ts';

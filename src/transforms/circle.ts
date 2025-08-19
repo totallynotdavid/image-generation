@@ -1,7 +1,7 @@
 import { Image } from '@matmen/imagescript';
 import { CircleParams, TransformResult } from '@/types.ts';
 import { resolveAsset } from '@/utils.ts';
-import { ProcessingError } from '@/errors.ts';
+import { ProcessingError, throwProcessingError } from '@/errors.ts';
 import { parseHex } from '@temelj/color';
 
 const MAX_IMAGE_SIZE = 4096;
@@ -50,15 +50,7 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
             return await processedImage.encode();
         }
     } catch (error) {
-        if (error instanceof ProcessingError) {
-            throw error;
-        }
-        throw new ProcessingError(
-            `Failed to apply circle transform: ${
-                error instanceof Error ? error.message : 'unknown error'
-            }`,
-            error instanceof Error ? error : undefined,
-        );
+        throwProcessingError(error, 'Failed to apply circle transform');
     }
 }
 

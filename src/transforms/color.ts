@@ -2,7 +2,7 @@ import { Image } from '@matmen/imagescript';
 import { fromRgb, hslToRgb, parseHex, rgbToHsl } from '@temelj/color';
 import { ColorParams, TransformResult } from '@/types.ts';
 import { loadImage, resolveAsset } from '@/utils.ts';
-import { ProcessingError } from '@/errors.ts';
+import { ProcessingError, throwProcessingError } from '@/errors.ts';
 
 const INV_255 = 1 / 255;
 const DEFAULT_INTENSITY = 1;
@@ -130,12 +130,7 @@ export async function color(params: ColorParams): Promise<TransformResult> {
         });
 
         return await out.encode();
-    } catch (err) {
-        throw new ProcessingError(
-            `Failed to apply color transform: ${
-                err instanceof Error ? err.message : 'unknown error'
-            }`,
-            err instanceof Error ? err : undefined,
-        );
+    } catch (error) {
+        throwProcessingError(error, 'Failed to apply color transform');
     }
 }

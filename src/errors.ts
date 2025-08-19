@@ -21,3 +21,12 @@ export class ProcessingError extends ImageTransformError {
         super('PROCESSING_ERROR', message, cause);
     }
 }
+
+export function throwProcessingError(error: unknown, prefix: string): never {
+    throw new ProcessingError(
+        `${prefix}: ${
+            error instanceof Error ? error.message : 'unknown error'
+        }`,
+        error instanceof Error ? error : undefined,
+    );
+}
