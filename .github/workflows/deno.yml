@@ -30,14 +30,6 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-deno-
 
-            - name: Install system dependencies for canvas
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-
-            - name: Setup npm packages with Deno
-              run: deno cache --node-modules-dir --no-check npm:canvas@3.1.0 npm:gifencoder@2.0.1 --reload
-
             - name: Check formatting
               run: deno fmt --check
 

@@ -1,70 +1,105 @@
-import {
-    SingleImageTransform,
-    TransformMap,
-    TransformResult,
-} from '@/types/transforms.ts';
-import { validateImagePath } from '@/validation/utils.ts';
-import { Buffer } from 'node:buffer';
-import sharp, { Blend } from 'npm:sharp@0.34.1';
+import { Image } from '@matmen/imagescript';
+import { CircleParams, TransformResult } from '@/types.ts';
+import { resolveAsset } from '@/utils.ts';
+import { ProcessingError, throwProcessingError } from '@/errors.ts';
+import { parseHex } from '@temelj/color';
 
-export async function circle(
-    params: SingleImageTransform<TransformMap['circle']>,
+const MAX_IMAGE_SIZE = 4096;
+
+export async function circle(params: CircleParams): Promise<TransformResult> {
+    try {
+        const resolvedPath = await resolveAsset(params.input);
+        const buffer = await Deno.readFile(resolvedPath);
+
+        const image = await Image.decode(buffer);
+
+        if (image.width === 0 || image.height === 0) {
+            throw new ProcessingError('Image has zero dimensions');
+        }
+
+        if (image.width > MAX_IMAGE_SIZE || image.height > MAX_IMAGE_SIZE) {
+            throw new ProcessingError(
+                `Image too large: ${image.width}x${image.height}px`,
+            );
+        }
+
+        const size = Math.min(image.width, image.height);
+        const options = params.options;
+        const borderWidth = Math.max(0, options?.borderWidth || 0);
+
+        if (size + (borderWidth * 2) > MAX_IMAGE_SIZE) {
+            throw new ProcessingError(
+                `Resulting image size too large: ${size + (borderWidth * 2)}px`,
+            );
+        }
+
+        let processedImage = image;
+        if (image.width !== size || image.height !== size) {
+            processedImage = image.cover(size, size);
+        }
+
+        if (borderWidth > 0) {
+            return await createCircleWithBorder(
+                processedImage,
+                size,
+                borderWidth,
+                options?.borderColor,
+            );
+        } else {
+            processedImage = processedImage.cropCircle();
+            return await processedImage.encode();
+        }
+    } catch (error) {
+        throwProcessingError(error, 'Failed to apply circle transform');
+    }
+}
+
+async function createCircleWithBorder(
+    image: Image,
+    size: number,
+    borderWidth: number,
+    borderColor?: string,
 ): Promise<TransformResult> {
-    const { input, options } = params;
-    const {
-        borderColor = '#000000',
-        borderWidth = 0,
-    } = options || {};
+    const borderColorHex = borderColor || '#000000';
 
-    const inputBuffer = await validateImagePath(input);
-    const metadata = await sharp(inputBuffer).metadata();
-    const { width = 0, height = 0 } = metadata;
-    const size = Math.min(width, height);
-    const circleRadius = size / 2;
+    const color = parseHex(borderColorHex);
+    if (!color) {
+        throw new ProcessingError(`Invalid border color: ${borderColorHex}`);
+    }
 
-    const mask = Buffer.from(`
-        <svg viewBox="0 0 ${size} ${size}">
-            <circle cx="${circleRadius}" cy="${circleRadius}" 
-                r="${circleRadius}" fill="black"/>
-            <circle cx="${circleRadius}" cy="${circleRadius}" 
-                r="${circleRadius - borderWidth}" fill="white"/>
-        </svg>
-    `);
+    const { red: r, green: g, blue: b } = color;
+    const borderColorRGBA = Image.rgbaToColor(r, g, b, 255);
 
-    const border = borderWidth > 0
-        ? Buffer.from(`
-        <svg viewBox="0 0 ${size} ${size}">
-            <circle cx="${circleRadius}" cy="${circleRadius}"
-                r="${circleRadius - (borderWidth / 2)}"
-                stroke="${borderColor}"
-                stroke-width="${borderWidth}"
-                fill="none"
-            />
-        </svg>
-    `)
-        : null;
+    if (borderWidth >= size / 2) {
+        throw new ProcessingError('Border width too large for image size');
+    }
 
-    const pipeline = sharp(inputBuffer)
-        .resize(size, size, {
-            fit: 'cover',
-            position: 'center',
-            fastShrinkOnLoad: true,
-        })
-        .composite([
-            {
-                input: mask,
-                blend: 'dest-in' as Blend,
-            },
-            ...(border
-                ? [
-                    {
-                        input: border,
-                        blend: 'over' as Blend,
-                    },
-                ]
-                : []),
-        ]);
+    const borderSize = size + (borderWidth * 2);
+    const borderedImage = new Image(borderSize, borderSize);
 
-    const processedBuffer = await pipeline.png().toBuffer();
-    return new Uint8Array(processedBuffer);
+    borderedImage.fill(0x00000000); // transparent background
+
+    const borderRadius = borderSize / 2;
+    const innerRadius = borderRadius - borderWidth;
+
+    borderedImage.drawCircle(
+        borderRadius,
+        borderRadius,
+        borderRadius,
+        borderColorRGBA,
+    );
+
+    borderedImage.drawCircle(
+        borderRadius,
+        borderRadius,
+        innerRadius,
+        0x00000000,
+    );
+
+    const circularImage = image.cropCircle();
+
+    borderedImage.composite(circularImage, borderWidth, borderWidth);
+
+    const finalImage = borderedImage.cropCircle();
+    return await finalImage.encode();
 }

@@ -1,65 +1,64 @@
+import { Frame, GIF, Image } from '@matmen/imagescript';
+import { BlinkParams, TransformResult } from '@/types.ts';
+import { resolveAsset } from '@/utils.ts';
 import {
-    MultiImageTransform,
-    TransformMap,
-    TransformResult,
-} from '@/types/transforms.ts';
-import { validateImagePath } from '@/validation/utils.ts';
-import { ProcessingError } from '@/errors.ts';
-import sharp from 'npm:sharp@0.34.1';
-import GIFEncoder from 'npm:gifencoder@2.0.1';
-import { createCanvas, Image } from 'npm:canvas@3.1.0';
+    InvalidImageError,
+    ProcessingError,
+    throwProcessingError,
+} from '@/errors.ts';
 
-export async function blink(
-    params: MultiImageTransform<TransformMap['blink']>,
-): Promise<TransformResult> {
+export async function blink(params: BlinkParams): Promise<TransformResult> {
     const { inputs, options } = params;
-    const {
-        delay = 200,
-        loop = true,
-    } = options || {};
+
+    if (!inputs || inputs.length < 2) {
+        throw new ProcessingError(
+            'At least 2 images required for blink animation',
+        );
+    }
+
+    const duration = Math.max(0, options?.delay ?? 200);
+    const loop = options?.loop !== false;
 
     try {
-        const processedBuffers = await Promise.all(
-            inputs.map(async (input) => {
-                const buffer = await validateImagePath(input);
-                const { width, height } = await sharp(buffer).metadata();
-                return sharp(buffer)
-                    .resize(width, height)
-                    .toFormat('png')
-                    .toBuffer();
+        const resolvedPaths = await Promise.all(
+            inputs.map((input) => resolveAsset(input)),
+        );
+
+        const images = await Promise.all(
+            resolvedPaths.map((path) => {
+                return Deno.readFile(path).then((buffer) =>
+                    Image.decode(buffer)
+                );
             }),
         );
 
-        const { width = 480, height = 480 } = await sharp(
-            processedBuffers[0],
-        ).metadata();
+        const firstImage = images[0];
+        const { width, height } = firstImage;
 
-        const encoder = new GIFEncoder(width, height);
-        encoder.start();
-        encoder.setRepeat(loop ? 0 : -1);
-        encoder.setDelay(delay);
-        encoder.setQuality(10);
+        // all images where dimensions don't match
+        // are resized to match the first image
+        const resizedFrames: Frame[] = images.map((img) => {
+            let processedImg = img;
+            if (img.width !== width || img.height !== height) {
+                processedImg = img.resize(width, height);
+            }
+            const frame = new Frame(width, height);
+            frame.composite(processedImg, 0, 0);
+            return frame;
+        });
 
-        const canvas = createCanvas(width, height);
-        const ctx = canvas.getContext('2d');
+        resizedFrames.forEach((frame) => {
+            frame.duration = duration;
+        });
 
-        for (const buffer of processedBuffers) {
-            const img = new Image();
-            img.src = `data:image/png;base64,${buffer.toString('base64')}`;
+        const loopCount = loop ? -1 : 0;
+        const gif = new GIF(resizedFrames, loopCount);
 
-            ctx.clearRect(0, 0, width, height);
-            ctx.drawImage(img, 0, 0, width, height);
-            encoder.addFrame(ctx);
-        }
-
-        encoder.finish();
-        return new Uint8Array(encoder.out.getData());
+        return await gif.encode();
     } catch (error) {
-        throw new ProcessingError(
-            `Failed to create animated GIF: ${
-                error instanceof Error ? error.message : 'Unknown error'
-            }`,
-            error instanceof Error ? error : undefined,
-        );
+        if (error instanceof InvalidImageError) {
+            throw error;
+        }
+        throwProcessingError(error, 'Failed to create blink animation');
     }
 }

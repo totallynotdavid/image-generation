@@ -1,87 +1,83 @@
-import { join } from '@std/path';
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
+import {
+    assert,
+    assertInstanceOf,
+    assertRejects,
+    cleanup,
+    getAssetPath,
+    hasPngSignature,
+    setup,
+    TestAssets,
+} from '../_setup.ts';
 import { greyscale } from '@/transforms/greyscale.ts';
-import { ProcessingError } from '@/errors.ts';
-import sharp from 'npm:sharp@0.34.1';
+import { InvalidImageError } from '@/errors.ts';
 
-async function createTestImage(path: string): Promise<void> {
-    // Create a simple 10x10 black PNG
-    const imageBuffer = await sharp({
-        create: {
-            width: 10,
-            height: 10,
-            channels: 4,
-            background: { r: 0, g: 0, b: 0, alpha: 1 },
-        },
-    })
-        .png()
-        .toBuffer();
+Deno.test({
+    name: 'greyscale tests setup',
+    fn: setup,
+    sanitizeResources: false,
+    sanitizeOps: false,
+});
 
-    await Deno.writeFile(path, imageBuffer);
-}
+Deno.test('greyscale: should convert colored image to grayscale', async () => {
+    const result = await greyscale({
+        input: getAssetPath(TestAssets.SQUARE_RED),
+    });
 
-Deno.test('greyscale - successfully converts image to greyscale', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
+    assertInstanceOf(result, Uint8Array);
+    assert(result.length > 0);
+    assert(hasPngSignature(result));
+});
 
-    await Deno.mkdir(testDir, { recursive: true });
-    await createTestImage(testImage);
+Deno.test('greyscale: should handle different image sizes', async () => {
+    const testCases = [
+        TestAssets.TINY,
+        TestAssets.WIDE,
+        TestAssets.TALL,
+        TestAssets.LARGE,
+    ];
 
-    try {
-        const result = await greyscale({ input: testImage });
-
-        assertExists(result);
-        assertEquals(result instanceof Uint8Array, true);
-
-        const rawBuffer = await sharp(result).raw().toBuffer();
-        const pixelData = new Uint8Array(rawBuffer);
-
-        for (let i = 0; i < pixelData.length; i += 4) {
-            const r = pixelData[i];
-            const g = pixelData[i + 1];
-            const b = pixelData[i + 2];
-            assertEquals(
-                r,
-                g,
-                'Red and green channels should be equal in grayscale',
-            );
-            assertEquals(
-                g,
-                b,
-                'Green and blue channels should be equal in grayscale',
-            );
-        }
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
+    for (const asset of testCases) {
+        const result = await greyscale({ input: getAssetPath(asset) });
+        assertInstanceOf(result, Uint8Array);
+        assert(result.length > 0);
+        assert(hasPngSignature(result));
     }
 });
 
-Deno.test('greyscale - propagates validation errors', async () => {
+Deno.test('greyscale: should handle complex patterns', async () => {
+    const testCases = [
+        TestAssets.CHECKERBOARD,
+        TestAssets.CIRCLE,
+        TestAssets.NOISE,
+    ];
+
+    for (const asset of testCases) {
+        const result = await greyscale({ input: getAssetPath(asset) });
+        assertInstanceOf(result, Uint8Array);
+        assert(result.length > 0);
+        assert(hasPngSignature(result));
+    }
+});
+
+Deno.test('greyscale: should throw InvalidImageError for nonexistent file', async () => {
     await assertRejects(
-        async () => {
-            await greyscale({ input: 'invalid.png' });
-        },
-        ProcessingError,
-        'Failed to apply grayscale transform: [INVALID_IMAGE] File not found: invalid.png',
+        () => greyscale({ input: getAssetPath(TestAssets.NONEXISTENT) }),
+        InvalidImageError,
+        'Asset not found',
     );
 });
 
-Deno.test('greyscale - handles sharp processing errors', async () => {
-    const testDir = join(Deno.cwd(), 'test-images');
-    const testImage = join(testDir, 'test.png');
+Deno.test('greyscale: should throw InvalidImageError for non-image file', async () => {
+    await assertRejects(
+        () => greyscale({ input: getAssetPath(TestAssets.NOT_IMAGE) }),
+        InvalidImageError,
+        'File does not appear to be a valid image format',
+    );
+});
 
-    await Deno.mkdir(testDir, { recursive: true });
-    await Deno.writeFile(testImage, new Uint8Array([0, 1, 2, 3]));
-
-    try {
-        await assertRejects(
-            async () => {
-                await greyscale({ input: testImage });
-            },
-            ProcessingError,
-            'Failed to apply grayscale transform',
-        );
-    } finally {
-        await Deno.remove(testDir, { recursive: true });
-    }
+Deno.test({
+    name: 'greyscale tests cleanup',
+    fn: cleanup,
+    sanitizeResources: false,
+    sanitizeOps: false,
 });

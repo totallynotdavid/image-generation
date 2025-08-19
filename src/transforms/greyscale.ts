@@ -1,27 +1,21 @@
-import { SingleImageTransform, TransformResult } from '@/types/transforms.ts';
-import { validateImagePath } from '@/validation/utils.ts';
-import { ProcessingError } from '@/errors.ts';
-import sharp from 'npm:sharp@0.34.1';
+import { GreyscaleParams, TransformResult } from '@/types.ts';
+import { loadImage, resolveAsset } from '@/utils.ts';
+import { InvalidImageError, throwProcessingError } from '@/errors.ts';
 
 export async function greyscale(
-    params: SingleImageTransform,
+    params: GreyscaleParams,
 ): Promise<TransformResult> {
-    const { input } = params;
-
     try {
-        const inputBuffer = await validateImagePath(input);
+        const resolvedPath = await resolveAsset(params.input);
+        const image = await loadImage(resolvedPath);
 
-        const outputBuffer = await sharp(inputBuffer)
-            .grayscale()
-            .toBuffer();
+        const greyImage = image.saturation(0);
 
-        return new Uint8Array(outputBuffer);
-    } catch (error: unknown) {
-        throw new ProcessingError(
-            `Failed to apply grayscale transform: ${
-                error instanceof Error ? error.message : 'Unknown error'
-            }`,
-            error instanceof Error ? error : undefined,
-        );
+        return await greyImage.encode();
+    } catch (error) {
+        if (error instanceof InvalidImageError) {
+            throw error;
+        }
+        throwProcessingError(error, 'Failed to apply grayscale transform');
     }
 }

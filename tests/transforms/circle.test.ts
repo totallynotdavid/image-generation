@@ -1,87 +1,138 @@
-import { join } from '@std/path';
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
+import {
+    assert,
+    assertInstanceOf,
+    assertRejects,
+    cleanup,
+    getAssetPath,
+    hasPngSignature,
+    setup,
+    TestAssets,
+} from '../_setup.ts';
 import { circle } from '@/transforms/circle.ts';
-import { InvalidImageError } from '@/errors.ts';
-import sharp from 'npm:sharp@0.34.1';
+import { ProcessingError } from '@/errors.ts';
 
-async function createTestImage(path: string): Promise<void> {
-    // Create a simple 10x10 black PNG
-    const imageBuffer = await sharp({
-        create: {
-            width: 10,
-            height: 10,
-            channels: 4,
-            background: { r: 0, g: 0, b: 0, alpha: 1 },
-        },
-    })
-        .png()
-        .toBuffer();
+Deno.test({
+    name: 'circle tests setup',
+    fn: setup,
+    sanitizeResources: false,
+    sanitizeOps: false,
+});
 
-    await Deno.writeFile(path, imageBuffer);
-}
+Deno.test('circle: should crop square images to circles', async () => {
+    const squareImages = [
+        TestAssets.SQUARE_RED,
+        TestAssets.SQUARE_GREEN,
+        TestAssets.SQUARE_BLUE,
+    ];
 
-Deno.test(
-    'circle - successfully creates circle image without border',
-    async () => {
-        const testDir = join(Deno.cwd(), 'test-images');
-        const testImage = join(testDir, 'test.png');
+    for (const image of squareImages) {
+        const result = await circle({ input: getAssetPath(image) });
+        assertInstanceOf(result, Uint8Array);
+        assert(hasPngSignature(result));
+    }
+});
 
-        await Deno.mkdir(testDir, { recursive: true });
-        await createTestImage(testImage);
+Deno.test('circle: should handle rectangular images by cropping to smallest dimension', async () => {
+    const result1 = await circle({ input: getAssetPath(TestAssets.WIDE) });
+    assertInstanceOf(result1, Uint8Array);
+    assert(hasPngSignature(result1));
 
-        try {
-            const result = await circle({
-                input: testImage,
-                options: {
-                    borderWidth: 0,
-                },
-            });
+    const result2 = await circle({ input: getAssetPath(TestAssets.TALL) });
+    assertInstanceOf(result2, Uint8Array);
+    assert(hasPngSignature(result2));
+});
 
-            assertExists(result);
-            assertEquals(result instanceof Uint8Array, true);
-        } finally {
-            await Deno.remove(testDir, { recursive: true });
-        }
-    },
-);
+Deno.test('circle: should add borders with different widths and colors', async () => {
+    const borderConfigs = [
+        { borderWidth: 2, borderColor: '#ff0000' },
+        { borderWidth: 5, borderColor: '#00ff00' },
+        { borderWidth: 10, borderColor: '#0000ff' },
+        { borderWidth: 15, borderColor: '#ffff00' },
+    ];
 
-Deno.test(
-    'circle - successfully creates circle image with border',
-    async () => {
-        const testDir = join(Deno.cwd(), 'test-images');
-        const testImage = join(testDir, 'test.png');
+    for (const config of borderConfigs) {
+        const result = await circle({
+            input: getAssetPath(TestAssets.CIRCLE),
+            options: config,
+        });
 
-        await Deno.mkdir(testDir, { recursive: true });
-        await createTestImage(testImage);
+        assertInstanceOf(result, Uint8Array);
+        assert(hasPngSignature(result));
+    }
+});
 
-        try {
-            const result = await circle({
-                input: testImage,
-                options: {
-                    borderWidth: 2,
-                    borderColor: '#ff0000', // Red border
-                },
-            });
+Deno.test('circle: should handle edge cases for border width', async () => {
+    // Zero border width
+    const result1 = await circle({
+        input: getAssetPath(TestAssets.CHECKERBOARD),
+        options: { borderWidth: 0 },
+    });
+    assertInstanceOf(result1, Uint8Array);
 
-            assertExists(result);
-            assertEquals(result instanceof Uint8Array, true);
-        } finally {
-            await Deno.remove(testDir, { recursive: true });
-        }
-    },
-);
+    // Negative border width (should clamp to 0)
+    const result2 = await circle({
+        input: getAssetPath(TestAssets.TINY),
+        options: { borderWidth: -5 },
+    });
+    assertInstanceOf(result2, Uint8Array);
+});
 
-Deno.test('circle - propagates validation errors', async () => {
+Deno.test('circle: should work with different image sizes', async () => {
+    const sizes = [TestAssets.TINY, TestAssets.LARGE];
+
+    for (const size of sizes) {
+        const result = await circle({
+            input: getAssetPath(size),
+            options: { borderWidth: 3, borderColor: '#808080' },
+        });
+
+        assertInstanceOf(result, Uint8Array);
+        assert(hasPngSignature(result));
+    }
+});
+
+Deno.test('circle: should throw ProcessingError for invalid border colors', async () => {
+    const invalidColors = ['invalid-color', 'not-hex', '#gggggg'];
+    for (const borderColor of invalidColors) {
+        await assertRejects(
+            () =>
+                circle({
+                    input: getAssetPath(TestAssets.SQUARE_RED),
+                    options: { borderWidth: 5, borderColor },
+                }),
+            ProcessingError,
+            'Invalid border color',
+        );
+    }
+});
+
+Deno.test('circle: should throw ProcessingError when border is too large', async () => {
     await assertRejects(
-        async () => {
-            await circle({
-                input: 'invalid.png',
-                options: {
-                    borderWidth: 0,
-                },
-            });
-        },
-        InvalidImageError,
-        '[INVALID_IMAGE] File not found: invalid.png',
+        () =>
+            circle({
+                input: getAssetPath(TestAssets.TINY), // 10x10 image
+                options: { borderWidth: 10 }, // Border too large relative to image
+            }),
+        ProcessingError,
+        'Border width too large for image size',
     );
+});
+
+Deno.test('circle: should throw ProcessingError for extremely large borders', async () => {
+    await assertRejects(
+        () =>
+            circle({
+                input: getAssetPath(TestAssets.SQUARE_RED),
+                options: { borderWidth: 5000 },
+            }),
+        ProcessingError,
+        'Resulting image size too large',
+    );
+});
+
+Deno.test({
+    name: 'circle tests cleanup',
+    fn: cleanup,
+    sanitizeResources: false,
+    sanitizeOps: false,
 });

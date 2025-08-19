@@ -1,6 +1,6 @@
-import { blink, circle, color, greyscale, transform } from '@/index.ts';
-import { dirname, fromFileUrl, join } from 'jsr:@std/path@1.0.8';
-import { writeFile } from 'jsr:@std/fs@1.0.16/unstable-write-file';
+import { blink, circle, color, greyscale } from '@/index.ts';
+import { dirname, fromFileUrl, join } from '@std/path';
+import { writeFile } from '@std/fs/unstable-write-file';
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
 
@@ -20,10 +20,10 @@ async function run(): Promise<void> {
             input: input1,
             options: {
                 hex: '#ff0000',
-                blendMode: 'overlay',
+                blendMode: 'tint',
             },
         });
-        await saveOutput(colored, 'red-overlay.png');
+        await saveOutput(colored, 'red-tint.png');
         console.log('Color transform complete', colored.length);
 
         const blinked = await blink({
@@ -49,13 +49,14 @@ async function run(): Promise<void> {
         });
         await saveOutput(circled, 'circle-border.png');
         console.log('Circle transform complete', circled.length);
-
+        /*
         const dynamic = await transform('color', {
             input: input1,
             options: { hex: '#fff' },
         });
         await saveOutput(dynamic, 'white-overlay.png');
         console.log('Dynamic transform complete', dynamic.length);
+        */
     } catch (error) {
         console.error('Error:', error);
     }

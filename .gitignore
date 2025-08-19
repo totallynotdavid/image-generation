@@ -2,7 +2,8 @@
 node_modules
 custom-assets
 cov
-build/
+build
+coverage
 
 # Files
 *.lcov

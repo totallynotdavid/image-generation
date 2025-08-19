@@ -7,10 +7,10 @@ await build({
     importMap: './deno.json',
     test: false,
     outDir: './build',
-    packageManager: 'pnpm',
     shims: {
         deno: true,
     },
+    scriptModule: false,
     package: {
         name: '@totallynotdavid/image-generation',
         version: Deno.args[0]?.replace(/^v/, '') ?? '1.0.0',
@@ -23,10 +23,6 @@ await build({
         },
         bugs: {
             url: 'https://github.com/totallynotdavid/image-generation/issues',
-        },
-        devDependencies: {
-            '@types/node': '22.14.1',
-            '@types/gifencoder': '^2.0.3',
         },
     },
     postBuild() {
