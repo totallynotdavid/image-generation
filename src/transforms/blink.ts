@@ -1,5 +1,4 @@
-import sharp from 'npm:sharp@0.34.1';
-import GIFEncoder from 'npm:gifencoder@2.0.1';
+import { Frame, GIF, Image } from '@matmen/imagescript';
 import { BlinkParams, TransformResult } from '@/types.ts';
 import { resolveAsset } from '@/utils.ts';
 import { ProcessingError } from '@/errors.ts';
@@ -13,11 +12,11 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         );
     }
 
-    const delay = options?.delay || 200;
+    const duration = options?.delay ?? 200;
     const loop = options?.loop !== false; // defaults to true
 
-    if (delay < 0) {
-        throw new ProcessingError('Delay must be non-negative');
+    if (duration < 0) {
+        throw new ProcessingError('Duration must be non-negative');
     }
 
     try {
@@ -25,49 +24,35 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
             inputs.map((input) => resolveAsset(input)),
         );
 
-        const imageBuffers = await Promise.all(
-            resolvedPaths.map(async (path) => {
-                const buffer = await Deno.readFile(path);
-                return sharp(buffer).png().toBuffer();
+        const images = await Promise.all(
+            resolvedPaths.map((path) => {
+                return Deno.readFile(path).then((buffer) =>
+                    Image.decode(buffer)
+                );
             }),
         );
 
-        const { width = 480, height = 480 } = await sharp(imageBuffers[0])
-            .metadata();
+        const firstImage = images[0];
+        const { width, height } = firstImage;
 
         // all images are resized to the same dimensions as the first img
-        const resizedBuffers = await Promise.all(
-            imageBuffers.map((buffer) =>
-                sharp(buffer)
-                    .resize(width, height, { fit: 'cover' })
-                    .raw()
-                    .toBuffer({ resolveWithObject: true })
-            ),
-        );
+        const resizedFrames: Frame[] = images.map((img) => {
+            const resized = img.resize(width, height);
+            const frame = new Frame(width, height);
+            frame.composite(resized, 0, 0);
+            return frame;
+        });
 
-        const encoder = new GIFEncoder(width, height);
-        encoder.start();
-        encoder.setRepeat(loop ? 0 : -1);
-        encoder.setDelay(delay);
-        encoder.setQuality(10);
+        resizedFrames.forEach((frame) => {
+            frame.duration = duration;
+        });
 
-        for (const { data } of resizedBuffers) {
-            const rgbaData = new Uint8ClampedArray(width * height * 4);
+        const loopCount = loop ? -1 : 0;
+        const gif = new GIF(resizedFrames, loopCount);
 
-            let i = 0;
-            let j = 0;
-            while (i < data.length) {
-                rgbaData[j++] = data[i++]; // R
-                rgbaData[j++] = data[i++]; // G
-                rgbaData[j++] = data[i++]; // B
-                rgbaData[j++] = 255; // A
-            }
+        const encodedGif = await gif.encode();
 
-            encoder.addFrame(rgbaData);
-        }
-
-        encoder.finish();
-        return new Uint8Array(encoder.out.getData());
+        return encodedGif;
     } catch (error) {
         throw new ProcessingError(
             `Failed to create blink animation: ${

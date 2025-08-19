@@ -1,6 +1,6 @@
 import { blink, circle, color, greyscale } from '@/index.ts';
 import { dirname, fromFileUrl, join } from '@std/path';
-import { writeFile } from "@std/fs/unstable-write-file";
+import { writeFile } from '@std/fs/unstable-write-file';
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
 
