@@ -7,7 +7,6 @@ await build({
     importMap: './deno.json',
     test: false,
     outDir: './build',
-    packageManager: 'pnpm',
     shims: {
         deno: true,
     },
@@ -24,9 +23,6 @@ await build({
         },
         bugs: {
             url: 'https://github.com/totallynotdavid/image-generation/issues',
-        },
-        devDependencies: {
-            '@types/node': '22.14.1',
         },
     },
     postBuild() {
