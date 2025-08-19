@@ -15,26 +15,22 @@ Features:
 - Runs natively on Deno (no npm dependencies).
 - Works with local files and in-memory buffers (no need to upload images to
   third-party services).
-- Each transformation returns a `Uint8Array`, so it plugs into any storage,
-  delivery, or network code. You decide how to handle the data.
+- Each transformation returns a `Uint8Array`, so you can chain them together and
+  integrate the results wherever you deliver or store image data.
 - Designed for composition: build processing pipelines by chaining simple
   functions.
 
-Good fit for:
+The package is a good fit for:
 
 - Social media or chat bots that need consistent image effects
 - Messaging applications that add image filters or overlays
-
-Simple, composable, and self-contained. You can use the functions directly,
-chain them together, and integrate the results wherever you deliver or store
-image data.
 
 ## Available transformations
 
 | Transform   | Purpose                             | Example                                                                                  | Result                                           |
 | ----------- | ----------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `greyscale` | Convert to black and white          | `await greyscale({ input: "photo.jpg" })`                                                | ![greyscale](example/output/greyscale.png)       |
-| `color`     | Apply color effects with blending   | `await color({ input: "photo.jpg", options: { hex: "#ff5500", blendMode: "tint" } })`    | ![color-tint](example/output/red-tint.png)    |
+| `color`     | Apply color effects with blending   | `await color({ input: "photo.jpg", options: { hex: "#ff5500", blendMode: "tint" } })`    | ![color-tint](example/output/red-tint.png)       |
 | `circle`    | Crop to circle with optional border | `await circle({ input: "photo.jpg", options: { borderWidth: 5, borderColor: "#000" } })` | ![circle-crop](example/output/circle-border.png) |
 | `blink`     | Create animated GIF from images     | `await blink({ inputs: ["frame1.jpg", "frame2.jpg"], options: { delay: 200 } })`         | ![animation](example/output/blink-animation.gif) |
 
