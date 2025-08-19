@@ -2,15 +2,13 @@ import { InvalidImageError } from '@/errors.ts';
 import { isAbsolute, join } from '@std/path';
 import { Image } from '@matmen/imagescript';
 
-const MIN_FILE_SIZE = 4;
-
 const IMAGE_SIGNATURES = {
     PNG: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
     JPEG: new Uint8Array([0xff, 0xd8]),
     GIF: new Uint8Array([0x47, 0x49, 0x46, 0x38]),
-    WEBP: new Uint8Array([0x52, 0x49, 0x46, 0x46]),
+    WEBP_RIFF: new Uint8Array([0x52, 0x49, 0x46, 0x46]),
+    WEBP_WEBP: new Uint8Array([0x57, 0x45, 0x42, 0x50]),
 } as const;
-
 
 function matchesSignature(data: Uint8Array, signature: Uint8Array): boolean {
     if (data.length < signature.length) return false;
@@ -20,6 +18,13 @@ function matchesSignature(data: Uint8Array, signature: Uint8Array): boolean {
     return true;
 }
 
+function isWebP(header: Uint8Array): boolean {
+    return (
+        matchesSignature(header, IMAGE_SIGNATURES.WEBP_RIFF) &&
+        matchesSignature(header.slice(8, 12), IMAGE_SIGNATURES.WEBP_WEBP)
+    );
+}
+
 async function validateImageFormat(path: string): Promise<void> {
     let file: Deno.FsFile | undefined;
     try {
@@ -27,15 +32,14 @@ async function validateImageFormat(path: string): Promise<void> {
         const header = new Uint8Array(12);
         const bytesRead = await file.read(header);
 
-        if (!bytesRead || bytesRead < MIN_FILE_SIZE) {
+        if (!bytesRead || bytesRead < 12) {
             throw new InvalidImageError('File too small to be a valid image');
         }
 
         const isValid = matchesSignature(header, IMAGE_SIGNATURES.PNG) ||
             matchesSignature(header, IMAGE_SIGNATURES.JPEG) ||
             matchesSignature(header, IMAGE_SIGNATURES.GIF) ||
-            (matchesSignature(header, IMAGE_SIGNATURES.WEBP) &&
-                header.slice(8, 12).some((b) => b === 0x57));
+            isWebP(header);
 
         if (!isValid) {
             throw new InvalidImageError(
