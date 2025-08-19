@@ -34,7 +34,7 @@ image data.
 | Transform   | Purpose                             | Example                                                                                  | Result                                           |
 | ----------- | ----------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `greyscale` | Convert to black and white          | `await greyscale({ input: "photo.jpg" })`                                                | ![greyscale](example/output/greyscale.png)       |
-| `color`     | Apply color effects with blending   | `await color({ input: "photo.jpg", options: { hex: "#ff5500", blendMode: "tint" } })`    | ![color-tint](example/output/red-overlay.png)    |
+| `color`     | Apply color effects with blending   | `await color({ input: "photo.jpg", options: { hex: "#ff5500", blendMode: "tint" } })`    | ![color-tint](example/output/red-tint.png)    |
 | `circle`    | Crop to circle with optional border | `await circle({ input: "photo.jpg", options: { borderWidth: 5, borderColor: "#000" } })` | ![circle-crop](example/output/circle-border.png) |
 | `blink`     | Create animated GIF from images     | `await blink({ inputs: ["frame1.jpg", "frame2.jpg"], options: { delay: 200 } })`         | ![animation](example/output/blink-animation.gif) |
 
