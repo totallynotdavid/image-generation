@@ -11,8 +11,7 @@ export async function greyscale(
 
         const greyImage = image.saturation(0);
 
-        const result = await greyImage.encode();
-        return new Uint8Array(result);
+        return await greyImage.encode();
     } catch (error) {
         if (error instanceof ProcessingError) {
             throw error;

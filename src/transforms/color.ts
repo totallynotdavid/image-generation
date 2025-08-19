@@ -118,8 +118,7 @@ export async function color(params: ColorParams): Promise<TransformResult> {
             }
         });
 
-        const encoded = await out.encode();
-        return new Uint8Array(encoded);
+        return await out.encode();
     } catch (err) {
         throw new ProcessingError(
             `Failed to apply color transform: ${

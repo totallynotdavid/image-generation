@@ -4,6 +4,8 @@ import { resolveAsset } from '@/utils.ts';
 import { ProcessingError } from '@/errors.ts';
 import { parseHex } from '@temelj/color';
 
+const MAX_IMAGE_SIZE = 4096;
+
 export async function circle(params: CircleParams): Promise<TransformResult> {
     try {
         const resolvedPath = await resolveAsset(params.input);
@@ -23,8 +25,7 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
             throw new ProcessingError('Border width must be non-negative');
         }
 
-        const maxSize = 4096;
-        if (size + (borderWidth * 2) > maxSize) {
+        if (size + (borderWidth * 2) > MAX_IMAGE_SIZE) {
             throw new ProcessingError(
                 `Resulting image size too large: ${size + (borderWidth * 2)}px`,
             );
@@ -36,7 +37,7 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
         }
 
         if (borderWidth > 0) {
-            return createCircleWithBorder(
+            return await createCircleWithBorder(
                 processedImage,
                 size,
                 borderWidth,
@@ -44,8 +45,7 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
             );
         } else {
             processedImage = processedImage.cropCircle();
-            const result = await processedImage.encode();
-            return new Uint8Array(result);
+            return await processedImage.encode();
         }
     } catch (error) {
         if (error instanceof ProcessingError) {
@@ -107,6 +107,5 @@ async function createCircleWithBorder(
     borderedImage.composite(circularImage, borderWidth, borderWidth);
 
     const finalImage = borderedImage.cropCircle();
-    const result = await finalImage.encode();
-    return new Uint8Array(result);
+    return await finalImage.encode();
 }

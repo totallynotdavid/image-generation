@@ -35,11 +35,15 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         const firstImage = images[0];
         const { width, height } = firstImage;
 
-        // all images are resized to the same dimensions as the first img
+        // all images where dimensions don't match
+        // are resized to match the first image
         const resizedFrames: Frame[] = images.map((img) => {
-            const resized = img.resize(width, height);
+            let processedImg = img;
+            if (img.width !== width || img.height !== height) {
+                processedImg = img.resize(width, height);
+            }
             const frame = new Frame(width, height);
-            frame.composite(resized, 0, 0);
+            frame.composite(processedImg, 0, 0);
             return frame;
         });
 
@@ -50,9 +54,7 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         const loopCount = loop ? -1 : 0;
         const gif = new GIF(resizedFrames, loopCount);
 
-        const encodedGif = await gif.encode();
-
-        return encodedGif;
+        return await gif.encode();
     } catch (error) {
         throw new ProcessingError(
             `Failed to create blink animation: ${
