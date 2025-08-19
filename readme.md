@@ -163,6 +163,28 @@ cd image-generation
 deno install --allow-scripts
 ```
 
+<details>
+
+<summary>How to install deno</summary>
+If you don't have Deno installed, you can download it from
+[deno.land](https://deno.land/):
+
+```bash
+# Unix-based systems
+curl -fsSL https://deno.land/install.sh | sh
+
+# Windows
+irm https://deno.land/install.ps1 | iex
+```
+
+Or, you can use also use [mise](https://mise.jdx.dev/lang/deno.html):
+
+```bash
+mise use -g deno@latest
+```
+
+</details>
+
 Available tasks:
 
 - `deno task dev:example` - Run the example code
@@ -172,7 +194,8 @@ Available tasks:
 - `deno task build:npm` - Build the library for npm. It uses the
   [build_npm.ts](build_npm.ts) script
 
-Run the example to verify everything works:
+Then, you can run the example to verify everything works. The results are saved
+in `example/output`.
 
 ```bash
 deno task dev:example
