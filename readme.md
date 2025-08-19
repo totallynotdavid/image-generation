@@ -165,12 +165,12 @@ deno install --allow-scripts
 
 Available tasks:
 
-- `deno task dev:example` - Run the example code.
-- `deno task test` - Run tests (67 tests).
+- `deno task dev:example` - Run the example code
+- `deno task test` - Run tests (67 tests)
 - `deno task tidy` - Format and lint code using the rules set on
-  [deno.json](deno.json).
+  [deno.json](deno.json)
 - `deno task build:npm` - Build the library for npm. It uses the
-  [build_npm.ts](build_npm.ts) script.
+  [build_npm.ts](build_npm.ts) script
 
 Run the example to verify everything works:
 
