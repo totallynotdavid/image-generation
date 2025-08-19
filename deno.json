@@ -13,14 +13,9 @@
         "dev": "deno run --allow-ffi --allow-read --watch src/index.ts",
         "dev:example": "deno run --allow-read --allow-write --allow-net example/main.ts",
         "tidy": "deno fmt . && deno lint src/ example/",
-        "llm": "bash utils/repo.sh",
-        "build:npm": "deno run -A build_npm.ts",
         "test": "deno test --allow-read --allow-write --allow-net --junit-path=./report.xml",
-        "test:coverage": "deno test --allow-read --allow-write --allow-net --coverage=coverage tests/",
-        "test:transforms": "deno test --allow-read --allow-write tests/transforms/",
-        "test:utils": "deno test --allow-read --allow-write tests/utils.test.ts",
-        "test:integration": "deno test --allow-read --allow-write tests/integration.test.ts",
-        "test:performance": "deno test --allow-read --allow-write tests/performance.test.ts"
+        "llm": "bash utils/repo.sh",
+        "build:npm": "deno run -A build_npm.ts"
     },
     "imports": {
         "@deno/dnt": "jsr:@deno/dnt@0.41.3",
