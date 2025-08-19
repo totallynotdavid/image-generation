@@ -26,7 +26,6 @@ await build({
         },
         devDependencies: {
             '@types/node': '22.14.1',
-            '@types/gifencoder': '^2.0.3',
         },
     },
     postBuild() {
