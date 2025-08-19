@@ -2,6 +2,8 @@ import { InvalidImageError } from '@/errors.ts';
 import { isAbsolute, join } from '@std/path';
 import { Image } from '@matmen/imagescript';
 
+const MIN_FILE_SIZE = 4;
+
 const IMAGE_SIGNATURES = {
     PNG: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
     JPEG: new Uint8Array([0xff, 0xd8]),
@@ -9,7 +11,6 @@ const IMAGE_SIGNATURES = {
     WEBP: new Uint8Array([0x52, 0x49, 0x46, 0x46]),
 } as const;
 
-const MIN_FILE_SIZE = 4;
 
 function matchesSignature(data: Uint8Array, signature: Uint8Array): boolean {
     if (data.length < signature.length) return false;
