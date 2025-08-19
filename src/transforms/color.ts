@@ -1,51 +1,33 @@
-import {
-    SingleImageTransform,
-    TransformMap,
-    TransformResult,
-} from '@/types/transforms.ts';
-import { parseHexColor, validateImagePath } from '@/validation/utils.ts';
-import { ProcessingError } from '@/errors.ts';
-import { Buffer } from 'node:buffer';
 import sharp from 'npm:sharp@0.34.1';
+import { ColorParams, TransformResult } from '@/types.ts';
+import { parseHexColor, resolveAsset } from '@/utils.ts';
+import { ProcessingError } from '@/errors.ts';
 
-export async function color(
-    params: SingleImageTransform<TransformMap['color']>,
-): Promise<TransformResult> {
-    const { input, options } = params;
-
-    const {
-        hex = '#ffffff',
-        blendMode = 'overlay',
-    } = options || {};
-
+export async function color(params: ColorParams): Promise<TransformResult> {
     try {
-        const inputBuffer = await validateImagePath(input);
-        const { r, g, b } = parseHexColor(hex);
+        const { r, g, b } = parseHexColor(params.options.hex);
+        const resolvedPath = await resolveAsset(params.input);
+        const buffer = await Deno.readFile(resolvedPath);
 
-        let outputBuffer: Buffer;
+        let pipeline = sharp(buffer);
 
-        if (blendMode === 'overlay') {
-            outputBuffer = await sharp(inputBuffer)
-                .tint({ r, g, b })
-                .toBuffer();
-        } else if (blendMode === 'softlight') {
-            outputBuffer = await sharp(inputBuffer)
-                .modulate({
-                    brightness: 1,
-                    saturation: 1.2,
-                    hue: 30,
-                })
-                .tint({ r, g, b })
-                .toBuffer();
-        } else {
-            throw new ProcessingError(`Unsupported blend mode: ${blendMode}`);
+        if (params.options.blendMode === 'softlight') {
+            pipeline = pipeline.modulate({
+                brightness: 1,
+                saturation: 1.2,
+                hue: 30,
+            });
         }
 
-        return new Uint8Array(outputBuffer);
-    } catch (error: unknown) {
+        const result = await pipeline
+            .tint({ r, g, b })
+            .toBuffer();
+
+        return new Uint8Array(result);
+    } catch (error) {
         throw new ProcessingError(
             `Failed to apply color transform: ${
-                error instanceof Error ? error.message : 'Unknown error'
+                error instanceof Error ? error.message : 'unknown error'
             }`,
             error instanceof Error ? error : undefined,
         );
