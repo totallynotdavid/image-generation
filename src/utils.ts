@@ -9,6 +9,8 @@ const IMAGE_SIGNATURES = {
     WEBP: new Uint8Array([0x52, 0x49, 0x46, 0x46]),
 } as const;
 
+const MIN_FILE_SIZE = 4;
+
 function matchesSignature(data: Uint8Array, signature: Uint8Array): boolean {
     if (data.length < signature.length) return false;
     for (let i = 0; i < signature.length; i++) {
@@ -21,10 +23,10 @@ async function validateImageFormat(path: string): Promise<void> {
     let file: Deno.FsFile | undefined;
     try {
         file = await Deno.open(path, { read: true });
-        const header = new Uint8Array(8);
+        const header = new Uint8Array(12);
         const bytesRead = await file.read(header);
 
-        if (!bytesRead || bytesRead < 4) {
+        if (!bytesRead || bytesRead < MIN_FILE_SIZE) {
             throw new InvalidImageError('File too small to be a valid image');
         }
 

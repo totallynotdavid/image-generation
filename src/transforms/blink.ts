@@ -12,12 +12,8 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         );
     }
 
-    const duration = options?.delay ?? 200;
-    const loop = options?.loop !== false; // defaults to true
-
-    if (duration < 0) {
-        throw new ProcessingError('Duration must be non-negative');
-    }
+    const duration = Math.max(0, options?.delay ?? 200);
+    const loop = options?.loop !== false;
 
     try {
         const resolvedPaths = await Promise.all(

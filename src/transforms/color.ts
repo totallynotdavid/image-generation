@@ -5,6 +5,13 @@ import { loadImage, resolveAsset } from '@/utils.ts';
 import { ProcessingError } from '@/errors.ts';
 
 const INV_255 = 1 / 255;
+const DEFAULT_INTENSITY = 1;
+const DEFAULT_OPACITY = 0.3;
+const DEFAULT_HEX = '#ffffff';
+const MIN_INTENSITY = 0;
+const MAX_INTENSITY = 1;
+const MIN_OPACITY = 0;
+const MAX_OPACITY = 1;
 
 function softLightBlend(b: number, s: number): number {
     if (s < 0.5) {
@@ -20,10 +27,13 @@ export async function color(params: ColorParams): Promise<TransformResult> {
         const options = params.options ?? {};
         const mode = options.blendMode ?? 'tint';
         const intensity = typeof options.intensity === 'number'
-            ? Math.max(0, Math.min(1, options.intensity))
-            : 1;
+            ? Math.max(
+                MIN_INTENSITY,
+                Math.min(MAX_INTENSITY, options.intensity),
+            )
+            : DEFAULT_INTENSITY;
 
-        const hex = options.hex ?? '#ffffff';
+        const hex = options.hex ?? DEFAULT_HEX;
         const tintRgb = parseHex(hex);
 
         if (!tintRgb) {
@@ -40,6 +50,7 @@ export async function color(params: ColorParams): Promise<TransformResult> {
 
         let tH: number;
         let tS: number;
+
         if (mode === 'tint') {
             const tintHsl = rgbToHsl(tintRgb);
             tH = tintHsl.hue;
@@ -51,8 +62,8 @@ export async function color(params: ColorParams): Promise<TransformResult> {
         }
 
         const washOpacity = typeof options.opacity === 'number'
-            ? Math.max(0, Math.min(1, options.opacity))
-            : 0.3;
+            ? Math.max(MIN_OPACITY, Math.min(MAX_OPACITY, options.opacity))
+            : DEFAULT_OPACITY;
 
         const resolvedPath = await resolveAsset(params.input);
         const src = await loadImage(resolvedPath);
@@ -103,9 +114,9 @@ export async function color(params: ColorParams): Promise<TransformResult> {
                 finalB = (rb * 255) | 0;
             }
 
-            if (intensity <= 0) {
+            if (intensity <= MIN_INTENSITY) {
                 return Image.rgbaToColor(origR, origG, origB, origA);
-            } else if (intensity >= 1) {
+            } else if (intensity >= MAX_INTENSITY) {
                 return Image.rgbaToColor(finalR, finalG, finalB, origA);
             } else {
                 const rMix =

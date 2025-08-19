@@ -17,13 +17,15 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
             throw new ProcessingError('Image has zero dimensions');
         }
 
+        if (image.width > MAX_IMAGE_SIZE || image.height > MAX_IMAGE_SIZE) {
+            throw new ProcessingError(
+                `Image too large: ${image.width}x${image.height}px`,
+            );
+        }
+
         const size = Math.min(image.width, image.height);
         const options = params.options;
-        const borderWidth = options?.borderWidth || 0;
-
-        if (borderWidth < 0) {
-            throw new ProcessingError('Border width must be non-negative');
-        }
+        const borderWidth = Math.max(0, options?.borderWidth || 0);
 
         if (size + (borderWidth * 2) > MAX_IMAGE_SIZE) {
             throw new ProcessingError(
