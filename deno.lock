@@ -5,15 +5,17 @@
     "jsr:@deno/cache-dir@~0.10.3": "0.10.3",
     "jsr:@deno/dnt@0.41.3": "0.41.3",
     "jsr:@deno/graph@~0.73.1": "0.73.1",
+    "jsr:@matmen/imagescript@*": "1.3.1",
+    "jsr:@matmen/imagescript@^1.3.1": "1.3.1",
     "jsr:@std/assert@0.223": "0.223.0",
     "jsr:@std/assert@0.226": "0.226.0",
     "jsr:@std/assert@1.0.12": "1.0.12",
     "jsr:@std/assert@^1.0.12": "1.0.12",
     "jsr:@std/async@^1.0.12": "1.0.12",
     "jsr:@std/bytes@0.223": "0.223.0",
-    "jsr:@std/data-structures@^1.0.6": "1.0.6",
+    "jsr:@std/data-structures@^1.0.6": "1.0.7",
     "jsr:@std/fmt@0.223": "0.223.0",
-    "jsr:@std/fmt@1": "1.0.6",
+    "jsr:@std/fmt@1": "1.0.7",
     "jsr:@std/fs@0.223": "0.223.0",
     "jsr:@std/fs@1": "1.0.16",
     "jsr:@std/fs@1.0.16": "1.0.16",
@@ -31,12 +33,11 @@
     "jsr:@ts-morph/bootstrap@0.24": "0.24.0",
     "jsr:@ts-morph/common@0.24": "0.24.0",
     "npm:@types/node@24.3.0": "24.3.0",
-    "npm:canvas@3.1.0": "3.1.0",
     "npm:canvas@3.1.2": "3.1.2",
     "npm:gifencoder@2.0.1": "2.0.1",
     "npm:sharp@0.34.1": "0.34.1",
     "npm:sharp@0.34.3": "0.34.3",
-    "npm:typescript@^5.8.3": "5.8.3"
+    "npm:typescript@^5.8.3": "5.9.2"
   },
   "jsr": {
     "@david/code-block-writer@13.0.3": {
@@ -66,6 +67,9 @@
     "@deno/graph@0.73.1": {
       "integrity": "cd69639d2709d479037d5ce191a422eabe8d71bb68b0098344f6b07411c84d41"
     },
+    "@matmen/imagescript@1.3.1": {
+      "integrity": "8b3d4fc6a4597259ede419497c7dce9cc523bfdc0fa25f95a33dfab2135cc59b"
+    },
     "@std/assert@0.223.0": {
       "integrity": "eb8d6d879d76e1cc431205bd346ed4d88dc051c6366365b1af47034b0670be24"
     },
@@ -84,14 +88,14 @@
     "@std/bytes@0.223.0": {
       "integrity": "84b75052cd8680942c397c2631318772b295019098f40aac5c36cead4cba51a8"
     },
-    "@std/data-structures@1.0.6": {
-      "integrity": "76a7fd8080c66604c0496220a791860492ab21a04a63a969c0b9a0609bbbb760"
+    "@std/data-structures@1.0.7": {
+      "integrity": "16932d2c8d281f65eaaa2209af2473209881e33b1ced54cd1b015e7b4cdbb0d2"
     },
     "@std/fmt@0.223.0": {
       "integrity": "6deb37794127dfc7d7bded2586b9fc6f5d50e62a8134846608baf71ffc1a5208"
     },
-    "@std/fmt@1.0.6": {
-      "integrity": "a2c56a69a2369876ddb3ad6a500bb6501b5bad47bb3ea16bfb0c18974d2661fc"
+    "@std/fmt@1.0.7": {
+      "integrity": "2a727c043d8df62cd0b819b3fb709b64dd622e42c3b1bb817ea7e6cc606360fb"
     },
     "@std/fs@0.223.0": {
       "integrity": "3b4b0550b2c524cbaaa5a9170c90e96cbb7354e837ad1bdaf15fc9df1ae9c31c"
@@ -511,14 +515,6 @@
         "@mapbox/node-pre-gyp",
         "nan",
         "simple-get@3.1.1"
-      ],
-      "scripts": true
-    },
-    "canvas@3.1.0": {
-      "integrity": "sha512-tTj3CqqukVJ9NgSahykNwtGda7V33VLObwrHfzT0vqJXu7J4d4C/7kQQW3fOEGDfZZoILPut5H00gOjyttPGyg==",
-      "dependencies": [
-        "node-addon-api",
-        "prebuild-install"
       ],
       "scripts": true
     },
@@ -1008,8 +1004,8 @@
         "safe-buffer"
       ]
     },
-    "typescript@5.8.3": {
-      "integrity": "sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==",
+    "typescript@5.9.2": {
+      "integrity": "sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==",
       "bin": true
     },
     "undici-types@7.10.0": {
@@ -1044,6 +1040,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@deno/dnt@0.41.3",
+      "jsr:@matmen/imagescript@^1.3.1",
       "jsr:@std/assert@1.0.12",
       "jsr:@std/fs@1.0.16",
       "jsr:@std/path@1.0.8",
