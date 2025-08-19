@@ -9,7 +9,7 @@
         "url": "git+https://github.com/totallynotdavid/image-generation.git"
     },
     "tasks": {
-        "clean": "rm -rf build assets custom-assets node_modules",
+        "clean": "rm -rf build assets coverage node_modules",
         "dev": "deno run --allow-ffi --allow-read --watch src/index.ts",
         "dev:example": "deno run --allow-read --allow-write --allow-net example/main.ts",
         "tidy": "deno fmt . && deno lint src/ example/",
