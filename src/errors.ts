@@ -16,12 +16,6 @@ export class InvalidImageError extends ImageTransformError {
     }
 }
 
-export class InvalidHexError extends ImageTransformError {
-    constructor(hex: string) {
-        super('INVALID_HEX', `Invalid hex color value: ${hex}`);
-    }
-}
-
 export class ProcessingError extends ImageTransformError {
     constructor(message: string, cause?: Error) {
         super('PROCESSING_ERROR', message, cause);

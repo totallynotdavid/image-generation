@@ -1,7 +1,8 @@
 import { Image } from '@matmen/imagescript';
 import { CircleParams, TransformResult } from '@/types.ts';
-import { parseHexColor, resolveAsset } from '@/utils.ts';
+import { resolveAsset } from '@/utils.ts';
 import { ProcessingError } from '@/errors.ts';
+import { parseHex } from '@temelj/color';
 
 export async function circle(params: CircleParams): Promise<TransformResult> {
     try {
@@ -67,7 +68,12 @@ async function createCircleWithBorder(
 ): Promise<TransformResult> {
     const borderColorHex = borderColor || '#000000';
 
-    const { r, g, b } = parseHexColor(borderColorHex);
+    const color = parseHex(borderColorHex);
+    if (!color) {
+        throw new ProcessingError(`Invalid border color: ${borderColorHex}`);
+    }
+
+    const { red: r, green: g, blue: b } = color;
     const borderColorRGBA = Image.rgbaToColor(r, g, b, 255);
 
     const borderSize = size + (borderWidth * 2);

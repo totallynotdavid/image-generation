@@ -13,7 +13,6 @@ export type {
 
 export {
     ImageTransformError,
-    InvalidHexError,
     InvalidImageError,
     ProcessingError,
 } from './errors.ts';

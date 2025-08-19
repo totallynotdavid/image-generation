@@ -1,4 +1,4 @@
-import { InvalidHexError, InvalidImageError } from '@/errors.ts';
+import { InvalidImageError } from '@/errors.ts';
 import { isAbsolute, join } from '@std/path';
 import { Image } from '@matmen/imagescript';
 
@@ -102,34 +102,4 @@ export async function loadImage(path: string): Promise<Image> {
             error instanceof Error ? error : undefined,
         );
     }
-}
-
-export function parseHexColor(
-    hex: string,
-): { r: number; g: number; b: number } {
-    if (!hex || typeof hex !== 'string') {
-        throw new InvalidHexError('Hex color must be a string');
-    }
-
-    const cleanHex = hex.replace('#', '');
-
-    if (!/^[A-Fa-f0-9]{3}$|^[A-Fa-f0-9]{6}$/.test(cleanHex)) {
-        throw new InvalidHexError(hex);
-    }
-
-    let r: number;
-    let g: number;
-    let b: number;
-
-    if (cleanHex.length === 3) {
-        r = parseInt(cleanHex[0].repeat(2), 16);
-        g = parseInt(cleanHex[1].repeat(2), 16);
-        b = parseInt(cleanHex[2].repeat(2), 16);
-    } else {
-        r = parseInt(cleanHex.slice(0, 2), 16);
-        g = parseInt(cleanHex.slice(2, 4), 16);
-        b = parseInt(cleanHex.slice(4, 6), 16);
-    }
-
-    return { r, g, b };
 }
