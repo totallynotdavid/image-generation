@@ -12,7 +12,7 @@ functional design makes transformations easy to compose, test, and reuse.
 
 Features:
 
-- Runs natively on Deno — no npm dependencies.
+- Runs natively on Deno (no npm dependencies).
 - Works with local files and in-memory buffers (no need to upload images to
   third-party services).
 - Each transformation returns a `Uint8Array`, so it plugs into any storage,
