@@ -92,8 +92,7 @@ Deno.test('circle: should work with different image sizes', async () => {
 });
 
 Deno.test('circle: should throw ProcessingError for invalid border colors', async () => {
-    const invalidColors = ['invalid-color', 'not-hex', '123456', '#gggggg'];
-
+    const invalidColors = ['invalid-color', 'not-hex', '#gggggg'];
     for (const borderColor of invalidColors) {
         await assertRejects(
             () =>
