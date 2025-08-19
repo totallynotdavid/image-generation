@@ -49,7 +49,7 @@ async function validateImageFormat(path: string): Promise<void> {
     } catch (error) {
         if (error instanceof InvalidImageError) throw error;
         if (error instanceof Deno.errors.NotFound) {
-            throw new InvalidImageError(`File not found: ${path}`);
+            throw new InvalidImageError(`File not found: ${path}`, error);
         }
         throw new InvalidImageError(
             `Failed to validate image: ${
@@ -94,11 +94,6 @@ export async function loadImage(path: string): Promise<Image> {
     try {
         const buffer = await Deno.readFile(path);
         const image = await Image.decode(buffer);
-
-        if (image.width === 0 || image.height === 0) {
-            throw new InvalidImageError('Image has zero dimensions');
-        }
-
         return image;
     } catch (error) {
         if (error instanceof InvalidImageError) throw error;
