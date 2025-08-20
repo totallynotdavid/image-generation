@@ -1,6 +1,7 @@
 import { InvalidImageError } from '@/errors.ts';
 import { isAbsolute, join } from '@std/path';
 import { Image } from '@matmen/imagescript';
+import type { TransformOptions } from '@/types.ts';
 
 const IMAGE_SIGNATURES = {
     PNG: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
@@ -10,12 +11,11 @@ const IMAGE_SIGNATURES = {
     WEBP_WEBP: new Uint8Array([0x57, 0x45, 0x42, 0x50]),
 } as const;
 
+const validatedPaths = new Set<string>();
+
 function matchesSignature(data: Uint8Array, signature: Uint8Array): boolean {
     if (data.length < signature.length) return false;
-    for (let i = 0; i < signature.length; i++) {
-        if (data[i] !== signature[i]) return false;
-    }
-    return true;
+    return signature.every((byte, i) => data[i] === byte);
 }
 
 function isWebP(header: Uint8Array): boolean {
@@ -26,6 +26,8 @@ function isWebP(header: Uint8Array): boolean {
 }
 
 async function validateImageFormat(path: string): Promise<void> {
+    if (validatedPaths.has(path)) return;
+
     let file: Deno.FsFile | undefined;
     try {
         file = await Deno.open(path, { read: true });
@@ -46,6 +48,8 @@ async function validateImageFormat(path: string): Promise<void> {
                 'File does not appear to be a valid image format (PNG, JPEG, GIF, or WEBP)',
             );
         }
+
+        validatedPaths.add(path);
     } catch (error) {
         if (error instanceof InvalidImageError) throw error;
         if (error instanceof Deno.errors.NotFound) {
@@ -83,7 +87,6 @@ export async function resolveAsset(
             return path;
         } catch (error) {
             if (error instanceof InvalidImageError) throw error;
-            continue;
         }
     }
 
@@ -93,10 +96,8 @@ export async function resolveAsset(
 export async function loadImage(path: string): Promise<Image> {
     try {
         const buffer = await Deno.readFile(path);
-        const image = await Image.decode(buffer);
-        return image;
+        return await Image.decode(buffer);
     } catch (error) {
-        if (error instanceof InvalidImageError) throw error;
         throw new InvalidImageError(
             `Failed to load image: ${
                 error instanceof Error ? error.message : 'unknown error'
@@ -104,4 +105,21 @@ export async function loadImage(path: string): Promise<Image> {
             error instanceof Error ? error : undefined,
         );
     }
+}
+
+export function applyBaseTransforms(
+    image: Image,
+    options?: TransformOptions,
+): Image {
+    if (!options?.resize) return image;
+
+    const { width, height, mode } = options.resize;
+
+    if (!width && !height) return image;
+
+    const resizeWidth = width ?? Image.RESIZE_AUTO;
+    const resizeHeight = height ?? Image.RESIZE_AUTO;
+    const resizeMode = mode ?? Image.RESIZE_NEAREST_NEIGHBOR;
+
+    return image.resize(resizeWidth, resizeHeight, resizeMode);
 }
