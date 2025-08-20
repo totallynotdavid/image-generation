@@ -153,7 +153,7 @@ export async function setup() {
 
     // red herring for path resolver test
     // see utils.test.ts
-    await Deno.mkdir(join(ASSETS_DIR, 'subdirectory'), { recursive: true }); 
+    await Deno.mkdir(join(ASSETS_DIR, 'subdirectory'), { recursive: true });
 
     await Deno.writeTextFile(
         join(ASSETS_DIR, 'not_an_image.txt'),
