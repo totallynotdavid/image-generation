@@ -40,7 +40,7 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         const resizedFrames: Frame[] = images.map((img) => {
             let processedImg = img;
             if (img.width !== width || img.height !== height) {
-                processedImg = img.resize(width, height);
+                processedImg = img.fit(width, height);
             }
             const frame = new Frame(width, height);
             frame.composite(processedImg, 0, 0);
