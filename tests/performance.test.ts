@@ -21,7 +21,6 @@ Deno.test({
 Deno.test('performance: transforms should complete within reasonable time', async () => {
     const startTime = performance.now();
 
-    // Run each transform once
     await greyscale({ input: getAssetPath(TestAssets.LARGE) });
     await color({
         input: getAssetPath(TestAssets.LARGE),
@@ -35,8 +34,7 @@ Deno.test('performance: transforms should complete within reasonable time', asyn
     const endTime = performance.now();
     const totalTime = endTime - startTime;
 
-    // Should complete within 5 seconds for large images (generous threshold)
-    assert(totalTime < 5000, `Transforms took too long: ${totalTime}ms`);
+    assert(totalTime < 385, `Transforms took too long: ${totalTime}ms`);
 });
 
 Deno.test('performance: blink should handle multiple images efficiently', async () => {
@@ -56,8 +54,7 @@ Deno.test('performance: blink should handle multiple images efficiently', async 
     const totalTime = endTime - startTime;
 
     assertInstanceOf(result, Uint8Array);
-    // Should complete within 3 seconds for 5 images (generous threshold)
-    assert(totalTime < 3000, `Blink animation took too long: ${totalTime}ms`);
+    assert(totalTime < 80, `Blink animation took too long: ${totalTime}ms`);
 });
 
 Deno.test('performance: small images should be very fast', async () => {
@@ -78,20 +75,16 @@ Deno.test('performance: small images should be very fast', async () => {
         const operationTime = endTime - startTime;
 
         assertInstanceOf(result, Uint8Array);
-        // Small images should complete very quickly (under 100ms)
         assert(
-            operationTime < 100,
+            operationTime < 15,
             `Small image operation took too long: ${operationTime}ms`,
         );
     }
 });
 
 Deno.test('performance: memory usage should be reasonable', async () => {
-    // This test checks that we can run multiple operations without issues
-    // In a real environment, you'd want more sophisticated memory monitoring
-
     const operations = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 100; i++) {
         operations.push(
             greyscale({ input: getAssetPath(TestAssets.CHECKERBOARD) }),
         );
@@ -99,8 +92,7 @@ Deno.test('performance: memory usage should be reasonable', async () => {
 
     const results = await Promise.all(operations);
 
-    // All operations should complete successfully
-    assert(results.length === 10);
+    assert(results.length === 100);
     results.forEach((result) => {
         assertInstanceOf(result, Uint8Array);
         assert(result.length > 0);
