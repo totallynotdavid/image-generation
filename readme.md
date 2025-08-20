@@ -7,14 +7,13 @@
 A simple, lightweight TypeScript image-processing library for Deno.
 
 Each image transformation is a small, standalone async function: you pass
-parameters and it returns a `Uint8Array` containing the processed image. That
-functional design makes transformations easy to compose, test, and reuse.
+parameters and it returns a `Uint8Array` containing the processed image. Its
+design makes transformations easy to compose, test, and reuse.
 
 Features:
 
 - Runs natively on Deno (no npm dependencies).
-- Works with local files and in-memory buffers (no need to upload images to
-  third-party services).
+- Works with local files and in-memory buffers.
 - Each transformation returns a `Uint8Array`, so you can chain them together and
   integrate the results wherever you deliver or store image data.
 - Designed for composition: build processing pipelines by chaining simple
@@ -36,9 +35,6 @@ The package is a good fit for:
 
 The cat in the image examples is
 [@rexiecat](https://www.instagram.com/rexiecat/). Give them some love.
-
-Each transformation returns a `Uint8Array` that you can write to disk, send over
-HTTP, or pass to another transformation.
 
 ## Getting started
 
@@ -100,6 +96,20 @@ The `color` transformation in particular supports three blend modes:
 - `softlight`: Applies soft light blending for subtle effects.
 - `wash`: Simple color overlay with opacity control.
 
+To create a circular avatar with a border:
+
+```typescript
+import { circle } from '@dv/image-generation';
+
+const avatarImage = await circle({
+    input: './photos/profile.png',
+    options: {
+        borderWidth: 5,
+        borderColor: '#000000',
+    },
+});
+```
+
 ### Multiple input processing
 
 The `blink` transformation creates animated GIFs from multiple images:
@@ -137,13 +147,13 @@ const processFrame = async (imagePath: string) => {
     });
 };
 
-// Create animation from processed frames
 const frames = await Promise.all([
     processFrame('./frame1.jpg'),
     processFrame('./frame2.jpg'),
     processFrame('./frame3.jpg'),
 ]);
 
+// Create animation using blink from processed frames
 const animation = await blink({
     inputs: frames, // Use processed buffers
     options: { delay: 300 },
@@ -165,9 +175,9 @@ deno install --allow-scripts
 
 <details>
 
-<summary>How to install deno</summary>
-If you don't have Deno installed, you can download it from
-[deno.land](https://deno.land/):
+<summary>How to install Deno</summary>
+
+You can download it from [deno.land](https://deno.land/):
 
 ```bash
 # Unix-based systems
@@ -188,10 +198,11 @@ mise use -g deno@latest
 <details>
 
 <summary>Available tasks in deno.json</summary>
+
 You can run the following tasks:
 
 - `deno task dev:example` - Run the example code
-- `deno task test` - Run tests (67 tests)
+- `deno task test` - Run the 67 tests
 - `deno task tidy` - Format and lint code using the rules set on
   [deno.json](deno.json)
 - `deno task build:npm` - Build the library for npm. It uses the
@@ -223,7 +234,7 @@ appropriate types to `src/types.ts` and export from `src/index.ts`.
 
 ## License
 
-MIT License
+[MIT License](LICENSE)
 
 ## Acknowledgements
 
