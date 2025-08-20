@@ -151,9 +151,10 @@ export async function setup() {
     await Deno.remove(ASSETS_DIR, { recursive: true }).catch(() => {});
     await Deno.mkdir(ASSETS_DIR, { recursive: true });
 
-    await Deno.mkdir(join(ASSETS_DIR, 'subdirectory'), { recursive: true });
+    // red herring for path resolver test
+    // see utils.test.ts
+    await Deno.mkdir(join(ASSETS_DIR, 'subdirectory'), { recursive: true }); 
 
-    // Create non-image files for negative testing
     await Deno.writeTextFile(
         join(ASSETS_DIR, 'not_an_image.txt'),
         'This is not an image file',
@@ -164,7 +165,6 @@ export async function setup() {
     );
     await Deno.writeTextFile(join(ASSETS_DIR, 'empty_file.png'), '');
 
-    // Generate and save test images
     for (const { name, generator } of TEST_IMAGES) {
         const image = generator();
         const buffer = await image.encode();
@@ -172,20 +172,20 @@ export async function setup() {
     }
 
     console.log(
-        `✅ Generated ${TEST_IMAGES.length} test images in ${ASSETS_DIR}`,
+        `[✅] Generated ${TEST_IMAGES.length} test images in ${ASSETS_DIR}`,
     );
 }
 
 export async function cleanup() {
     await Deno.remove(ASSETS_DIR, { recursive: true }).catch(() => {});
-    console.log('🧹 Cleaned up test assets');
+    console.log('[🧹] Cleaned up test assets');
 }
 
 export function getAssetPath(name: string): string {
     return join(ASSETS_DIR, name);
 }
 
-// Utility functions for validating image formats
+// These functions validate image formats across different tests
 export function hasPngSignature(data: Uint8Array): boolean {
     const signature = [0x89, 0x50, 0x4e, 0x47];
     if (data.length < signature.length) return false;
@@ -204,7 +204,7 @@ export function hasJpegSignature(data: Uint8Array): boolean {
     return signature.every((byte, i) => data[i] === byte);
 }
 
-// Test data sets for different scenarios
+// Set of files created by _setup.ts used across the tests
 export const TestAssets = {
     // Basic shapes
     SQUARE_RED: 'square_red.png',
