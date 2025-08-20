@@ -1,23 +1,25 @@
 import { Image } from '@matmen/imagescript';
-import { CircleParams, TransformResult } from '@/types.ts';
-import { resolveAsset } from '@/utils.ts';
-import { ProcessingError, throwProcessingError } from '@/errors.ts';
 import { parseHex } from '@temelj/color';
+import { CircleParams, TransformResult } from '@/types.ts';
+import { applyBaseTransforms, loadImage, resolveAsset } from '@/utils.ts';
+import { ProcessingError, throwProcessingError } from '@/errors.ts';
 
 export async function circle(params: CircleParams): Promise<TransformResult> {
     try {
         const resolvedPath = await resolveAsset(params.input);
-        const buffer = await Deno.readFile(resolvedPath);
+        const originalImage = await loadImage(resolvedPath);
 
-        const image = await Image.decode(buffer);
+        const image = applyBaseTransforms(originalImage, params.options);
 
         if (image.width === 0 || image.height === 0) {
             throw new ProcessingError('Image has zero dimensions');
         }
 
-        const size = Math.min(image.width, image.height);
         const options = params.options;
         const borderWidth = Math.max(0, options?.borderWidth || 0);
+
+        // smaller dimension is used to ensure we can fit a circle
+        const size = Math.min(image.width, image.height);
 
         let processedImage = image;
         if (image.width !== size || image.height !== size) {
@@ -32,8 +34,8 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
                 options?.borderColor,
             );
         } else {
-            processedImage = processedImage.cropCircle();
-            return await processedImage.encode();
+            const circularImage = processedImage.cropCircle();
+            return await circularImage.encode();
         }
     } catch (error) {
         throwProcessingError(error, 'Failed to apply circle transform');
@@ -65,25 +67,16 @@ async function createCircleWithBorder(
 
     borderedImage.fill(0x00000000); // transparent background
 
-    const borderRadius = borderSize / 2;
-    const innerRadius = borderRadius - borderWidth;
+    const centerX = borderSize / 2;
+    const centerY = borderSize / 2;
+    const outerRadius = borderSize / 2;
+    const innerRadius = outerRadius - borderWidth;
 
-    borderedImage.drawCircle(
-        borderRadius,
-        borderRadius,
-        borderRadius,
-        borderColorRGBA,
-    );
+    borderedImage.drawCircle(centerX, centerY, outerRadius, borderColorRGBA);
 
-    borderedImage.drawCircle(
-        borderRadius,
-        borderRadius,
-        innerRadius,
-        0x00000000,
-    );
+    borderedImage.drawCircle(centerX, centerY, innerRadius, 0x00000000);
 
     const circularImage = image.cropCircle();
-
     borderedImage.composite(circularImage, borderWidth, borderWidth);
 
     const finalImage = borderedImage.cropCircle();
