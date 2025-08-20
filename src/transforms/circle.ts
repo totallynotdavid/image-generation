@@ -4,8 +4,6 @@ import { resolveAsset } from '@/utils.ts';
 import { ProcessingError, throwProcessingError } from '@/errors.ts';
 import { parseHex } from '@temelj/color';
 
-const MAX_IMAGE_SIZE = 4096;
-
 export async function circle(params: CircleParams): Promise<TransformResult> {
     try {
         const resolvedPath = await resolveAsset(params.input);
@@ -17,21 +15,9 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
             throw new ProcessingError('Image has zero dimensions');
         }
 
-        if (image.width > MAX_IMAGE_SIZE || image.height > MAX_IMAGE_SIZE) {
-            throw new ProcessingError(
-                `Image too large: ${image.width}x${image.height}px`,
-            );
-        }
-
         const size = Math.min(image.width, image.height);
         const options = params.options;
         const borderWidth = Math.max(0, options?.borderWidth || 0);
-
-        if (size + (borderWidth * 2) > MAX_IMAGE_SIZE) {
-            throw new ProcessingError(
-                `Resulting image size too large: ${size + (borderWidth * 2)}px`,
-            );
-        }
 
         let processedImage = image;
         if (image.width !== size || image.height !== size) {
