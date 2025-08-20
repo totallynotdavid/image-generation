@@ -34,7 +34,8 @@ Deno.test('performance: transforms should complete within reasonable time', asyn
     const endTime = performance.now();
     const totalTime = endTime - startTime;
 
-    assert(totalTime < 385, `Transforms took too long: ${totalTime}ms`);
+    // Locally, this value is ~385, but on the CI server it takes about twice as long.
+    assert(totalTime < 775, `Transforms took too long: ${totalTime}ms`);
 });
 
 Deno.test('performance: blink should handle multiple images efficiently', async () => {
