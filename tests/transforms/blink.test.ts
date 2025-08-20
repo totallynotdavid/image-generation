@@ -89,18 +89,16 @@ Deno.test('blink: should respect timing options', async () => {
 });
 
 Deno.test('blink: should handle loop options', async () => {
-    // Test looping enabled
     const result1 = await blink({
         inputs: [
             getAssetPath(TestAssets.CIRCLE),
             getAssetPath(TestAssets.CHECKERBOARD),
         ],
-        options: { loop: true },
+        options: { loop: true }, // the important part
     });
     assertInstanceOf(result1, Uint8Array);
     assert(hasGifSignature(result1));
 
-    // Test looping disabled
     const result2 = await blink({
         inputs: [
             getAssetPath(TestAssets.NOISE),
@@ -126,14 +124,12 @@ Deno.test('blink: should clamp negative delay to zero', async () => {
 });
 
 Deno.test('blink: should throw ProcessingError for insufficient images', async () => {
-    // Test with no images
     await assertRejects(
         () => blink({ inputs: [] }),
         ProcessingError,
         'At least 2 images required for blink animation',
     );
 
-    // Test with only one image
     await assertRejects(
         () => blink({ inputs: [getAssetPath(TestAssets.SQUARE_RED)] }),
         ProcessingError,
