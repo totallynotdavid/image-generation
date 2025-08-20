@@ -62,14 +62,12 @@ Deno.test('circle: should add borders with different widths and colors', async (
 });
 
 Deno.test('circle: should handle edge cases for border width', async () => {
-    // Zero border width
     const result1 = await circle({
         input: getAssetPath(TestAssets.CHECKERBOARD),
         options: { borderWidth: 0 },
     });
     assertInstanceOf(result1, Uint8Array);
 
-    // Negative border width (should clamp to 0)
     const result2 = await circle({
         input: getAssetPath(TestAssets.TINY),
         options: { borderWidth: -5 },

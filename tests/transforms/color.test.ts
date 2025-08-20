@@ -88,23 +88,21 @@ Deno.test('color: should use default values when options are minimal', async () 
 });
 
 Deno.test('color: should clamp out-of-range values', async () => {
-    // Test intensity clamping
     const result1 = await color({
         input: getAssetPath(TestAssets.SQUARE_RED),
-        options: { intensity: -5 }, // Should clamp to 0
+        options: { intensity: -5 }, // it should clamp to 0
     });
     assertInstanceOf(result1, Uint8Array);
 
     const result2 = await color({
         input: getAssetPath(TestAssets.SQUARE_GREEN),
-        options: { intensity: 10 }, // Should clamp to 1
+        options: { intensity: 10 }, // it should clamp to 1
     });
     assertInstanceOf(result2, Uint8Array);
 
-    // Test opacity clamping for wash mode
     const result3 = await color({
         input: getAssetPath(TestAssets.SQUARE_BLUE),
-        options: { blendMode: 'wash', opacity: -2 }, // Should clamp to 0
+        options: { blendMode: 'wash', opacity: -2 }, // it should clamp to 0
     });
     assertInstanceOf(result3, Uint8Array);
 });
