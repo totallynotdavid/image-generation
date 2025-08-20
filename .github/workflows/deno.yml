@@ -33,7 +33,7 @@ jobs:
 
             - run: deno lint
 
-            - run: deno test --allow-read --allow-write --allow-net --coverage=cov --junit-path=./junit.xml
+            - run: deno test --allow-read --allow-write --allow-net --coverage=cov --junit-path=./junit.xml ./tests/
 
             - run: deno coverage --lcov cov > coverage.lcov
 
