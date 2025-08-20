@@ -1,5 +1,5 @@
 import { GreyscaleParams, TransformResult } from '@/types.ts';
-import { loadImage, resolveAsset } from '@/utils.ts';
+import { applyBaseTransforms, loadImage, resolveAsset } from '@/utils.ts';
 import { InvalidImageError, throwProcessingError } from '@/errors.ts';
 
 export async function greyscale(
@@ -7,10 +7,11 @@ export async function greyscale(
 ): Promise<TransformResult> {
     try {
         const resolvedPath = await resolveAsset(params.input);
-        const image = await loadImage(resolvedPath);
+        const originalImage = await loadImage(resolvedPath);
+
+        const image = applyBaseTransforms(originalImage, params.options);
 
         const greyImage = image.saturation(0);
-
         return await greyImage.encode();
     } catch (error) {
         if (error instanceof InvalidImageError) {
