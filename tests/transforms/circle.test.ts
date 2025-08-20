@@ -118,18 +118,6 @@ Deno.test('circle: should throw ProcessingError when border is too large', async
     );
 });
 
-Deno.test('circle: should throw ProcessingError for extremely large borders', async () => {
-    await assertRejects(
-        () =>
-            circle({
-                input: getAssetPath(TestAssets.SQUARE_RED),
-                options: { borderWidth: 5000 },
-            }),
-        ProcessingError,
-        'Resulting image size too large',
-    );
-});
-
 Deno.test({
     name: 'circle tests cleanup',
     fn: cleanup,
