@@ -18,20 +18,16 @@ async function run(): Promise<void> {
 
         const colored = await color({
             input: input1,
-            options: {
-                hex: '#ff0000',
-                blendMode: 'tint',
-            },
+            hex: '#ff0000',
+            blendMode: 'tint',
         });
         await saveOutput(colored, 'red-tint.png');
         console.log('Color transform complete', colored.length);
 
         const blinked = await blink({
             inputs: [input1, input2],
-            options: {
-                delay: 200,
-                loop: true,
-            },
+            delay: 200,
+            loop: true,
         });
         await saveOutput(blinked, 'blink-animation.gif');
         console.log('Blink transform complete', blinked.length);
@@ -42,10 +38,8 @@ async function run(): Promise<void> {
 
         const circled = await circle({
             input: input1,
-            options: {
-                borderColor: '#ff0000',
-                borderWidth: 8,
-            },
+            borderColor: '#ff0000',
+            borderWidth: 8,
         });
         await saveOutput(circled, 'circle-border.png');
         console.log('Circle transform complete', circled.length);
