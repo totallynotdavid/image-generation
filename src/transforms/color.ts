@@ -1,14 +1,16 @@
 import { Image } from '@matmen/imagescript';
 import { fromRgb, hslToRgb, parseHex, rgbToHsl } from '@temelj/color';
-import { ColorParams, TransformResult } from '@/types.ts';
-import { applyBaseTransforms, loadImageFromInput } from '@/utils.ts';
-import { ProcessingError, throwProcessingError } from '@/errors.ts';
+import type { ColorParams, TransformResult } from '@/types.ts';
+import { loadImage } from '@/utils.ts';
+import {
+    ImageTransformError,
+    ProcessingError,
+    throwProcessingError,
+} from '@/errors.ts';
 
 const INV_255 = 1 / 255;
-const DEFAULTS = { INTENSITY: 1.0, OPACITY: 0.3, HEX: '#ffffff' } as const;
-const BOUNDS = { INTENSITY: [0, 1], OPACITY: [0, 1] } as const;
 
-function clamp(value: number, [min, max]: readonly [number, number]): number {
+function clamp(value: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, value));
 }
 
@@ -25,17 +27,12 @@ function softLightBlend(base: number, overlay: number): number {
 
 export async function color(params: ColorParams): Promise<TransformResult> {
     try {
-        const options = params.options;
-        const mode = options.blendMode ?? 'tint';
-        const intensity = clamp(
-            options.intensity ?? DEFAULTS.INTENSITY,
-            BOUNDS.INTENSITY,
-        );
-        const opacity = clamp(
-            options.opacity ?? DEFAULTS.OPACITY,
-            BOUNDS.OPACITY,
-        );
-        const hex = options.hex ?? DEFAULTS.HEX;
+        const image = await loadImage(params.input);
+
+        const mode = params.blendMode ?? 'tint';
+        const intensity = clamp(params.intensity ?? 1.0, 0, 1);
+        const opacity = clamp(params.opacity ?? 0.3, 0, 1);
+        const hex = params.hex ?? '#ffffff';
 
         const tintRgb = parseHex(hex);
         if (!tintRgb) {
@@ -43,8 +40,6 @@ export async function color(params: ColorParams): Promise<TransformResult> {
         }
 
         const { red: tr255, green: tg255, blue: tb255 } = tintRgb;
-        const originalImage = await loadImageFromInput(params.input);
-        const src = applyBaseTransforms(originalImage, params.options);
 
         let tint: { h: number; s: number; tr: number; tg: number; tb: number };
         if (mode === 'tint') {
@@ -69,9 +64,9 @@ export async function color(params: ColorParams): Promise<TransformResult> {
         const oneMinusOpacity = 1 - opacity;
         const oneMinusIntensity = 1 - intensity;
 
-        const out = new Image(src.width, src.height);
+        const out = new Image(image.width, image.height);
         out.fill((x: number, y: number) => {
-            const [origR, origG, origB, origA] = src.getRGBAAt(x, y);
+            const [origR, origG, origB, origA] = image.getRGBAAt(x, y);
 
             let finalR = origR;
             let finalG = origG;
@@ -120,6 +115,7 @@ export async function color(params: ColorParams): Promise<TransformResult> {
 
         return await out.encode();
     } catch (error) {
+        if (error instanceof ImageTransformError) throw error;
         throwProcessingError(error, 'Failed to apply color transform');
     }
 }

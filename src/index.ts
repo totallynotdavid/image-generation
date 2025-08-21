@@ -1,3 +1,5 @@
+export { loadImage, resizeImage } from '@/utils.ts';
+
 export { greyscale } from '@/transforms/greyscale.ts';
 export { color } from '@/transforms/color.ts';
 export { circle } from '@/transforms/circle.ts';
@@ -12,8 +14,4 @@ export type {
     TransformResult,
 } from '@/types.ts';
 
-export {
-    ImageTransformError,
-    InvalidImageError,
-    ProcessingError,
-} from '@/errors.ts';
+export { ImageTransformError, ProcessingError } from '@/errors.ts';

@@ -1,19 +1,16 @@
-import { GreyscaleParams, TransformResult } from '@/types.ts';
-import { applyBaseTransforms, loadImageFromInput } from '@/utils.ts';
-import { InvalidImageError, throwProcessingError } from '@/errors.ts';
+import type { GreyscaleParams, TransformResult } from '@/types.ts';
+import { loadImage } from '@/utils.ts';
+import { ImageTransformError, throwProcessingError } from '@/errors.ts';
 
 export async function greyscale(
     params: GreyscaleParams,
 ): Promise<TransformResult> {
     try {
-        const originalImage = await loadImageFromInput(params.input);
-        const image = applyBaseTransforms(originalImage, params.options);
+        const image = await loadImage(params.input);
         const greyImage = image.saturation(0);
         return await greyImage.encode();
     } catch (error) {
-        if (error instanceof InvalidImageError) {
-            throw error;
-        }
-        throwProcessingError(error, 'Failed to apply grayscale transform');
+        if (error instanceof ImageTransformError) throw error;
+        throwProcessingError(error, 'Failed to apply greyscale transform');
     }
 }
