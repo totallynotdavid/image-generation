@@ -45,7 +45,6 @@ export interface BlinkParams {
 export interface BlinkOptions {
     delay?: number;
     loop?: boolean;
-    maxConcurrent?: number;
 }
 
 export type TransformResult = Uint8Array;
