@@ -1,7 +1,7 @@
 import { assertEquals, assertRejects } from '@std/assert';
-import { greyscale } from '../../src/transforms/greyscale.ts';
-import { ProcessingError } from '../../src/errors.ts';
 import { Image } from '@matmen/imagescript';
+import { greyscale } from '@/transforms/greyscale.ts';
+import { ProcessingError } from '@/errors.ts';
 import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
 
 Deno.test({
