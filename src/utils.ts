@@ -1,7 +1,7 @@
 import { InvalidImageError } from '@/errors.ts';
 import { isAbsolute, join } from '@std/path';
 import { Image } from '@matmen/imagescript';
-import type { TransformOptions } from '@/types.ts';
+import type { ImageInput, TransformOptions } from '@/types.ts';
 
 const IMAGE_SIGNATURES = {
     PNG: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
@@ -23,6 +23,24 @@ function isWebP(header: Uint8Array): boolean {
         matchesSignature(header, IMAGE_SIGNATURES.WEBP_RIFF) &&
         matchesSignature(header.slice(8, 12), IMAGE_SIGNATURES.WEBP_WEBP)
     );
+}
+
+function validateImageBuffer(buffer: Uint8Array): void {
+    if (buffer.length < 12) {
+        throw new InvalidImageError('Buffer too small to be a valid image');
+    }
+
+    const header = buffer.slice(0, 12);
+    const isValid = matchesSignature(header, IMAGE_SIGNATURES.PNG) ||
+        matchesSignature(header, IMAGE_SIGNATURES.JPEG) ||
+        matchesSignature(header, IMAGE_SIGNATURES.GIF) ||
+        isWebP(header);
+
+    if (!isValid) {
+        throw new InvalidImageError(
+            'Buffer does not appear to be a valid image format (PNG, JPEG, GIF, or WEBP)',
+        );
+    }
 }
 
 async function validateImageFormat(path: string): Promise<void> {
@@ -93,13 +111,36 @@ export async function resolveAsset(
     throw new InvalidImageError(`Asset not found: ${assetName}`);
 }
 
-export async function loadImage(path: string): Promise<Image> {
+export async function loadImageFromInput(input: ImageInput): Promise<Image> {
+    if (typeof input === 'string') {
+        return await loadImageFromPath(input);
+    } else {
+        return await loadImageFromBuffer(input);
+    }
+}
+
+async function loadImageFromPath(path: string): Promise<Image> {
     try {
-        const buffer = await Deno.readFile(path);
+        const resolvedPath = await resolveAsset(path);
+        const buffer = await Deno.readFile(resolvedPath);
         return await Image.decode(buffer);
     } catch (error) {
         throw new InvalidImageError(
-            `Failed to load image: ${
+            `Failed to load image from path: ${
+                error instanceof Error ? error.message : 'unknown error'
+            }`,
+            error instanceof Error ? error : undefined,
+        );
+    }
+}
+
+async function loadImageFromBuffer(buffer: Uint8Array): Promise<Image> {
+    try {
+        validateImageBuffer(buffer);
+        return await Image.decode(buffer);
+    } catch (error) {
+        throw new InvalidImageError(
+            `Failed to load image from buffer: ${
                 error instanceof Error ? error.message : 'unknown error'
             }`,
             error instanceof Error ? error : undefined,

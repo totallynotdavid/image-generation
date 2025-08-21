@@ -1,14 +1,12 @@
 import { Image } from '@matmen/imagescript';
 import { parseHex } from '@temelj/color';
 import { CircleParams, TransformResult } from '@/types.ts';
-import { applyBaseTransforms, loadImage, resolveAsset } from '@/utils.ts';
+import { applyBaseTransforms, loadImageFromInput } from '@/utils.ts';
 import { ProcessingError, throwProcessingError } from '@/errors.ts';
 
 export async function circle(params: CircleParams): Promise<TransformResult> {
     try {
-        const resolvedPath = await resolveAsset(params.input);
-        const originalImage = await loadImage(resolvedPath);
-
+        const originalImage = await loadImageFromInput(params.input);
         const image = applyBaseTransforms(originalImage, params.options);
 
         if (image.width === 0 || image.height === 0) {

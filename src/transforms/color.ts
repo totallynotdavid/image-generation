@@ -1,7 +1,7 @@
 import { Image } from '@matmen/imagescript';
 import { fromRgb, hslToRgb, parseHex, rgbToHsl } from '@temelj/color';
 import { ColorParams, TransformResult } from '@/types.ts';
-import { applyBaseTransforms, loadImage, resolveAsset } from '@/utils.ts';
+import { applyBaseTransforms, loadImageFromInput } from '@/utils.ts';
 import { ProcessingError, throwProcessingError } from '@/errors.ts';
 
 const INV_255 = 1 / 255;
@@ -44,9 +44,7 @@ export async function color(params: ColorParams): Promise<TransformResult> {
 
         const { red: tr255, green: tg255, blue: tb255 } = tintRgb;
 
-        const resolvedPath = await resolveAsset(params.input);
-        const originalImage = await loadImage(resolvedPath);
-
+        const originalImage = await loadImageFromInput(params.input);
         const src = applyBaseTransforms(originalImage, params.options);
 
         let tint: { h: number; s: number } | {

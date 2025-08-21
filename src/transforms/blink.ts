@@ -1,6 +1,6 @@
 import { Frame, GIF, Image } from '@matmen/imagescript';
 import { BlinkParams, TransformResult } from '@/types.ts';
-import { applyBaseTransforms, resolveAsset } from '@/utils.ts';
+import { applyBaseTransforms, loadImageFromInput } from '@/utils.ts';
 import {
     InvalidImageError,
     ProcessingError,
@@ -20,15 +20,8 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
     const loop = options?.loop !== false;
 
     try {
-        const resolvedPaths = await Promise.all(
-            inputs.map((input) => resolveAsset(input)),
-        );
-
         const originalImages: Image[] = await Promise.all(
-            resolvedPaths.map(async (path) => {
-                const buffer = await Deno.readFile(path);
-                return await Image.decode(buffer);
-            }),
+            inputs.map((input) => loadImageFromInput(input)),
         );
 
         const images = originalImages.map((img) =>

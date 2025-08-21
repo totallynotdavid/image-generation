@@ -8,13 +8,15 @@ export interface TransformOptions {
     resize?: ResizeOptions;
 }
 
+export type ImageInput = string | Uint8Array;
+
 export interface GreyscaleParams {
-    input: string;
+    input: ImageInput;
     options?: TransformOptions;
 }
 
 export interface ColorParams {
-    input: string;
+    input: ImageInput;
     options: ColorOptions & TransformOptions;
 }
 
@@ -26,7 +28,7 @@ export interface ColorOptions {
 }
 
 export interface CircleParams {
-    input: string;
+    input: ImageInput;
     options?: CircleOptions & TransformOptions;
 }
 
@@ -36,7 +38,7 @@ export interface CircleOptions {
 }
 
 export interface BlinkParams {
-    inputs: string[];
+    inputs: ImageInput[];
     options?: BlinkOptions & TransformOptions;
 }
 

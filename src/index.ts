@@ -8,6 +8,7 @@ export type {
     CircleParams,
     ColorParams,
     GreyscaleParams,
+    ImageInput,
     TransformResult,
 } from '@/types.ts';
 
@@ -16,5 +17,3 @@ export {
     InvalidImageError,
     ProcessingError,
 } from '@/errors.ts';
-
-export { resolveAsset } from '@/utils.ts';
