@@ -43,24 +43,26 @@ export async function color(params: ColorParams): Promise<TransformResult> {
         }
 
         const { red: tr255, green: tg255, blue: tb255 } = tintRgb;
-
         const originalImage = await loadImageFromInput(params.input);
         const src = applyBaseTransforms(originalImage, params.options);
 
-        let tint: { h: number; s: number } | {
-            r: number;
-            g: number;
-            b: number;
-        };
-
+        let tint: { h: number; s: number; tr: number; tg: number; tb: number };
         if (mode === 'tint') {
             const tintHsl = rgbToHsl(tintRgb);
-            tint = { h: tintHsl.hue, s: tintHsl.saturation };
+            tint = {
+                h: tintHsl.hue,
+                s: tintHsl.saturation,
+                tr: tr255 * INV_255,
+                tg: tg255 * INV_255,
+                tb: tb255 * INV_255,
+            };
         } else {
             tint = {
-                r: tr255 * INV_255,
-                g: tg255 * INV_255,
-                b: tb255 * INV_255,
+                h: 0,
+                s: 0,
+                tr: tr255 * INV_255,
+                tg: tg255 * INV_255,
+                tb: tb255 * INV_255,
             };
         }
 
@@ -82,31 +84,29 @@ export async function color(params: ColorParams): Promise<TransformResult> {
                     finalB = (tb255 * opacity + origB * oneMinusOpacity) | 0;
                     break;
 
-                case 'tint':
-                    if ('h' in tint) {
-                        const srcHsl = rgbToHsl(fromRgb(origR, origG, origB));
-                        const tinted = hslToRgb({
-                            hue: tint.h,
-                            saturation: tint.s,
-                            lightness: srcHsl.lightness,
-                            alpha: 1,
-                        });
-                        finalR = tinted.red;
-                        finalG = tinted.green;
-                        finalB = tinted.blue;
-                    }
+                case 'tint': {
+                    const srcHsl = rgbToHsl(fromRgb(origR, origG, origB));
+                    const tinted = hslToRgb({
+                        hue: tint.h,
+                        saturation: tint.s,
+                        lightness: srcHsl.lightness,
+                        alpha: 1,
+                    });
+                    finalR = tinted.red;
+                    finalG = tinted.green;
+                    finalB = tinted.blue;
                     break;
+                }
 
-                case 'softlight':
-                    if ('r' in tint) {
-                        const br = origR * INV_255;
-                        const bg = origG * INV_255;
-                        const bb = origB * INV_255;
-                        finalR = (softLightBlend(br, tint.r) * 255) | 0;
-                        finalG = (softLightBlend(bg, tint.g) * 255) | 0;
-                        finalB = (softLightBlend(bb, tint.b) * 255) | 0;
-                    }
+                case 'softlight': {
+                    const br = origR * INV_255;
+                    const bg = origG * INV_255;
+                    const bb = origB * INV_255;
+                    finalR = (softLightBlend(br, tint.tr) * 255) | 0;
+                    finalG = (softLightBlend(bg, tint.tg) * 255) | 0;
+                    finalB = (softLightBlend(bb, tint.tb) * 255) | 0;
                     break;
+                }
             }
 
             if (intensity < 1) {
