@@ -28,19 +28,21 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
             applyBaseTransforms(img, options)
         );
 
-        const firstImage = images[0];
-        const { width, height } = firstImage;
-
-        const frames: Frame[] = [];
-        for (const img of images) {
-            const processedImg = (img.width !== width || img.height !== height)
+        const { width, height } = images[0];
+        const normalized: Image[] = new Array(images.length);
+        for (let i = 0; i < images.length; i++) {
+            const img = images[i];
+            normalized[i] = img.width !== width || img.height !== height
                 ? img.fit(width, height)
                 : img;
+        }
 
+        const frames: Frame[] = new Array(normalized.length);
+        for (let i = 0; i < normalized.length; i++) {
             const frame = new Frame(width, height);
-            frame.composite(processedImg, 0, 0);
+            frame.composite(normalized[i], 0, 0);
             frame.duration = delay;
-            frames.push(frame);
+            frames[i] = frame;
         }
 
         const gif = new GIF(frames, loop ? -1 : 0);
