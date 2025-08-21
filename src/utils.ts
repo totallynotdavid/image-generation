@@ -11,8 +11,6 @@ const IMAGE_SIGNATURES = {
     WEBP_WEBP: new Uint8Array([0x57, 0x45, 0x42, 0x50]),
 } as const;
 
-const validatedPaths = new Set<string>();
-
 function matchesSignature(data: Uint8Array, signature: Uint8Array): boolean {
     if (data.length < signature.length) return false;
     return signature.every((byte, i) => data[i] === byte);
@@ -44,8 +42,6 @@ function validateImageBuffer(buffer: Uint8Array): void {
 }
 
 async function validateImageFormat(path: string): Promise<void> {
-    if (validatedPaths.has(path)) return;
-
     let file: Deno.FsFile | undefined;
     try {
         file = await Deno.open(path, { read: true });
@@ -66,8 +62,6 @@ async function validateImageFormat(path: string): Promise<void> {
                 'File does not appear to be a valid image format (PNG, JPEG, GIF, or WEBP)',
             );
         }
-
-        validatedPaths.add(path);
     } catch (error) {
         if (error instanceof InvalidImageError) throw error;
         if (error instanceof Deno.errors.NotFound) {
@@ -155,7 +149,6 @@ export function applyBaseTransforms(
     if (!options?.resize) return image;
 
     const { width, height, mode } = options.resize;
-
     if (!width && !height) return image;
 
     const resizeWidth = width ?? Image.RESIZE_AUTO;
