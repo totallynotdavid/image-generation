@@ -21,7 +21,7 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
 
     try {
         const originalImages: Image[] = await Promise.all(
-            inputs.map((input) => loadImageFromInput(input)),
+            inputs.map(loadImageFromInput),
         );
 
         const images = originalImages.map((img) =>
@@ -31,7 +31,8 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         const firstImage = images[0];
         const { width, height } = firstImage;
 
-        const frames: Frame[] = images.map((img) => {
+        const frames: Frame[] = [];
+        for (const img of images) {
             const processedImg = (img.width !== width || img.height !== height)
                 ? img.fit(width, height)
                 : img;
@@ -39,8 +40,8 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
             const frame = new Frame(width, height);
             frame.composite(processedImg, 0, 0);
             frame.duration = delay;
-            return frame;
-        });
+            frames.push(frame);
+        }
 
         const gif = new GIF(frames, loop ? -1 : 0);
         return await gif.encode();
