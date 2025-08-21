@@ -1,124 +1,90 @@
-import {
-    assert,
-    assertInstanceOf,
-    assertRejects,
-    cleanup,
-    getAssetPath,
-    hasPngSignature,
-    setup,
-    TestAssets,
-} from '../_setup.ts';
-import { circle } from '@/transforms/circle.ts';
-import { ProcessingError } from '@/errors.ts';
+import { assertEquals, assertRejects } from '@std/assert';
+import { circle } from '../../src/transforms/circle.ts';
+import { ProcessingError } from '../../src/errors.ts';
+import { Image } from '@matmen/imagescript';
+import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
 
 Deno.test({
-    name: 'circle tests setup',
-    fn: setup,
-    sanitizeResources: false,
-    sanitizeOps: false,
-});
+    name: 'circle transform tests',
+    async fn(t) {
+        await setupTestAssets();
 
-Deno.test('circle: should crop square images to circles', async () => {
-    const squareImages = [
-        TestAssets.SQUARE_RED,
-        TestAssets.SQUARE_GREEN,
-        TestAssets.SQUARE_BLUE,
-    ];
+        await t.step('creates basic circle', async () => {
+            const result = await circle({
+                input: TestAssets.RED_SQUARE,
+            });
 
-    for (const image of squareImages) {
-        const result = await circle({ input: getAssetPath(image) });
-        assertInstanceOf(result, Uint8Array);
-        assert(hasPngSignature(result));
-    }
-});
-
-Deno.test('circle: should handle rectangular images by cropping to smallest dimension', async () => {
-    const result1 = await circle({ input: getAssetPath(TestAssets.WIDE) });
-    assertInstanceOf(result1, Uint8Array);
-    assert(hasPngSignature(result1));
-
-    const result2 = await circle({ input: getAssetPath(TestAssets.TALL) });
-    assertInstanceOf(result2, Uint8Array);
-    assert(hasPngSignature(result2));
-});
-
-Deno.test('circle: should add borders with different widths and colors', async () => {
-    const borderConfigs = [
-        { borderWidth: 2, borderColor: '#ff0000' },
-        { borderWidth: 5, borderColor: '#00ff00' },
-        { borderWidth: 10, borderColor: '#0000ff' },
-        { borderWidth: 15, borderColor: '#ffff00' },
-    ];
-
-    for (const config of borderConfigs) {
-        const result = await circle({
-            input: getAssetPath(TestAssets.CIRCLE),
-            options: config,
+            const image = await Image.decode(result);
+            assertEquals(image.width, 100);
+            assertEquals(image.height, 100);
         });
 
-        assertInstanceOf(result, Uint8Array);
-        assert(hasPngSignature(result));
-    }
-});
+        await t.step('creates circle with border', async () => {
+            const result = await circle({
+                input: TestAssets.BLUE_SQUARE,
+                borderWidth: 10,
+                borderColor: '#ffffff',
+            });
 
-Deno.test('circle: should handle edge cases for border width', async () => {
-    const result1 = await circle({
-        input: getAssetPath(TestAssets.CHECKERBOARD),
-        options: { borderWidth: 0 },
-    });
-    assertInstanceOf(result1, Uint8Array);
-
-    const result2 = await circle({
-        input: getAssetPath(TestAssets.TINY),
-        options: { borderWidth: -5 },
-    });
-    assertInstanceOf(result2, Uint8Array);
-});
-
-Deno.test('circle: should work with different image sizes', async () => {
-    const sizes = [TestAssets.TINY, TestAssets.LARGE];
-
-    for (const size of sizes) {
-        const result = await circle({
-            input: getAssetPath(size),
-            options: { borderWidth: 3, borderColor: '#808080' },
+            const image = await Image.decode(result);
+            assertEquals(image.width, 120); // 100 + 2*10
+            assertEquals(image.height, 120);
         });
 
-        assertInstanceOf(result, Uint8Array);
-        assert(hasPngSignature(result));
-    }
-});
+        await t.step('handles rectangular image', async () => {
+            const result = await circle({
+                input: TestAssets.GREEN_RECTANGLE,
+                borderWidth: 5,
+            });
 
-Deno.test('circle: should throw ProcessingError for invalid border colors', async () => {
-    const invalidColors = ['invalid-color', 'not-hex', '#gggggg'];
-    for (const borderColor of invalidColors) {
-        await assertRejects(
-            () =>
-                circle({
-                    input: getAssetPath(TestAssets.SQUARE_RED),
-                    options: { borderWidth: 5, borderColor },
-                }),
-            ProcessingError,
-            'Invalid border color',
+            const image = await Image.decode(result);
+            // should use smallest dimension (80) + border
+            assertEquals(image.width, 90);
+            assertEquals(image.height, 90);
+        });
+
+        await t.step('works with tiny images', async () => {
+            const result = await circle({
+                input: TestAssets.TINY,
+                borderWidth: 2,
+                borderColor: '#ff0000',
+            });
+
+            const image = await Image.decode(result);
+            assertEquals(image.width, 24); // 20 + 2*2
+        });
+
+        await t.step(
+            'should throw ProcessingError for invalid border color',
+            async () => {
+                const invalidBorderCall = async () => {
+                    return circle({
+                        input: TestAssets.RED_SQUARE,
+                        borderColor: 'invalid',
+                        borderWidth: 5,
+                    });
+                };
+
+                await assertRejects(
+                    invalidBorderCall,
+                    ProcessingError,
+                    'Invalid border color',
+                );
+            },
         );
-    }
-});
 
-Deno.test('circle: should throw ProcessingError when border is too large', async () => {
-    await assertRejects(
-        () =>
-            circle({
-                input: getAssetPath(TestAssets.TINY), // 10x10 image
-                options: { borderWidth: 10 }, // Border too large relative to image
-            }),
-        ProcessingError,
-        'Border width too large for image size',
-    );
-});
+        await t.step('throws on excessive border width', async () => {
+            await assertRejects(
+                () =>
+                    circle({
+                        input: TestAssets.TINY,
+                        borderWidth: 15, // too large for 20px image
+                    }),
+                ProcessingError,
+                'Border width too large',
+            );
+        });
 
-Deno.test({
-    name: 'circle tests cleanup',
-    fn: cleanup,
-    sanitizeResources: false,
-    sanitizeOps: false,
+        await cleanupTestAssets();
+    },
 });

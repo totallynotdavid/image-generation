@@ -1,83 +1,48 @@
-import {
-    assert,
-    assertInstanceOf,
-    assertRejects,
-    cleanup,
-    getAssetPath,
-    hasPngSignature,
-    setup,
-    TestAssets,
-} from '../_setup.ts';
-import { greyscale } from '@/transforms/greyscale.ts';
-import { InvalidImageError } from '@/errors.ts';
+import { assertEquals, assertRejects } from '@std/assert';
+import { greyscale } from '../../src/transforms/greyscale.ts';
+import { ProcessingError } from '../../src/errors.ts';
+import { Image } from '@matmen/imagescript';
+import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
 
 Deno.test({
-    name: 'greyscale tests setup',
-    fn: setup,
-    sanitizeResources: false,
-    sanitizeOps: false,
-});
+    name: 'greyscale transform tests',
+    async fn(t) {
+        await setupTestAssets();
 
-Deno.test('greyscale: should convert colored image to grayscale', async () => {
-    const result = await greyscale({
-        input: getAssetPath(TestAssets.SQUARE_RED),
-    });
+        await t.step('converts colored image to greyscale', async () => {
+            const result = await greyscale({ input: TestAssets.RED_SQUARE });
 
-    assertInstanceOf(result, Uint8Array);
-    assert(result.length > 0);
-    assert(hasPngSignature(result));
-});
+            const image = await Image.decode(result);
+            assertEquals(image.width, 100);
+            assertEquals(image.height, 100);
 
-Deno.test('greyscale: should handle different image sizes', async () => {
-    const testCases = [
-        TestAssets.TINY,
-        TestAssets.WIDE,
-        TestAssets.TALL,
-        TestAssets.LARGE,
-    ];
+            const [r, g, b] = image.getRGBAAt(50, 50);
+            assertEquals(r, g);
+            assertEquals(g, b);
+        });
 
-    for (const asset of testCases) {
-        const result = await greyscale({ input: getAssetPath(asset) });
-        assertInstanceOf(result, Uint8Array);
-        assert(result.length > 0);
-        assert(hasPngSignature(result));
-    }
-});
+        await t.step('works with different image formats', async () => {
+            const result = await greyscale({ input: TestAssets.GRADIENT });
+            const image = await Image.decode(result);
+            assertEquals(image.width, 120);
+            assertEquals(image.height, 120);
+        });
 
-Deno.test('greyscale: should handle complex patterns', async () => {
-    const testCases = [
-        TestAssets.CHECKERBOARD,
-        TestAssets.CIRCLE,
-        TestAssets.NOISE,
-    ];
+        await t.step('works with Uint8Array input', async () => {
+            const buffer = await Deno.readFile(TestAssets.BLUE_SQUARE);
+            const result = await greyscale({ input: buffer });
+            const image = await Image.decode(result);
+            assertEquals(image.width, 100);
+        });
 
-    for (const asset of testCases) {
-        const result = await greyscale({ input: getAssetPath(asset) });
-        assertInstanceOf(result, Uint8Array);
-        assert(result.length > 0);
-        assert(hasPngSignature(result));
-    }
-});
+        await t.step('throws on invalid input', async () => {
+            await assertRejects(
+                () => greyscale({ input: TestAssets.NOT_IMAGE }),
+                ProcessingError,
+                'Failed to load image',
+            );
+        });
 
-Deno.test('greyscale: should throw InvalidImageError for nonexistent file', async () => {
-    await assertRejects(
-        () => greyscale({ input: getAssetPath(TestAssets.NONEXISTENT) }),
-        InvalidImageError,
-        'Asset not found',
-    );
-});
-
-Deno.test('greyscale: should throw InvalidImageError for non-image file', async () => {
-    await assertRejects(
-        () => greyscale({ input: getAssetPath(TestAssets.NOT_IMAGE) }),
-        InvalidImageError,
-        'File does not appear to be a valid image format',
-    );
-});
-
-Deno.test({
-    name: 'greyscale tests cleanup',
-    fn: cleanup,
-    sanitizeResources: false,
-    sanitizeOps: false,
+        await cleanupTestAssets();
+    },
 });

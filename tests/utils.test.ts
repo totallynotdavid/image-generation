@@ -1,140 +1,67 @@
-import {
-    assert,
-    assertEquals,
-    assertInstanceOf,
-    assertRejects,
-    cleanup,
-    getAssetPath,
-    setup,
-    TestAssets,
-} from './_setup.ts';
-import { resolveAsset } from '@/utils.ts';
-import { InvalidImageError } from '@/errors.ts';
+import { assertEquals, assertRejects } from '@std/assert';
+import { loadImage, resizeImage } from '@/utils.ts';
+import { ProcessingError } from '@/errors.ts';
+import { cleanupTestAssets, setupTestAssets, TestAssets } from './_setup.ts';
 
 Deno.test({
-    name: 'utils tests setup',
-    fn: setup,
-    sanitizeResources: false,
-    sanitizeOps: false,
-});
+    name: 'utils tests',
+    async fn(t) {
+        await setupTestAssets();
 
-Deno.test('resolveAsset: should resolve absolute paths to valid images', async () => {
-    const testImages = [
-        TestAssets.SQUARE_RED,
-        TestAssets.CIRCLE,
-        TestAssets.CHECKERBOARD,
-    ];
+        await t.step('loadImage - loads from file path', async () => {
+            const image = await loadImage(TestAssets.RED_SQUARE);
+            assertEquals(image.width, 100);
+            assertEquals(image.height, 100);
+        });
 
-    for (const image of testImages) {
-        const absolutePath = getAssetPath(image);
-        const resolved = await resolveAsset(absolutePath);
-        assertEquals(resolved, absolutePath);
-    }
-});
+        await t.step('loadImage - loads from Uint8Array', async () => {
+            const buffer = await Deno.readFile(TestAssets.BLUE_SQUARE);
+            const image = await loadImage(buffer);
+            assertEquals(image.width, 100);
+            assertEquals(image.height, 100);
+        });
 
-Deno.test('resolveAsset: should resolve relative paths from base directory', async () => {
-    const testImages = [TestAssets.WIDE, TestAssets.TALL, TestAssets.NOISE];
+        await t.step('loadImage - throws on invalid file', async () => {
+            await assertRejects(
+                () => loadImage(TestAssets.NOT_IMAGE),
+                ProcessingError,
+                'Failed to load image',
+            );
+        });
 
-    for (const image of testImages) {
-        const resolved = await resolveAsset(image, getAssetPath('.'));
-        assertEquals(resolved, getAssetPath(image));
-    }
-});
+        await t.step('loadImage - throws on nonexistent file', async () => {
+            await assertRejects(
+                () => loadImage(TestAssets.NONEXISTENT),
+                ProcessingError,
+                'Failed to load image',
+            );
+        });
 
-Deno.test('resolveAsset: should handle different image formats', async () => {
-    const pngFiles = [TestAssets.TINY, TestAssets.LARGE];
+        await t.step('resizeImage - resizes with width only', async () => {
+            const image = await loadImage(TestAssets.GREEN_RECTANGLE);
+            const resized = resizeImage(image, { width: 75 });
+            assertEquals(resized.width, 75);
+            // height should maintain aspect ratio
+            assertEquals(resized.height, 40);
+        });
 
-    for (const file of pngFiles) {
-        const resolved = await resolveAsset(getAssetPath(file));
-        assert(resolved.endsWith(file));
-    }
-});
+        await t.step('resizeImage - resizes with height only', async () => {
+            const image = await loadImage(TestAssets.GREEN_RECTANGLE);
+            const resized = resizeImage(image, { height: 40 });
+            assertEquals(resized.height, 40);
+            assertEquals(resized.width, 75);
+        });
 
-Deno.test('resolveAsset: should validate image format signatures', async () => {
-    const validPath = await resolveAsset(getAssetPath(TestAssets.CIRCLE));
-    assert(validPath.includes(TestAssets.CIRCLE));
-});
-
-Deno.test('resolveAsset: should throw InvalidImageError for various invalid inputs', async () => {
-    const invalidNames = ['', '   ', '\t', '\n'];
-    for (const name of invalidNames) {
-        await assertRejects(
-            () => resolveAsset(name),
-            InvalidImageError,
-            'Asset name must be a non-empty string',
+        await t.step(
+            'resizeImage - returns original when no dimensions',
+            async () => {
+                const image = await loadImage(TestAssets.RED_SQUARE);
+                const resized = resizeImage(image, {});
+                assertEquals(resized.width, image.width);
+                assertEquals(resized.height, image.height);
+            },
         );
-    }
-});
 
-Deno.test('resolveAsset: should throw InvalidImageError for nonexistent files', async () => {
-    const nonexistentFiles = [
-        'does_not_exist.png',
-        'missing/file.jpg',
-        'another_missing_file.gif',
-    ];
-
-    for (const file of nonexistentFiles) {
-        await assertRejects(
-            () => resolveAsset(file),
-            InvalidImageError,
-            'Asset not found',
-        );
-    }
-});
-
-Deno.test('resolveAsset: should throw InvalidImageError for non-image files', async () => {
-    await assertRejects(
-        () => resolveAsset(getAssetPath(TestAssets.NOT_IMAGE)),
-        InvalidImageError,
-        'File does not appear to be a valid image format',
-    );
-});
-
-Deno.test('resolveAsset: should throw InvalidImageError for fake image files', async () => {
-    await assertRejects(
-        () => resolveAsset(getAssetPath(TestAssets.FAKE_PNG)),
-        InvalidImageError,
-        'File does not appear to be a valid image format',
-    );
-});
-
-Deno.test('resolveAsset: should throw InvalidImageError for empty files', async () => {
-    await assertRejects(
-        () => resolveAsset(getAssetPath(TestAssets.EMPTY)),
-        InvalidImageError,
-        'File too small to be a valid image',
-    );
-});
-
-Deno.test('resolveAsset: should handle directory candidates properly', async () => {
-    await assertRejects(
-        () => resolveAsset(getAssetPath('subdirectory')),
-        InvalidImageError,
-        'Asset not found',
-    );
-});
-
-Deno.test('resolveAsset: should try multiple candidate paths', async () => {
-    const result = await resolveAsset(TestAssets.SQUARE_RED, getAssetPath('.'));
-    assertEquals(result, getAssetPath(TestAssets.SQUARE_RED));
-});
-
-Deno.test('resolveAsset: should handle complex path scenarios', async () => {
-    const basePaths = ['./', './test_assets', getAssetPath('.')];
-
-    for (const basePath of basePaths) {
-        try {
-            const result = await resolveAsset(TestAssets.NOISE, basePath);
-            assert(result.includes(TestAssets.NOISE));
-        } catch (error) {
-            assertInstanceOf(error, InvalidImageError);
-        }
-    }
-});
-
-Deno.test({
-    name: 'utils tests cleanup',
-    fn: cleanup,
-    sanitizeResources: false,
-    sanitizeOps: false,
+        await cleanupTestAssets();
+    },
 });
