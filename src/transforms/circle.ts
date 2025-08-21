@@ -47,7 +47,6 @@ async function createCircleWithBorder(
     borderColor?: string,
 ): Promise<TransformResult> {
     const borderColorHex = borderColor || '#000000';
-
     const color = parseHex(borderColorHex);
     if (!color) {
         throw new ProcessingError(`Invalid border color: ${borderColorHex}`);
@@ -63,16 +62,21 @@ async function createCircleWithBorder(
     const borderSize = size + (borderWidth * 2);
     const borderedImage = new Image(borderSize, borderSize);
 
-    borderedImage.fill(0x00000000); // transparent background
-
     const centerX = borderSize / 2;
     const centerY = borderSize / 2;
-    const outerRadius = borderSize / 2;
-    const innerRadius = outerRadius - borderWidth;
+    const outerRadiusSquared = (borderSize / 2) ** 2;
+    const innerRadiusSquared = (borderSize / 2 - borderWidth) ** 2;
 
-    borderedImage.drawCircle(centerX, centerY, outerRadius, borderColorRGBA);
+    borderedImage.fill((x: number, y: number) => {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const distanceSquared = dx * dx + dy * dy;
 
-    borderedImage.drawCircle(centerX, centerY, innerRadius, 0x00000000);
+        return (distanceSquared <= outerRadiusSquared &&
+                distanceSquared > innerRadiusSquared)
+            ? borderColorRGBA
+            : 0x00000000;
+    });
 
     const circularImage = image.cropCircle();
     borderedImage.composite(circularImage, borderWidth, borderWidth);
