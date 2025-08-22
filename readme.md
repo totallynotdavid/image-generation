@@ -19,10 +19,14 @@ Features:
 - Designed for composition: build processing pipelines by chaining simple
   functions.
 
-The package is a good fit for:
+What this package does not do:
 
-- Social media or chat bots that need consistent image effects
-- Messaging applications that add image filters or overlays
+- Caching or concurrency controls
+- Input or image format validation
+- Memory management (large images will have a large memory footprint)
+- Create directories or handle permissions
+
+Calling services must handle these based on their own requirements.
 
 ## Available transformations
 
