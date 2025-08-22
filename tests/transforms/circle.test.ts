@@ -7,8 +7,6 @@ import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
 Deno.test({
     name: 'circle tests setup',
     fn: setupTestAssets,
-    sanitizeResources: false,
-    sanitizeOps: false,
 });
 
 Deno.test('circle: should create basic circle', async () => {
@@ -98,6 +96,4 @@ Deno.test('circle: should throws on excessive border width', async () => {
 Deno.test({
     name: 'circle tests cleanup',
     fn: cleanupTestAssets,
-    sanitizeResources: false,
-    sanitizeOps: false,
 });

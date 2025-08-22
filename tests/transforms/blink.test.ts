@@ -7,8 +7,6 @@ import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
 Deno.test({
     name: 'blink tests setup',
     fn: setupTestAssets,
-    sanitizeResources: false,
-    sanitizeOps: false,
 });
 
 Deno.test('blink: should create basic blink animation', async () => {
@@ -95,6 +93,4 @@ Deno.test('blink: throws on empty inputs', async () => {
 Deno.test({
     name: 'blink tests cleanup',
     fn: cleanupTestAssets,
-    sanitizeResources: false,
-    sanitizeOps: false,
 });
