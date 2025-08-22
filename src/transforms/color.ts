@@ -45,7 +45,8 @@ export async function color(params: ColorParams): Promise<TransformResult> {
         if (mode === 'tint') {
             const tintHsl = rgbToHsl(tintRgb);
             tint = {
-                h: tintHsl.hue,
+                // hue is stored as [0,1], so we have to scale it to deg [0,360] for hslToRgb
+                h: tintHsl.hue * 360,
                 s: tintHsl.saturation,
                 tr: tr255 * INV_255,
                 tg: tg255 * INV_255,
