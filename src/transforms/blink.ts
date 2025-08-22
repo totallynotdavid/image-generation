@@ -1,14 +1,14 @@
-import { Frame, GIF, Image } from '@matmen/imagescript';
-import { BlinkParams, TransformResult } from '@/types.ts';
-import { applyBaseTransforms, resolveAsset } from '@/utils.ts';
+import { Frame, GIF } from '@matmen/imagescript';
+import type { BlinkParams, TransformResult } from '@/types.ts';
+import { loadImage } from '@/utils.ts';
 import {
-    InvalidImageError,
+    ImageTransformError,
     ProcessingError,
     throwProcessingError,
 } from '@/errors.ts';
 
 export async function blink(params: BlinkParams): Promise<TransformResult> {
-    const { inputs, options } = params;
+    const { inputs, delay = 200, loop = true } = params;
 
     if (!inputs?.length || inputs.length < 2) {
         throw new ProcessingError(
@@ -16,45 +16,29 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
         );
     }
 
-    const delay = Math.max(50, options?.delay ?? 200);
-    const loop = options?.loop !== false;
-
     try {
-        const resolvedPaths = await Promise.all(
-            inputs.map((input) => resolveAsset(input)),
-        );
+        const images = await Promise.all(inputs.map(loadImage));
+        const animationDelay = Math.max(50, delay);
 
-        const originalImages: Image[] = await Promise.all(
-            resolvedPaths.map(async (path) => {
-                const buffer = await Deno.readFile(path);
-                return await Image.decode(buffer);
-            }),
-        );
+        const { width, height } = images[0];
 
-        const images = originalImages.map((img) =>
-            applyBaseTransforms(img, options)
-        );
-
-        const firstImage = images[0];
-        const { width, height } = firstImage;
-
-        const frames: Frame[] = images.map((img) => {
-            const processedImg = (img.width !== width || img.height !== height)
+        const normalizedImages = images.map((img) =>
+            img.width !== width || img.height !== height
                 ? img.fit(width, height)
-                : img;
+                : img
+        );
 
+        const frames = normalizedImages.map((img) => {
             const frame = new Frame(width, height);
-            frame.composite(processedImg, 0, 0);
-            frame.duration = delay;
+            frame.composite(img, 0, 0);
+            frame.duration = animationDelay;
             return frame;
         });
 
         const gif = new GIF(frames, loop ? -1 : 0);
         return await gif.encode();
     } catch (error) {
-        if (error instanceof InvalidImageError) {
-            throw error;
-        }
+        if (error instanceof ImageTransformError) throw error;
         throwProcessingError(error, 'Failed to create blink animation');
     }
 }

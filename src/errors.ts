@@ -10,12 +10,6 @@ export class ImageTransformError extends Error {
     }
 }
 
-export class InvalidImageError extends ImageTransformError {
-    constructor(message = 'Invalid image provided', cause?: Error) {
-        super('INVALID_IMAGE', message, cause);
-    }
-}
-
 export class ProcessingError extends ImageTransformError {
     constructor(message: string, cause?: Error) {
         super('PROCESSING_ERROR', message, cause);
