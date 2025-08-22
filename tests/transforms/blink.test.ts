@@ -25,9 +25,9 @@ Deno.test('blink: should create basic blink animation', async () => {
 Deno.test('blink: should handle multiple images', async () => {
     const result = await blink({
         inputs: [
-            TestAssets.RED_SQUARE,
-            TestAssets.BLUE_SQUARE,
-            TestAssets.PATTERN,
+            TestAssets.RED_SQUARE, // 100x100
+            TestAssets.BLUE_SQUARE, // 100x100
+            TestAssets.PATTERN, // 100x100
         ],
         delay: 300,
     });
@@ -40,7 +40,10 @@ Deno.test('blink: should handle multiple images', async () => {
 
 Deno.test('blink: should handle mixed image sizes', async () => {
     const result = await blink({
-        inputs: [TestAssets.RED_SQUARE, TestAssets.GREEN_RECTANGLE],
+        inputs: [
+            TestAssets.RED_SQUARE, // 100x100
+            TestAssets.GREEN_RECTANGLE, // 150x80
+        ],
         delay: 150,
     });
 
@@ -49,6 +52,9 @@ Deno.test('blink: should handle mixed image sizes', async () => {
 
     // blink() normalizes all images to match the first image's dimensions
     // in case of mixed sizes.
+    assertEquals(gif.height, 100);
+    assertEquals(gif.width, 100);
+
     // Since we passed two images, two objects should be generated.
     assertEquals(gif[0].bitmap.length, 40000);
     assertEquals(gif[1].bitmap.length, 40000);
