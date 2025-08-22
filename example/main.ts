@@ -1,12 +1,11 @@
 import { blink, circle, color, greyscale } from '@/index.ts';
 import { dirname, fromFileUrl, join } from '@std/path';
-import { writeFile } from '@std/fs/unstable-write-file';
 
 const __dirname = dirname(fromFileUrl(import.meta.url));
 
 async function saveOutput(data: Uint8Array, filename: string): Promise<void> {
     const outputPath = join(__dirname, 'output', filename);
-    await writeFile(outputPath, data);
+    await Deno.writeFile(outputPath, data);
     console.log(`Saved to ${outputPath}`);
 }
 
@@ -43,14 +42,6 @@ async function run(): Promise<void> {
         });
         await saveOutput(circled, 'circle-border.png');
         console.log('Circle transform complete', circled.length);
-        /*
-        const dynamic = await transform('color', {
-            input: input1,
-            options: { hex: '#fff' },
-        });
-        await saveOutput(dynamic, 'white-overlay.png');
-        console.log('Dynamic transform complete', dynamic.length);
-        */
     } catch (error) {
         console.error('Error:', error);
     }
