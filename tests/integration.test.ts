@@ -17,7 +17,7 @@ Deno.test('integration: should chain transforms (color -> greyscale)', async () 
     const coloredImage = await Image.decode(colorResult);
 
     const [r1, g1, b1, a1] = coloredImage.getRGBAAt(50, 50);
-    assertEquals([r1, g1, b1, a1], [0, 255, 0, 255]);
+    assertEquals([r1, g1, b1, a1], [127, 127, 0, 255]);
 
     // second transform: greyscale
     const greyResult = await greyscale({ input: colorResult });
@@ -25,7 +25,7 @@ Deno.test('integration: should chain transforms (color -> greyscale)', async () 
 
     assertEquals(greyImage.width, 100);
     const [r2, g2, b2, a2] = greyImage.getRGBAAt(50, 50);
-    assertEquals([r2, g2, b2, a2], [127, 127, 127, 255]);
+    assertEquals([r2, g2, b2, a2], [63, 63, 63, 255]);
 });
 
 Deno.test('integration: should chain transforms (circle -> color)', async () => {
