@@ -88,9 +88,12 @@ export async function color(params: ColorParams): Promise<TransformResult> {
                         lightness: srcHsl.lightness,
                         alpha: 1,
                     });
-                    finalR = tinted.red;
-                    finalG = tinted.green;
-                    finalB = tinted.blue;
+                    finalR = (tinted.red * opacity + origR * oneMinusOpacity) |
+                        0;
+                    finalG =
+                        (tinted.green * opacity + origG * oneMinusOpacity) | 0;
+                    finalB = (tinted.blue * opacity + origB * oneMinusOpacity) |
+                        0;
                     break;
                 }
 
@@ -98,9 +101,12 @@ export async function color(params: ColorParams): Promise<TransformResult> {
                     const br = origR * INV_255;
                     const bg = origG * INV_255;
                     const bb = origB * INV_255;
-                    finalR = (softLightBlend(br, tint.tr) * 255) | 0;
-                    finalG = (softLightBlend(bg, tint.tg) * 255) | 0;
-                    finalB = (softLightBlend(bb, tint.tb) * 255) | 0;
+                    const softR = softLightBlend(br, tint.tr) * 255;
+                    const softG = softLightBlend(bg, tint.tg) * 255;
+                    const softB = softLightBlend(bb, tint.tb) * 255;
+                    finalR = (softR * opacity + origR * oneMinusOpacity) | 0;
+                    finalG = (softG * opacity + origG * oneMinusOpacity) | 0;
+                    finalB = (softB * opacity + origB * oneMinusOpacity) | 0;
                     break;
                 }
             }
