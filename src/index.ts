@@ -1,17 +1,18 @@
-export { loadImage, resizeImage } from '@/utils.ts';
+export { loadImage, resizeImage } from "./utils";
 
-export { greyscale } from '@/transforms/greyscale.ts';
-export { color } from '@/transforms/color.ts';
-export { circle } from '@/transforms/circle.ts';
-export { blink } from '@/transforms/blink.ts';
+export { greyscale } from "./transforms/greyscale";
+export { color } from "./transforms/color";
+export { circle } from "./transforms/circle";
+export { blink } from "./transforms/blink";
 
 export type {
-    BlinkParams,
-    CircleParams,
-    ColorParams,
-    GreyscaleParams,
-    ImageInput,
-    TransformResult,
-} from '@/types.ts';
+  BlinkParams,
+  CircleParams,
+  ColorParams,
+  GreyscaleParams,
+  ImageInput,
+  ResizeOptions,
+  TransformResult,
+} from "./types";
 
-export { ImageTransformError, ProcessingError } from '@/errors.ts';
+export { ImageTransformError, ProcessingError } from "./errors";

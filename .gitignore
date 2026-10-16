@@ -1,17 +1,9 @@
-# Directories
 node_modules
-custom-assets
-cov
-build
+dist
 coverage
-
-# Files
 *.lcov
-*.png
-*.gif
-*.jpg
-*.xml
+junit.xml
 
-# Re-include example files
 !/example/**/*.png
 !/example/**/*.gif
+!/example/**/*.jpg

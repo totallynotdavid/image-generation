@@ -1,0 +1,63 @@
+{
+  "name": "@totallynotdavid/image-generation",
+  "version": "2.0.0",
+  "description": "Image transformations for Node.js, Bun and Deno: greyscale, color blends, circle crop and blink GIFs.",
+  "keywords": [
+    "gif",
+    "greyscale",
+    "image",
+    "image-processing",
+    "typescript"
+  ],
+  "bugs": {
+    "url": "https://github.com/totallynotdavid/image-generation/issues"
+  },
+  "license": "MIT",
+  "author": "totallynotdavid",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/totallynotdavid/image-generation.git"
+  },
+  "files": [
+    "dist",
+    "license"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "check": "vp check",
+    "fix": "vp check --fix",
+    "test": "vp test run",
+    "test:coverage": "vp test run --coverage",
+    "example": "bun example/main.ts",
+    "smoke": "vp pack && node scripts/smoke.mjs",
+    "prepack": "vp pack"
+  },
+  "dependencies": {
+    "imagescript": "^3.2.1"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
+    "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "5.0.5",
+    "publint": "^0.3.25",
+    "typescript": "^7.0.2",
+    "vite-plus": "1.3.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "packageManager": "bun@1.4.3"
+}
