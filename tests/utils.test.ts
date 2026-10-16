@@ -1,65 +1,65 @@
-import { assertEquals, assertRejects } from '@std/assert';
-import { loadImage, resizeImage } from '@/utils.ts';
-import { ProcessingError } from '@/errors.ts';
-import { cleanupTestAssets, setupTestAssets, TestAssets } from './_setup.ts';
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { loadImage, ProcessingError, resizeImage } from "../src";
+import { createFiles, solid } from "./fixtures";
 
-Deno.test({
-    name: 'utils tests setup',
-    fn: setupTestAssets,
+let files: Awaited<ReturnType<typeof createFiles>>;
+let rectangle: Uint8Array;
+
+beforeAll(async () => {
+  rectangle = await solid(150, 80, [0, 255, 0, 255]);
+  files = await createFiles({
+    "rectangle.png": rectangle,
+    "notes.txt": "not an image",
+    "empty.png": "",
+  });
+});
+afterAll(() => files.dispose());
+
+describe("loadImage", () => {
+  it("loads from a file path", async () => {
+    const image = await loadImage(files.path("rectangle.png"));
+
+    expect([image.width, image.height]).toEqual([150, 80]);
+  });
+
+  it("loads from bytes", async () => {
+    const image = await loadImage(rectangle);
+
+    expect([image.width, image.height]).toEqual([150, 80]);
+  });
+
+  it.each(["notes.txt", "empty.png", "missing.png"])("rejects %s", async (name) => {
+    await expect(loadImage(files.path(name))).rejects.toThrow(ProcessingError);
+    await expect(loadImage(files.path(name))).rejects.toThrow("Failed to load image");
+  });
 });
 
-Deno.test('loadImage: should load from file path', async () => {
-    const image = await loadImage(TestAssets.RED_SQUARE);
-    assertEquals(image.width, 100);
-    assertEquals(image.height, 100);
-});
+describe("resizeImage", () => {
+  it("keeps the aspect ratio when only the width is given", async () => {
+    const resized = resizeImage(await loadImage(rectangle), { width: 75 });
 
-Deno.test('loadImage: should load from Uint8Array', async () => {
-    const buffer = await Deno.readFile(TestAssets.BLUE_SQUARE);
-    const image = await loadImage(buffer);
-    assertEquals(image.width, 100);
-    assertEquals(image.height, 100);
-});
+    expect([resized.width, resized.height]).toEqual([75, 40]);
+  });
 
-Deno.test('loadImage: should throw an error on invalid file', async () => {
-    await assertRejects(
-        () => loadImage(TestAssets.NOT_IMAGE),
-        ProcessingError,
-        'Failed to load image',
-    );
-});
+  it("keeps the aspect ratio when only the height is given", async () => {
+    const resized = resizeImage(await loadImage(rectangle), { height: 40 });
 
-Deno.test('loadImage: should throw an error on non-existent file', async () => {
-    await assertRejects(
-        () => loadImage(TestAssets.NONEXISTENT),
-        ProcessingError,
-        'Failed to load image',
-    );
-});
+    expect([resized.width, resized.height]).toEqual([75, 40]);
+  });
 
-Deno.test('resizeImage: should resize with width only', async () => {
-    const image = await loadImage(TestAssets.GREEN_RECTANGLE); // size: 150x80
-    const resized = resizeImage(image, { width: 75 });
-    assertEquals(resized.width, 75);
-    // height should maintain aspect ratio
-    assertEquals(resized.height, 40);
-});
+  it("returns the image as is without dimensions", async () => {
+    const image = await loadImage(rectangle);
 
-Deno.test('resizeImage: should resize with height only', async () => {
-    const image = await loadImage(TestAssets.GREEN_RECTANGLE);
-    const resized = resizeImage(image, { height: 40 });
-    assertEquals(resized.height, 40);
-    assertEquals(resized.width, 75);
-});
+    expect(resizeImage(image, {})).toBe(image);
+  });
 
-Deno.test('resizeImage: should return original when no dimensions are passed', async () => {
-    const image = await loadImage(TestAssets.RED_SQUARE);
-    const resized = resizeImage(image, {});
-    assertEquals(resized.width, image.width);
-    assertEquals(resized.height, image.height);
-});
+  it("takes the resize mode", async () => {
+    const resized = resizeImage(await loadImage(rectangle), {
+      width: 30,
+      height: 30,
+      mode: "RESIZE_NEAREST_NEIGHBOR",
+    });
 
-Deno.test({
-    name: 'utils tests cleanup',
-    fn: cleanupTestAssets,
+    expect([resized.width, resized.height]).toEqual([30, 30]);
+  });
 });

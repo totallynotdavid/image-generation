@@ -1,49 +1,51 @@
-import { assertEquals, assertRejects } from '@std/assert';
-import { Image } from '@matmen/imagescript';
-import { greyscale } from '@/transforms/greyscale.ts';
-import { ProcessingError } from '@/errors.ts';
-import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { greyscale, ProcessingError } from "../../src";
+import { createFiles, pixel, size, solid } from "../fixtures";
 
-Deno.test({
-    name: 'greyscale tests setup',
-    fn: setupTestAssets,
+let files: Awaited<ReturnType<typeof createFiles>>;
+
+beforeAll(async () => {
+  files = await createFiles({
+    "red.png": await solid(100, 60, [255, 0, 0, 255]),
+    "notes.txt": "not an image",
+  });
 });
+afterAll(() => files.dispose());
 
-Deno.test('greyscale: should convert colored image to greyscale', async () => {
-    const result = await greyscale({ input: TestAssets.RED_SQUARE });
+describe("greyscale", () => {
+  it("turns the luma of a path input into equal channels", async () => {
+    const result = await greyscale({ input: files.path("red.png") });
 
-    const image = await Image.decode(result);
-    assertEquals(image.width, 100);
-    assertEquals(image.height, 100);
+    expect(await size(result)).toEqual([100, 60]);
+    // ITU-R 601 luma of pure red: 0.299 * 255
+    const [r, g, b, a] = await pixel(result, 50, 30);
+    expect([r, a]).toEqual([76, 255]);
+    expect(g).toBe(r);
+    expect(b).toBe(r);
+  });
 
-    const [r, g, b, a] = image.getRGBAAt(50, 50);
-    assertEquals([r, g, b, a], [127, 127, 127, 255]);
-});
+  it("accepts encoded bytes", async () => {
+    const result = await greyscale({ input: await solid(8, 8, [0, 0, 255, 255]) });
 
-Deno.test('greyscale: should work with different image formats', async () => {
-    // TODO: we should test various image formats, not just PNG
-    const result = await greyscale({ input: TestAssets.GRADIENT });
-    const image = await Image.decode(result);
-    assertEquals(image.width, 120);
-    assertEquals(image.height, 120);
-});
+    expect(await pixel(result, 4, 4)).toEqual([29, 29, 29, 255]);
+  });
 
-Deno.test('greyscale: should work with Uint8Array input', async () => {
-    const buffer = await Deno.readFile(TestAssets.BLUE_SQUARE);
-    const result = await greyscale({ input: buffer });
-    const image = await Image.decode(result);
-    assertEquals(image.width, 100);
-});
+  it("keeps the alpha channel", async () => {
+    const result = await greyscale({ input: await solid(8, 8, [200, 50, 50, 128]) });
 
-Deno.test('greyscale: throws on invalid input', async () => {
-    await assertRejects(
-        () => greyscale({ input: TestAssets.NOT_IMAGE }),
-        ProcessingError,
-        'Failed to load image',
+    expect((await pixel(result, 4, 4))[3]).toBe(128);
+  });
+
+  it("rejects a file that is not an image", async () => {
+    await expect(greyscale({ input: files.path("notes.txt") })).rejects.toThrow(ProcessingError);
+    await expect(greyscale({ input: files.path("notes.txt") })).rejects.toThrow(
+      "Failed to load image",
     );
-});
+  });
 
-Deno.test({
-    name: 'greyscale tests cleanup',
-    fn: cleanupTestAssets,
+  it("rejects a missing file", async () => {
+    await expect(greyscale({ input: files.path("missing.png") })).rejects.toThrow(
+      "Failed to load image",
+    );
+  });
 });

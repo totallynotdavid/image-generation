@@ -1,96 +1,71 @@
-import { assert, assertEquals, assertRejects } from '@std/assert';
-import { GIF } from '@matmen/imagescript';
-import { blink } from '@/transforms/blink.ts';
-import { ProcessingError } from '@/errors.ts';
-import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
+import { Animation } from "imagescript";
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { blink, ProcessingError } from "../../src";
+import { createFiles, solid } from "../fixtures";
 
-Deno.test({
-    name: 'blink tests setup',
-    fn: setupTestAssets,
+let files: Awaited<ReturnType<typeof createFiles>>;
+let red: Uint8Array;
+let blue: Uint8Array;
+let green: Uint8Array;
+
+beforeAll(async () => {
+  red = await solid(100, 100, [255, 0, 0, 255]);
+  blue = await solid(100, 100, [0, 0, 255, 255]);
+  green = await solid(150, 80, [0, 255, 0, 255]);
+  files = await createFiles({ "red.png": red, "blue.png": blue });
 });
+afterAll(() => files.dispose());
 
-Deno.test('blink: should create basic blink animation', async () => {
-    const result = await blink({
-        inputs: [TestAssets.RED_SQUARE, TestAssets.BLUE_SQUARE],
-    });
-
-    const gif = await GIF.decode(result);
-    assertEquals(gif.length, 2); // amount of frames, which is 2 in this case
-    assertEquals(gif.duration, 400); // default is 200ms
-    assertEquals(gif[0].bitmap.length, 40000); // 100x100x4 (RGBA)
-});
-
-Deno.test('blink: should handle multiple images', async () => {
-    const result = await blink({
-        inputs: [
-            TestAssets.RED_SQUARE, // 100x100
-            TestAssets.BLUE_SQUARE, // 100x100
-            TestAssets.PATTERN, // 100x100
-        ],
-        delay: 300,
-    });
-
-    const gif = await GIF.decode(result);
-    assertEquals(gif.length, 3);
-    assertEquals(gif[0].duration, 300);
-    assertEquals(gif[0].bitmap.length, 40000);
-});
-
-Deno.test('blink: should handle mixed image sizes', async () => {
-    const result = await blink({
-        inputs: [
-            TestAssets.RED_SQUARE, // 100x100
-            TestAssets.GREEN_RECTANGLE, // 150x80
-        ],
-        delay: 150,
-    });
-
-    const gif = await GIF.decode(result);
-    assertEquals(gif.length, 2);
-
-    // blink() normalizes all images to match the first image's dimensions
-    // in case of mixed sizes.
-    assertEquals(gif.height, 100);
-    assertEquals(gif.width, 100);
-
-    // Since we passed two images, two objects should be generated.
-    assertEquals(gif[0].bitmap.length, 40000);
-    assertEquals(gif[1].bitmap.length, 40000);
-});
-
-Deno.test('blink: respects minimum delay', async () => {
-    const result = await blink({
-        inputs: [TestAssets.RED_SQUARE, TestAssets.BLUE_SQUARE],
-        delay: 10, // blink() enforces a minimum of 50ms
-    });
-
-    const gif = await GIF.decode(result);
-    assertEquals(gif[0].duration, 50);
-});
-
-Deno.test('blink: throws on insufficient images', async () => {
-    await assertRejects(
-        () =>
-            blink({
-                inputs: [TestAssets.RED_SQUARE],
-            }),
-        ProcessingError,
-        'At least 2 images required',
+describe("blink", () => {
+  it("builds a looping GIF with one frame per input", async () => {
+    const gif = await Animation.decode(
+      await blink({ inputs: [files.path("red.png"), files.path("blue.png")] }),
     );
-});
 
-Deno.test('blink: throws on empty inputs', async () => {
-    await assertRejects(
-        () =>
-            blink({
-                inputs: [],
-            }),
-        ProcessingError,
-        'At least 2 images required',
+    expect(gif.frames).toHaveLength(2);
+    expect(gif.frames.map((frame) => frame.duration)).toEqual([200, 200]);
+    expect(gif.loopCount).toBe(-1);
+    expect([gif.width, gif.height]).toEqual([100, 100]);
+    expect(Array.from(gif.frames[0]!.getRGBAAt(50, 50))).toEqual([255, 0, 0, 255]);
+    expect(Array.from(gif.frames[1]!.getRGBAAt(50, 50))).toEqual([0, 0, 255, 255]);
+  });
+
+  it("plays once when loop is false", async () => {
+    const gif = await Animation.decode(await blink({ inputs: [red, blue], loop: false }));
+
+    expect(gif.loopCount).toBe(0);
+  });
+
+  it("uses the delay for every frame", async () => {
+    const gif = await Animation.decode(await blink({ inputs: [red, blue, red], delay: 300 }));
+
+    expect(gif.frames.map((frame) => frame.duration)).toEqual([300, 300, 300]);
+  });
+
+  it("raises a delay below 50 ms to 50 ms", async () => {
+    const gif = await Animation.decode(await blink({ inputs: [red, blue], delay: 10 }));
+
+    expect(gif.frames[0]!.duration).toBe(50);
+  });
+
+  it("fills every frame to the size of the first image", async () => {
+    const gif = await Animation.decode(await blink({ inputs: [red, green] }));
+
+    expect([gif.width, gif.height]).toEqual([100, 100]);
+    const second = gif.frames[1]!;
+    expect([second.width, second.height]).toEqual([100, 100]);
+    expect(Array.from(second.getRGBAAt(0, 0))).toEqual([0, 255, 0, 255]);
+    expect(Array.from(second.getRGBAAt(99, 99))).toEqual([0, 255, 0, 255]);
+  });
+
+  it("requires at least two images", async () => {
+    await expect(blink({ inputs: [] })).rejects.toThrow(ProcessingError);
+    await expect(blink({ inputs: [red] })).rejects.toThrow("At least 2 images required");
+  });
+
+  it("reports an input that cannot be loaded", async () => {
+    await expect(blink({ inputs: [red, files.path("missing.png")] })).rejects.toThrow(
+      "Failed to load image",
     );
-});
-
-Deno.test({
-    name: 'blink tests cleanup',
-    fn: cleanupTestAssets,
+  });
 });

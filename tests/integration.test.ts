@@ -1,83 +1,51 @@
-import { assertEquals } from '@std/assert';
-import { GIF, Image } from '@matmen/imagescript';
-import { blink, circle, color, greyscale } from '@/index.ts';
-import { cleanupTestAssets, setupTestAssets, TestAssets } from './_setup.ts';
+import { Animation } from "imagescript";
+import { describe, expect, it } from "vite-plus/test";
+import { blink, circle, color, greyscale } from "../src";
+import { pixel, size, solid } from "./fixtures";
 
-Deno.test({
-    name: 'integration tests setup',
-    fn: setupTestAssets,
-});
-
-Deno.test('integration: should chain transforms (color -> greyscale)', async () => {
-    const colorResult = await color({
-        input: TestAssets.RED_SQUARE,
-        hex: '#00ff00',
-        opacity: 0.5,
+describe("chained transforms", () => {
+  it("feeds the output of color into greyscale", async () => {
+    const tinted = await color({
+      input: await solid(100, 100, [255, 0, 0, 255]),
+      hex: "#00ff00",
+      blendMode: "wash",
+      opacity: 0.5,
     });
-    const coloredImage = await Image.decode(colorResult);
+    expect(await pixel(tinted, 50, 50)).toEqual([127, 127, 0, 255]);
 
-    const [r1, g1, b1, a1] = coloredImage.getRGBAAt(50, 50);
-    assertEquals([r1, g1, b1, a1], [127, 127, 0, 255]);
+    const grey = await greyscale({ input: tinted });
+    // 0.299 * 127 + 0.587 * 127
+    expect(await pixel(grey, 50, 50)).toEqual([113, 113, 113, 255]);
+  });
 
-    // second transform: greyscale
-    const greyResult = await greyscale({ input: colorResult });
-    const greyImage = await Image.decode(greyResult);
-
-    assertEquals(greyImage.width, 100);
-    const [r2, g2, b2, a2] = greyImage.getRGBAAt(50, 50);
-    assertEquals([r2, g2, b2, a2], [63, 63, 63, 255]);
-});
-
-Deno.test('integration: should chain transforms (circle -> color)', async () => {
-    const circleResult = await circle({
-        input: TestAssets.PATTERN, // 100x100
-        borderWidth: 5,
-        borderColor: '#ff0000',
+  it("feeds the output of circle into color", async () => {
+    const rounded = await circle({
+      input: await solid(100, 100, [200, 200, 200, 255]),
+      borderWidth: 5,
+      borderColor: "#ff0000",
     });
 
-    const circleImage = await Image.decode(circleResult);
-    const [r1, g1, b1, a1] = circleImage.getRGBAAt(50, 50);
-    assertEquals([r1, g1, b1, a1], [200, 200, 200, 255]);
-
-    // second transform: apply blue wash color overlay
-    const colorResult = await color({
-        input: circleResult,
-        hex: '#0000ff',
-        blendMode: 'wash',
-        opacity: 0.3,
+    const washed = await color({
+      input: rounded,
+      hex: "#0000ff",
+      blendMode: "wash",
+      opacity: 0.3,
     });
 
-    const coloredImage = await Image.decode(colorResult);
-    const [r2, g2, b2, a2] = coloredImage.getRGBAAt(50, 50);
-    assertEquals([r2, g2, b2, a2], [140, 140, 216, 255]);
-});
+    expect(await size(washed)).toEqual([110, 110]);
+    expect(await pixel(washed, 55, 55)).toEqual([140, 140, 216, 255]);
+    expect((await pixel(washed, 0, 0))[3]).toBe(0);
+  });
 
-Deno.test('integration: should create blink from processed images', async () => {
-    const redCircle = await circle({
-        input: TestAssets.RED_SQUARE,
-        borderWidth: 3,
-    });
+  it("builds an animation from processed frames", async () => {
+    const frames = await Promise.all([
+      circle({ input: await solid(100, 100, [255, 0, 0, 255]), borderWidth: 3 }),
+      greyscale({ input: await solid(100, 100, [0, 0, 255, 255]) }),
+      color({ input: await solid(100, 100, [50, 50, 50, 255]), hex: "#ff8800", opacity: 0.4 }),
+    ]);
 
-    const blueGrey = await greyscale({
-        input: TestAssets.BLUE_SQUARE,
-    });
+    const gif = await Animation.decode(await blink({ inputs: frames, delay: 200 }));
 
-    const tintedPattern = await color({
-        input: TestAssets.PATTERN,
-        hex: '#ff8800',
-        opacity: 0.4,
-    });
-
-    const blinkResult = await blink({
-        inputs: [redCircle, blueGrey, tintedPattern],
-        delay: 200,
-    });
-
-    const gif = await GIF.decode(blinkResult);
-    assertEquals(gif.length, 3);
-});
-
-Deno.test({
-    name: 'integration tests cleanup',
-    fn: cleanupTestAssets,
+    expect(gif.frames).toHaveLength(3);
+  });
 });

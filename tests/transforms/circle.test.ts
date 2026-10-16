@@ -1,99 +1,73 @@
-import { assertEquals, assertRejects } from '@std/assert';
-import { Image } from '@matmen/imagescript';
-import { circle } from '@/transforms/circle.ts';
-import { ProcessingError } from '@/errors.ts';
-import { cleanupTestAssets, setupTestAssets, TestAssets } from '../_setup.ts';
+import { describe, expect, it } from "vite-plus/test";
+import { circle, ProcessingError } from "../../src";
+import { pixel, size, solid, stripes } from "../fixtures";
 
-Deno.test({
-    name: 'circle tests setup',
-    fn: setupTestAssets,
-});
+describe("circle", () => {
+  it("makes the corners transparent and keeps the center", async () => {
+    const result = await circle({ input: await solid(100, 100, [255, 0, 0, 255]) });
 
-Deno.test('circle: should create basic circle', async () => {
+    expect(await size(result)).toEqual([100, 100]);
+    expect(await pixel(result, 50, 50)).toEqual([255, 0, 0, 255]);
+    expect((await pixel(result, 0, 0))[3]).toBe(0);
+    expect((await pixel(result, 99, 99))[3]).toBe(0);
+  });
+
+  it("adds the border around the image", async () => {
     const result = await circle({
-        input: TestAssets.RED_SQUARE,
+      input: await solid(100, 100, [0, 0, 255, 255]),
+      borderWidth: 10,
+      borderColor: "#ffffff",
     });
 
-    const image = await Image.decode(result);
-    assertEquals(image.width, 100);
-    assertEquals(image.height, 100);
-});
+    expect(await size(result)).toEqual([120, 120]);
+    expect(await pixel(result, 60, 60)).toEqual([0, 0, 255, 255]);
+    // 55 px from the center: inside the 50..60 ring
+    expect(await pixel(result, 60, 5)).toEqual([255, 255, 255, 255]);
+    expect((await pixel(result, 0, 0))[3]).toBe(0);
+  });
 
-Deno.test('circle: should create circle with border', async () => {
+  it("draws a black border when no color is given", async () => {
     const result = await circle({
-        input: TestAssets.BLUE_SQUARE,
-        borderWidth: 10,
-        borderColor: '#ffffff',
+      input: await solid(100, 100, [0, 0, 255, 255]),
+      borderWidth: 10,
     });
 
-    const image = await Image.decode(result);
+    expect(await pixel(result, 60, 5)).toEqual([0, 0, 0, 255]);
+  });
 
-    // BLUE_SQUARE + 2 * borderWith, where BLUE_SQUARE is 100x100
-    assertEquals(image.width, 120);
-    assertEquals(image.height, 120);
-});
+  it("crops a rectangle to a centered square", async () => {
+    const result = await circle({ input: await stripes(150, 80), borderWidth: 5 });
 
-Deno.test('circle: should handle rectangular image', async () => {
+    expect(await size(result)).toEqual([90, 90]);
+    // columns 35..114 of the input: red up to 49, green up to 99, blue after
+    expect(await pixel(result, 45, 45)).toEqual([0, 255, 0, 255]);
+    expect(await pixel(result, 10, 45)).toEqual([255, 0, 0, 255]);
+    expect(await pixel(result, 80, 45)).toEqual([0, 0, 255, 255]);
+  });
+
+  it("rounds a fractional border width", async () => {
     const result = await circle({
-        input: TestAssets.GREEN_RECTANGLE,
-        borderWidth: 5,
+      input: await solid(20, 20, [1, 2, 3, 255]),
+      borderWidth: 2.4,
     });
 
-    const image = await Image.decode(result);
+    expect(await size(result)).toEqual([24, 24]);
+  });
 
-    // GREEN_RECTANGLE + 2 * borderWidth, where GREEN_RECTANGLE is 150x80
-    // circle() picks the smallest dimension for the transformation
-    assertEquals(image.width, 90);
-    assertEquals(image.height, 90);
-});
+  it("rejects an invalid border color", async () => {
+    const input = await solid(100, 100, [0, 0, 0, 255]);
 
-Deno.test('circle: should work with tiny images', async () => {
-    const result = await circle({
-        input: TestAssets.TINY,
-        borderWidth: 2,
-        borderColor: '#ff0000',
-    });
-
-    const image = await Image.decode(result);
-    // TINY + 2 * borderWidth, where TINY is 20x20
-    assertEquals(image.width, 24);
-});
-
-Deno.test('circle: should throw ProcessingError for invalid border color', async () => {
-    const invalidBorderCall = async () => {
-        return circle({
-            input: TestAssets.RED_SQUARE,
-            borderColor: 'invalid',
-            // NOTE: borderWidth must be specified here.
-            // If borderWidth = 0 (or omitted), the function skips border handling entirely,
-            // so borderColor would never be validated. Setting borderWidth > 0 ensures
-            // that the invalid color check is triggered.
-            borderWidth: 5,
-        });
-    };
-
-    await assertRejects(
-        invalidBorderCall,
-        ProcessingError,
-        'Invalid border color',
+    await expect(circle({ input, borderColor: "invalid", borderWidth: 5 })).rejects.toThrow(
+      ProcessingError,
     );
-});
-
-Deno.test('circle: should throws on excessive border width', async () => {
-    await assertRejects(
-        () =>
-            circle({
-                input: TestAssets.TINY, // size: 20x20
-                // Rule (createCircleWithBorder): borderWidth must be <= size / 2
-                // For 20px, the maximum allowed border is any value < 10
-                borderWidth: 15,
-            }),
-        ProcessingError,
-        'Border width too large',
+    await expect(circle({ input, borderColor: "invalid", borderWidth: 5 })).rejects.toThrow(
+      "Invalid border color",
     );
-});
+  });
 
-Deno.test({
-    name: 'circle tests cleanup',
-    fn: cleanupTestAssets,
+  it("rejects a border that leaves no image", async () => {
+    await expect(
+      circle({ input: await solid(20, 20, [0, 0, 0, 255]), borderWidth: 10 }),
+    ).rejects.toThrow("Border width too large");
+  });
 });
