@@ -1,249 +1,150 @@
-# [pkg]: image-generation [![JSR](https://jsr.io/badges/@dv/image-generation)](https://jsr.io/@dv/image-generation) [![npm version](https://badge.fury.io/js/@totallynotdavid%2Fimage-generation.svg)](https://badge.fury.io/js/@totallynotdavid%2Fimage-generation)
+# image-generation
 
+[![npm](https://img.shields.io/npm/v/@totallynotdavid/image-generation)](https://www.npmjs.com/package/@totallynotdavid/image-generation)
+[![CI](https://github.com/totallynotdavid/image-generation/actions/workflows/ci.yml/badge.svg)](https://github.com/totallynotdavid/image-generation/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/totallynotdavid/image-generation/actions/workflows/codeql.yml/badge.svg)](https://github.com/totallynotdavid/image-generation/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/totallynotdavid/image-generation/graph/badge.svg?token=Z9K6TC9HFO)](https://codecov.io/gh/totallynotdavid/image-generation)
-[![Deno CI](https://github.com/totallynotdavid/image-generation/actions/workflows/deno.yml/badge.svg)](https://github.com/totallynotdavid/image-generation/actions/workflows/deno.yml)
 
-A simple, lightweight TypeScript image-processing library for Deno.
+Image transformations for Node.js, Bun and Deno. Each transformation is an async
+function: pass a file path or encoded image bytes and get the processed image
+back as a `Uint8Array`.
 
-Each image transformation is a small, standalone async function: you pass
-parameters and it returns a `Uint8Array` containing the processed image. Its
-design makes transformations easy to compose, test, and reuse.
+The library does not cache, limit concurrency or cap image size. A decoded image
+takes 4 bytes per pixel in memory, so size limits belong to the caller.
 
-Features:
+## Install
 
-- Runs natively on Deno (no npm dependencies).
-- Works with local files and in-memory buffers.
-- Each transformation returns a `Uint8Array`, so you can chain them together and
-  integrate the results wherever you deliver or store image data.
-- Designed for composition: build processing pipelines by chaining simple
-  functions.
+```bash
+npm install @totallynotdavid/image-generation
+# or
+bun add @totallynotdavid/image-generation
+deno add npm:@totallynotdavid/image-generation
+```
 
-What this package does not do:
+It needs Node.js 22.13 or later. The package is ESM and works with `require()`
+on those Node.js versions.
 
-- Caching or concurrency controls
-- Input or image format validation
-- Memory management (large images will have a large memory footprint)
-- Create directories or handle permissions
+## Usage
 
-Calling services must handle these based on their own requirements.
+```typescript
+import { writeFile } from "node:fs/promises";
+import { greyscale } from "@totallynotdavid/image-generation";
 
-## Available transformations
+const png = await greyscale({ input: "./photo.jpg" });
+await writeFile("./photo-grey.png", png);
+```
 
-| Transform   | Purpose                             | Example                                                                                  | Result                                           |
-| ----------- | ----------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `greyscale` | Convert to black and white          | `await greyscale({ input: "photo.jpg" })`                                                | ![greyscale](example/output/greyscale.png)       |
-| `color`     | Apply color effects with blending   | `await color({ input: "photo.jpg", options: { hex: "#ff5500", blendMode: "tint" } })`    | ![color-tint](example/output/red-tint.png)       |
-| `circle`    | Crop to circle with optional border | `await circle({ input: "photo.jpg", options: { borderWidth: 5, borderColor: "#000" } })` | ![circle-crop](example/output/circle-border.png) |
-| `blink`     | Create animated GIF from images     | `await blink({ inputs: ["frame1.jpg", "frame2.jpg"], options: { delay: 200 } })`         | ![animation](example/output/blink-animation.gif) |
+`input` is a file path or the bytes of a PNG, JPEG, GIF, WebP, TIFF or TGA
+image. Every transformation except `blink` returns a PNG. `blink` returns a GIF.
+
+## Transformations
+
+| Transform   | Purpose                             | Example                                                                         | Result                                           |
+| ----------- | ----------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `greyscale` | Convert to black and white          | `await greyscale({ input: "photo.jpg" })`                                       | ![greyscale](example/output/greyscale.png)       |
+| `color`     | Apply color effects with blending   | `await color({ input: "photo.jpg", hex: "#ff0000", blendMode: "tint" })`        | ![color-tint](example/output/red-tint.png)       |
+| `circle`    | Crop to circle with optional border | `await circle({ input: "photo.jpg", borderWidth: 8, borderColor: "#ff0000" })`  | ![circle-crop](example/output/circle-border.png) |
+| `blink`     | Create animated GIF from images     | `await blink({ inputs: ["frame1.jpg", "frame2.jpg"], delay: 200, loop: true })` | ![animation](example/output/blink-animation.gif) |
 
 The cat in the image examples is
 [@rexiecat](https://www.instagram.com/rexiecat/). Give them some love.
 
-## Getting started
+### greyscale
 
-Install it:
+`greyscale({ input })` converts to grey by luma (ITU-R 601) and keeps the alpha
+channel.
 
-```bash
-deno add @dv/image-generation
-# or if you use npm
-npm install @totallynotdavid/image-generation
-```
+### color
 
-The most basic usage involves importing a transformation and calling it:
+`color({ input, hex, blendMode, opacity, intensity })` mixes a color into every
+pixel. The alpha channel stays as it is.
 
-```typescript
-import { greyscale } from '@dv/image-generation';
+| Option      | Default   | Meaning                                                     |
+| ----------- | --------- | ----------------------------------------------------------- |
+| `hex`       | `#ffffff` | `#rgb`, `#rrggbb` or `#rrggbbaa`. The `#` is optional.      |
+| `blendMode` | `tint`    | `tint`, `softlight` or `wash`.                              |
+| `opacity`   | `0.3`     | Share of the blended color in the result, from 0 to 1.      |
+| `intensity` | `1`       | Strength of the whole effect, from 0 (original image) to 1. |
 
-const result = await greyscale({ input: './photos/profile.png' });
+The blend modes:
 
-// Save the result
-await Deno.writeFile('./output/grey-profile.png', result);
-```
+- `tint` keeps the lightness of each pixel and takes the hue and saturation of
+  the color.
+- `softlight` blends the color over the image with the W3C soft-light formula.
+- `wash` mixes the color into each channel.
 
-You need read permissions for input files and write permissions if saving
-output:
+### circle
 
-```bash
-deno run --allow-read --allow-write your-script.ts
-```
+`circle({ input, borderWidth, borderColor })` crops the centered square of the
+shorter side to a circle with transparent corners. A border of `borderWidth`
+pixels (rounded to a whole number) is added around it, so the output is
+`size + 2 * borderWidth` pixels wide. `borderColor` takes the same formats as
+`hex` and defaults to `#000000`. A border of half the shorter side or more
+throws.
 
-## How transformations work
+### blink
 
-The library provides several ways to transform images, from simple single-image
-operations to complex multi-step pipelines.
-
-### Single image processing
-
-Most transformations operate on a single input image, producing a modified
-output that can be saved or passed along in your pipeline.
-
-For example, to apply a color tint with blend mode to an image:
-
-```typescript
-import { color } from '@dv/image-generation';
-
-const tintedImage = await color({
-    input: './input.jpg',
-    options: {
-        hex: '#FF99CC',
-        blendMode: 'softlight',
-        intensity: 0.7,
-        opacity: 0.3,
-    },
-});
-```
-
-The `color` transformation in particular supports three blend modes:
-
-- `tint`: Changes the hue while preserving lightness.
-- `softlight`: Applies soft light blending for subtle effects.
-- `wash`: Simple color overlay with opacity control.
-
-To create a circular avatar with a border:
-
-```typescript
-import { circle } from '@dv/image-generation';
-
-const avatarImage = await circle({
-    input: './photos/profile.png',
-    options: {
-        borderWidth: 5,
-        borderColor: '#000000',
-    },
-});
-```
-
-### Multiple input processing
-
-The `blink` transformation creates animated GIFs from multiple images:
-
-```typescript
-import { blink } from '@dv/image-generation';
-
-const animation = await blink({
-    inputs: ['frame1.png', 'frame2.png', 'frame3.png'],
-    options: {
-        delay: 200, // milliseconds between frames
-        loop: true, // whether to loop indefinitely
-    },
-});
-```
-
-All input images are automatically resized to match the dimensions of the first
-image, ensuring consistent animation frames.
+`blink({ inputs, delay, loop })` builds a GIF with one frame per input. It needs
+at least two inputs. Every frame is scaled to cover the size of the first image
+and cropped to it. `delay` is in milliseconds, defaults to 200 and is raised to
+50 when lower. `loop` defaults to `true`.
 
 ### Composing transformations
 
-Since each transformation returns a `Uint8Array`, you can chain them by passing
-the output of one as input to another:
+Each transformation accepts the output of another as `input`, so a pipeline
+needs no files in between:
 
 ```typescript
-import { blink, circle, greyscale } from '@dv/image-generation';
+import { blink, circle, greyscale } from "@totallynotdavid/image-generation";
 
-// Process individual frames:
-// it applies a grayscale transformation followed by a circle transformation
-const processFrame = async (imagePath: string) => {
-    const greyData = await greyscale({ input: imagePath });
-    return await circle({
-        input: greyData, // Pass the buffer directly
-        options: { borderWidth: 3, borderColor: '#ffffff' },
-    });
-};
+const frames = await Promise.all(
+  ["./frame1.jpg", "./frame2.jpg", "./frame3.jpg"].map(async (path) =>
+    circle({
+      input: await greyscale({ input: path }),
+      borderWidth: 3,
+      borderColor: "#fff",
+    }),
+  ),
+);
 
-const frames = await Promise.all([
-    processFrame('./frame1.jpg'),
-    processFrame('./frame2.jpg'),
-    processFrame('./frame3.jpg'),
-]);
-
-// Create animation using blink from processed frames
-const animation = await blink({
-    inputs: frames, // Use processed buffers
-    options: { delay: 300 },
-});
+const animation = await blink({ inputs: frames, delay: 300 });
 ```
 
-This approach gives you control over each step while avoiding intermediate file
-I/O.
+## Errors
 
-## Development
+Every failure throws a `ProcessingError`, a subclass of `ImageTransformError`.
+The message starts with the code, as in
+`[PROCESSING_ERROR] Failed to load image: ...`, and `cause` holds the original
+error when there is one.
 
-To work on this library:
+```typescript
+import { greyscale, ProcessingError } from "@totallynotdavid/image-generation";
 
-```bash
-git clone https://github.com/totallynotdavid/image-generation
-cd image-generation
-deno install --allow-scripts
+try {
+  await greyscale({ input: "./missing.png" });
+} catch (error) {
+  if (error instanceof ProcessingError)
+    console.error(error.code, error.message);
+}
 ```
 
-<details>
+## Other exports
 
-<summary>How to install Deno</summary>
+`loadImage(input)` decodes a path or bytes to an
+[ImageScript](https://github.com/matmen/ImageScript) `Image`, and
+`resizeImage(image, { width, height, mode })` resizes one in place and returns
+it. Give one dimension to keep the aspect ratio. `mode` is an ImageScript
+`ResizeMode` and defaults to bilinear.
 
-You can download it from [deno.land](https://deno.land/):
+## Contributing
 
-```bash
-# Unix-based systems
-curl -fsSL https://deno.land/install.sh | sh
-
-# Windows
-irm https://deno.land/install.ps1 | iex
-```
-
-Or, you can use also use [mise](https://mise.jdx.dev/lang/deno.html):
-
-```bash
-mise use -g deno@latest
-```
-
-</details>
-
-<details>
-
-<summary>Available tasks in deno.json</summary>
-
-You can run the following tasks:
-
-- `deno task dev:example` - Run the example code
-- `deno task test` - Run the 67 tests
-- `deno task tidy` - Format and lint code using the rules set on
-  [deno.json](deno.json)
-- `deno task build:npm` - Build the library for npm. It uses the
-  [build_npm.ts](build_npm.ts) script
-
-</details>
-
-Then, you can run the example to verify everything works. The results are saved
-in `example/output`.
-
-```bash
-deno task dev:example
-```
-
-The codebase structure reflects the functional approach:
-
-```
-src/
-├── transforms/           # Each transformation is a standalone function
-├── types.ts              # Parameter types for each transformation
-├── utils.ts              # Asset resolution and image loading
-├── errors.ts             # Custom error classes
-└── index.ts              # Public API exports
-```
-
-If you want to add a new transformation, create a new file in `src/transforms/`
-that exports an async function following the established pattern. Add the
-appropriate types to `src/types.ts` and export from `src/index.ts`.
+See [.github/contributing.md](.github/contributing.md).
 
 ## License
 
-[MIT License](LICENSE)
+[MIT](license)
 
-## Acknowledgements
-
-- Inspired by
-  [discord-image-generation](https://www.npmjs.com/package/discord-image-generation)
-  by mrkayjaydee
-- Built with [ImageScript](https://github.com/matmen/ImageScript) by matmen for
-  cross-platform image processing
+Built on [ImageScript](https://github.com/matmen/ImageScript) by matmen.
+Inspired by
+[discord-image-generation](https://www.npmjs.com/package/discord-image-generation)
+by mrkayjaydee.
