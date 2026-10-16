@@ -1,38 +1,39 @@
-name: Publish to JSR and NPM
+name: Publish to npm
+
 on:
-    release:
-        types: [published]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
-    publish:
-        name: Publish to npm and jsr
-        runs-on: ubuntu-latest
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
 
-        permissions:
-            contents: read
-            id-token: write
+      - uses: jdx/mise-action@v5
 
-        steps:
-            - uses: actions/checkout@v4
+      - run: bun install --frozen-lockfile
 
-            - run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Release tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "Release ${GITHUB_REF_NAME} does not match package.json version ${version}" >&2
+            exit 1
+          fi
 
-            - uses: denoland/setup-deno@v1
-              with:
-                  deno-version: v2.x
+      - run: bun run check
 
-            - name: Publish to jsr
-              run: deno publish
+      - run: bun run test
 
-            - run: deno run -A build_npm.ts $RELEASE_VERSION
-
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: 24
-                  registry-url: 'https://registry.npmjs.org'
-                  scope: '@totallynotdavid'
-
-            - name: Publish to npm
-              run: npm publish build/ --access=public
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      # `npm publish` builds first through the prepack script.
+      - name: Publish to npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${RUNNER_TEMP}/.npmrc"
+          npm publish --userconfig "${RUNNER_TEMP}/.npmrc"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
