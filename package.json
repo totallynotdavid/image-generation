@@ -36,13 +36,6 @@
     "provenance": true
   },
   "scripts": {
-    "build": "vp pack",
-    "check": "vp check",
-    "fix": "vp check --fix",
-    "test": "vp test run",
-    "test:coverage": "vp test run --coverage",
-    "example": "bun example/main.ts",
-    "smoke": "vp pack && node scripts/smoke.mjs",
     "prepack": "vp pack"
   },
   "dependencies": {
