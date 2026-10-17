@@ -16,5 +16,9 @@ export function parseHex(value: string): Rgb | undefined {
     digits = digits.replace(/./g, "$&$&");
   }
   const packed = Number.parseInt(digits.slice(0, 6), 16);
-  return { red: packed >> 16, green: (packed >> 8) & 0xff, blue: packed & 0xff };
+  return {
+    red: packed >> 16,
+    green: (packed >> 8) & 0xff,
+    blue: packed & 0xff,
+  };
 }

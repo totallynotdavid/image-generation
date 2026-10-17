@@ -26,12 +26,18 @@ describe("blink", () => {
     expect(gif.frames.map((frame) => frame.duration)).toEqual([200, 200]);
     expect(gif.loopCount).toBe(-1);
     expect([gif.width, gif.height]).toEqual([100, 100]);
-    expect(Array.from(gif.frames[0]!.getRGBAAt(50, 50))).toEqual([255, 0, 0, 255]);
-    expect(Array.from(gif.frames[1]!.getRGBAAt(50, 50))).toEqual([0, 0, 255, 255]);
+    expect(Array.from(gif.frames[0]!.getRGBAAt(50, 50))).toEqual([
+      255, 0, 0, 255,
+    ]);
+    expect(Array.from(gif.frames[1]!.getRGBAAt(50, 50))).toEqual([
+      0, 0, 255, 255,
+    ]);
   });
 
   it("plays once when loop is false", async () => {
-    const gif = await Animation.decode(await blink({ inputs: [red, blue], loop: false }));
+    const gif = await Animation.decode(
+      await blink({ inputs: [red, blue], loop: false }),
+    );
 
     expect(gif.loopCount).toBe(0);
   });
@@ -39,11 +45,20 @@ describe("blink", () => {
   it.each([
     [300, 300],
     [10, 50],
-  ])("turns a delay of %i ms into %i ms for every frame", async (delay, duration) => {
-    const gif = await Animation.decode(await blink({ inputs: [red, blue, red], delay }));
+  ])(
+    "turns a delay of %i ms into %i ms for every frame",
+    async (delay, duration) => {
+      const gif = await Animation.decode(
+        await blink({ inputs: [red, blue, red], delay }),
+      );
 
-    expect(gif.frames.map((frame) => frame.duration)).toEqual([duration, duration, duration]);
-  });
+      expect(gif.frames.map((frame) => frame.duration)).toEqual([
+        duration,
+        duration,
+        duration,
+      ]);
+    },
+  );
 
   it("fills every frame to the size of the first image", async () => {
     const gif = await Animation.decode(await blink({ inputs: [red, green] }));
@@ -57,6 +72,8 @@ describe("blink", () => {
 
   it("requires at least two images", async () => {
     await expect(blink({ inputs: [] })).rejects.toThrow(ProcessingError);
-    await expect(blink({ inputs: [red] })).rejects.toThrow("At least 2 images required");
+    await expect(blink({ inputs: [red] })).rejects.toThrow(
+      "At least 2 images required",
+    );
   });
 });

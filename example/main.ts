@@ -12,7 +12,10 @@ async function save(data: Uint8Array, filename: string): Promise<void> {
   console.log(`${filename}: ${data.length} bytes`);
 }
 
-await save(await color({ input: input1, hex: "#ff0000", blendMode: "tint" }), "red-tint.png");
+await save(
+  await color({ input: input1, hex: "#ff0000", blendMode: "tint" }),
+  "red-tint.png",
+);
 await save(
   await blink({ inputs: [input1, input2], delay: 200, loop: true }),
   "blink-animation.gif",

@@ -1,5 +1,7 @@
 comment:
-  layout: "condensed_header, diff, flags, components, condensed_files, condensed_footer"
+  layout:
+    "condensed_header, diff, flags, components, condensed_files,
+    condensed_footer"
   behavior: default
   require_base: true
   require_head: true

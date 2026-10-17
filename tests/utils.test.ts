@@ -28,12 +28,15 @@ describe("loadImage", () => {
     expect([image.width, image.height]).toEqual([150, 80]);
   });
 
-  it.each(["notes.txt", "empty.png", "missing.png"])("rejects %s", async (name) => {
-    await expect(loadImage(files.path(name))).rejects.toMatchObject({
-      name: "ProcessingError",
-      message: expect.stringContaining("Failed to load image"),
-    });
-  });
+  it.each(["notes.txt", "empty.png", "missing.png"])(
+    "rejects %s",
+    async (name) => {
+      await expect(loadImage(files.path(name))).rejects.toMatchObject({
+        name: "ProcessingError",
+        message: expect.stringContaining("Failed to load image"),
+      });
+    },
+  );
 });
 
 describe("resizeImage", () => {

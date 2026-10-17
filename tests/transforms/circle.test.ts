@@ -4,7 +4,9 @@ import { pixel, size, solid, stripes } from "../fixtures";
 
 describe("circle", () => {
   it("makes the corners transparent and keeps the center", async () => {
-    const result = await circle({ input: await solid(100, 100, [255, 0, 0, 255]) });
+    const result = await circle({
+      input: await solid(100, 100, [255, 0, 0, 255]),
+    });
 
     expect(await size(result)).toEqual([100, 100]);
     expect(await pixel(result, 50, 50)).toEqual([255, 0, 0, 255]);
@@ -36,7 +38,10 @@ describe("circle", () => {
   });
 
   it("crops a rectangle to a centered square", async () => {
-    const result = await circle({ input: await stripes(150, 80), borderWidth: 5 });
+    const result = await circle({
+      input: await stripes(150, 80),
+      borderWidth: 5,
+    });
 
     expect(await size(result)).toEqual([90, 90]);
     // columns 35..114 of the input: red up to 49, green up to 99, blue after
@@ -57,7 +62,9 @@ describe("circle", () => {
   it("rejects an invalid border color", async () => {
     const input = await solid(100, 100, [0, 0, 0, 255]);
 
-    await expect(circle({ input, borderColor: "invalid", borderWidth: 5 })).rejects.toMatchObject({
+    await expect(
+      circle({ input, borderColor: "invalid", borderWidth: 5 }),
+    ).rejects.toMatchObject({
       name: "ProcessingError",
       message: expect.stringContaining("Invalid border color"),
     });

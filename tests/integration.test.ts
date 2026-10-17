@@ -17,7 +17,9 @@ describe("unreadable input", () => {
     "bytes that are not an image": new Uint8Array([1, 2, 3]),
   };
   const cases = Object.entries(transforms).flatMap(([name, run]) =>
-    Object.entries(unreadable).map(([label, input]) => [name, label, run, input] as const),
+    Object.entries(unreadable).map(
+      ([label, input]) => [name, label, run, input] as const,
+    ),
   );
 
   it.each(cases)("%s rejects %s", async (_name, _label, run, input) => {
@@ -64,12 +66,21 @@ describe("chained transforms", () => {
 
   it("builds an animation from processed frames", async () => {
     const frames = await Promise.all([
-      circle({ input: await solid(100, 100, [255, 0, 0, 255]), borderWidth: 3 }),
+      circle({
+        input: await solid(100, 100, [255, 0, 0, 255]),
+        borderWidth: 3,
+      }),
       greyscale({ input: await solid(100, 100, [0, 0, 255, 255]) }),
-      color({ input: await solid(100, 100, [50, 50, 50, 255]), hex: "#ff8800", opacity: 0.4 }),
+      color({
+        input: await solid(100, 100, [50, 50, 50, 255]),
+        hex: "#ff8800",
+        opacity: 0.4,
+      }),
     ]);
 
-    const gif = await Animation.decode(await blink({ inputs: frames, delay: 200 }));
+    const gif = await Animation.decode(
+      await blink({ inputs: frames, delay: 200 }),
+    );
 
     expect(gif.frames).toHaveLength(3);
   });

@@ -5,7 +5,9 @@ import { createFiles, pixel, size, solid } from "../fixtures";
 let files: Awaited<ReturnType<typeof createFiles>>;
 
 beforeAll(async () => {
-  files = await createFiles({ "red.png": await solid(100, 60, [255, 0, 0, 255]) });
+  files = await createFiles({
+    "red.png": await solid(100, 60, [255, 0, 0, 255]),
+  });
 });
 afterAll(() => files.dispose());
 
@@ -22,13 +24,17 @@ describe("greyscale", () => {
   });
 
   it("accepts encoded bytes", async () => {
-    const result = await greyscale({ input: await solid(8, 8, [0, 0, 255, 255]) });
+    const result = await greyscale({
+      input: await solid(8, 8, [0, 0, 255, 255]),
+    });
 
     expect(await pixel(result, 4, 4)).toEqual([29, 29, 29, 255]);
   });
 
   it("keeps the alpha channel", async () => {
-    const result = await greyscale({ input: await solid(8, 8, [200, 50, 50, 128]) });
+    const result = await greyscale({
+      input: await solid(8, 8, [200, 50, 50, 128]),
+    });
 
     expect((await pixel(result, 4, 4))[3]).toBe(128);
   });
