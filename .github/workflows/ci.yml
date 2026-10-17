@@ -11,30 +11,25 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   check:
-    name: Check, test and build
+    name: Check
     runs-on: ubuntu-latest
+    env:
+      CI: "true"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: jdx/mise-action@v5
 
-      - run: bun install --frozen-lockfile
+      - run: mise run install
 
-      - name: Format, lint and typecheck
-        run: bun run check
-
-      - name: Test with coverage
-        run: bun run test:coverage
-        env:
-          CI: "true"
-
-      - name: Build, pack and import the tarball
-        run: bun run smoke
+      - run: mise run check
 
       - name: Upload test results to Codecov
         # Upload even when the tests fail.
@@ -61,11 +56,13 @@ jobs:
       MISE_NODE_VERSION: ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: jdx/mise-action@v5
 
-      - run: bun install --frozen-lockfile
+      - run: mise run install
 
-      - run: bun run test
+      - run: mise run test
 
-      - run: bun run smoke
+      - run: mise run build

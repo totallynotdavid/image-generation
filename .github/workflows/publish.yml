@@ -16,7 +16,7 @@ jobs:
 
       - uses: jdx/mise-action@v5
 
-      - run: bun install --frozen-lockfile
+      - run: mise run install
 
       - name: Release tag matches package.json
         run: |
@@ -26,11 +26,11 @@ jobs:
             exit 1
           fi
 
-      - run: bun run check
+      - run: mise run check
 
-      - run: bun run test
+      - run: mise run build
 
-      # `npm publish` builds first through the prepack script.
+      # The prepack script builds the package before publishing.
       - name: Publish to npm
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${RUNNER_TEMP}/.npmrc"
