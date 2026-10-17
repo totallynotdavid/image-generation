@@ -20,12 +20,4 @@ export default defineConfig({
       reporter: ["text", "lcov"],
     },
   },
-  fmt: {
-    ignorePatterns: ["dist/**", "coverage/**", "**/*.md", "example/output/**"],
-  },
-  lint: {
-    options: { typeAware: true, typeCheck: true },
-    plugins: ["typescript", "unicorn", "oxc", "vitest"],
-    ignorePatterns: ["dist/**", "coverage/**"],
-  },
 });
