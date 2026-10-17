@@ -16,8 +16,11 @@ export class ProcessingError extends ImageTransformError {
   }
 }
 
-export function throwProcessingError(error: unknown, prefix: string): never {
-  throw new ProcessingError(
+export function processingError(
+  error: unknown,
+  prefix: string,
+): ProcessingError {
+  return new ProcessingError(
     `${prefix}: ${error instanceof Error ? error.message : "unknown error"}`,
     error instanceof Error ? error : undefined,
   );

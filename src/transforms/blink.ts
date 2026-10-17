@@ -1,7 +1,11 @@
 import { Animation, Frame } from "imagescript";
 import type { BlinkParams, TransformResult } from "../types";
 import { loadImage } from "../utils";
-import { ImageTransformError, ProcessingError, throwProcessingError } from "../errors";
+import {
+  ImageTransformError,
+  ProcessingError,
+  processingError,
+} from "../errors";
 
 const MIN_DELAY_MS = 50;
 
@@ -18,7 +22,8 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
     const { width, height } = images[0]!;
 
     const frames = images.map((image) => {
-      if (image.width !== width || image.height !== height) image.cover(width, height);
+      if (image.width !== width || image.height !== height)
+        image.cover(width, height);
       return Frame.from(image, duration);
     });
 
@@ -26,6 +31,6 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
     return await animation.encodeGIF();
   } catch (error) {
     if (error instanceof ImageTransformError) throw error;
-    throwProcessingError(error, "Failed to create blink animation");
+    throw processingError(error, "Failed to create blink animation");
   }
 }

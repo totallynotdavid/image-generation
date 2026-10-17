@@ -2,7 +2,11 @@ import { Image } from "imagescript";
 import type { CircleParams, TransformResult } from "../types";
 import { parseHex } from "../hex";
 import { loadImage } from "../utils";
-import { ImageTransformError, ProcessingError, throwProcessingError } from "../errors";
+import {
+  ImageTransformError,
+  ProcessingError,
+  processingError,
+} from "../errors";
 
 export async function circle(params: CircleParams): Promise<TransformResult> {
   try {
@@ -12,7 +16,12 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
     const size = Math.min(image.width, image.height);
 
     const disc = image
-      .crop(Math.floor((image.width - size) / 2), Math.floor((image.height - size) / 2), size, size)
+      .crop(
+        Math.floor((image.width - size) / 2),
+        Math.floor((image.height - size) / 2),
+        size,
+        size,
+      )
       .cropCircle();
     if (borderWidth === 0) return await disc.encode();
 
@@ -32,6 +41,6 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
     return await ring.composite(disc, borderWidth, borderWidth).encode();
   } catch (error) {
     if (error instanceof ImageTransformError) throw error;
-    throwProcessingError(error, "Failed to apply circle transform");
+    throw processingError(error, "Failed to apply circle transform");
   }
 }

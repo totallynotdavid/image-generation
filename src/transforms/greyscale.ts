@@ -1,13 +1,15 @@
 import type { GreyscaleParams, TransformResult } from "../types";
 import { loadImage } from "../utils";
-import { ImageTransformError, throwProcessingError } from "../errors";
+import { ImageTransformError, processingError } from "../errors";
 
-export async function greyscale(params: GreyscaleParams): Promise<TransformResult> {
+export async function greyscale(
+  params: GreyscaleParams,
+): Promise<TransformResult> {
   try {
     const image = await loadImage(params.input);
     return await image.greyscale().encode();
   } catch (error) {
     if (error instanceof ImageTransformError) throw error;
-    throwProcessingError(error, "Failed to apply greyscale transform");
+    throw processingError(error, "Failed to apply greyscale transform");
   }
 }

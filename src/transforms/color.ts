@@ -1,7 +1,11 @@
 import type { ColorParams, TransformResult } from "../types";
 import { parseHex, type Rgb } from "../hex";
 import { loadImage } from "../utils";
-import { ImageTransformError, ProcessingError, throwProcessingError } from "../errors";
+import {
+  ImageTransformError,
+  ProcessingError,
+  processingError,
+} from "../errors";
 
 type BlendMode = NonNullable<ColorParams["blendMode"]>;
 
@@ -11,7 +15,8 @@ function clamp(value: number, min: number, max: number): number {
 
 function softLight(base: number, overlay: number): number {
   if (overlay < 0.5) return base - (1 - 2 * overlay) * base * (1 - base);
-  const curve = base <= 0.25 ? ((16 * base - 12) * base + 4) * base : Math.sqrt(base);
+  const curve =
+    base <= 0.25 ? ((16 * base - 12) * base + 4) * base : Math.sqrt(base);
   return base + (2 * overlay - 1) * (curve - base);
 }
 
@@ -19,7 +24,10 @@ function mix(base: number, effect: number, amount: number): number {
   return (effect * amount + base * (1 - amount)) | 0;
 }
 
-function hueAndSaturation({ red, green, blue }: Rgb): { hue: number; saturation: number } {
+function hueAndSaturation({ red, green, blue }: Rgb): {
+  hue: number;
+  saturation: number;
+} {
   const r = red / 255;
   const g = green / 255;
   const b = blue / 255;
@@ -28,7 +36,8 @@ function hueAndSaturation({ red, green, blue }: Rgb): { hue: number; saturation:
   if (max === min) return { hue: 0, saturation: 0 };
 
   const delta = max - min;
-  const saturation = (max + min) / 2 > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  const saturation =
+    (max + min) / 2 > 0.5 ? delta / (2 - max - min) : delta / (max + min);
   let hue: number;
   if (max === r) hue = (g - b) / delta + (g < b ? 6 : 0);
   else if (max === g) hue = (b - r) / delta + 2;
@@ -83,13 +92,21 @@ function channelTable(
 ): Uint8Array {
   const table = new Uint8Array(256);
   for (let value = 0; value < 256; value++) {
-    const effect = mode === "wash" ? tintValue : softLight(value / 255, tintValue / 255) * 255;
+    const effect =
+      mode === "wash"
+        ? tintValue
+        : softLight(value / 255, tintValue / 255) * 255;
     table[value] = mix(value, mix(value, effect, opacity), intensity);
   }
   return table;
 }
 
-function applyTint(pixels: Uint8ClampedArray, tint: Rgb, opacity: number, intensity: number): void {
+function applyTint(
+  pixels: Uint8ClampedArray,
+  tint: Rgb,
+  opacity: number,
+  intensity: number,
+): void {
   const table = tintTable(tint);
   for (let i = 0; i < pixels.length; i += 4) {
     const r = pixels[i]!;
@@ -139,6 +156,6 @@ export async function color(params: ColorParams): Promise<TransformResult> {
     return await image.encode();
   } catch (error) {
     if (error instanceof ImageTransformError) throw error;
-    throwProcessingError(error, "Failed to apply color transform");
+    throw processingError(error, "Failed to apply color transform");
   }
 }
