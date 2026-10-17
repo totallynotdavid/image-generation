@@ -8,10 +8,6 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
   try {
     const image = await loadImage(params.input);
 
-    if (image.width === 0 || image.height === 0) {
-      throw new ProcessingError("Image has zero dimensions");
-    }
-
     const borderWidth = Math.max(0, Math.round(params.borderWidth || 0));
     const size = Math.min(image.width, image.height);
 
