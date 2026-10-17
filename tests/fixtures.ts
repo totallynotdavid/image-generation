@@ -5,7 +5,11 @@ import { Image } from "imagescript";
 
 export type Rgba = [r: number, g: number, b: number, a: number];
 
-export function solid(width: number, height: number, [r, g, b, a]: Rgba): Promise<Uint8Array> {
+export function solid(
+  width: number,
+  height: number,
+  [r, g, b, a]: Rgba,
+): Promise<Uint8Array> {
   return new Image(width, height).fill(Image.rgbaToColor(r, g, b, a)).encode();
 }
 
@@ -19,23 +23,36 @@ export function stripes(width: number, height: number): Promise<Uint8Array> {
   return image.encode();
 }
 
-export async function pixel(bytes: Uint8Array, x: number, y: number): Promise<Rgba> {
+export async function pixel(
+  bytes: Uint8Array,
+  x: number,
+  y: number,
+): Promise<Rgba> {
   const image = await Image.decode(bytes);
-  return Array.from(image.getRGBAAt(x, y)) as Rgba;
+  const [r = 0, g = 0, b = 0, a = 0] = image.getRGBAAt(x, y);
+  return [r, g, b, a];
 }
 
-export async function size(bytes: Uint8Array): Promise<[width: number, height: number]> {
+export async function size(
+  bytes: Uint8Array,
+): Promise<[width: number, height: number]> {
   const image = await Image.decode(bytes);
   return [image.width, image.height];
 }
 
 /** Files on disk for the tests that pass a path. Remove them with `dispose`. */
-export async function createFiles(files: Record<string, Uint8Array | string>): Promise<{
+export async function createFiles(
+  files: Record<string, Uint8Array | string>,
+): Promise<{
   path: (name: string) => string;
   dispose: () => Promise<void>;
 }> {
   const dir = await mkdtemp(join(tmpdir(), "image-generation-"));
-  await Promise.all(Object.entries(files).map(([name, data]) => writeFile(join(dir, name), data)));
+  await Promise.all(
+    Object.entries(files).map(([name, data]) =>
+      writeFile(join(dir, name), data),
+    ),
+  );
   return {
     path: (name) => join(dir, name),
     dispose: () => rm(dir, { recursive: true, force: true }),

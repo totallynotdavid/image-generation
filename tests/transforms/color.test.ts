@@ -20,8 +20,18 @@ describe("color wash", () => {
 
   it("returns the color at opacity 1 and the image at opacity 0", async () => {
     const input = await grey(90);
-    const full = await color({ input, hex: "#102030", blendMode: "wash", opacity: 1 });
-    const none = await color({ input, hex: "#102030", blendMode: "wash", opacity: 0 });
+    const full = await color({
+      input,
+      hex: "#102030",
+      blendMode: "wash",
+      opacity: 1,
+    });
+    const none = await color({
+      input,
+      hex: "#102030",
+      blendMode: "wash",
+      opacity: 0,
+    });
 
     expect(await pixel(full, 0, 0)).toEqual([16, 32, 48, 255]);
     expect(await pixel(none, 0, 0)).toEqual([90, 90, 90, 255]);
@@ -153,21 +163,35 @@ describe("color options", () => {
   });
 
   it("keeps the alpha channel", async () => {
-    const result = await color({ input: await grey(100, 90), hex: "#ff0000", opacity: 1 });
+    const result = await color({
+      input: await grey(100, 90),
+      hex: "#ff0000",
+      opacity: 1,
+    });
 
     expect((await pixel(result, 0, 0))[3]).toBe(90);
   });
 
-  it.each(["#f00", "ff0000", "#ff0000ff"])("accepts the hex form %s", async (hex) => {
-    const result = await color({ input: await grey(0), hex, blendMode: "wash", opacity: 1 });
+  it.each(["#f00", "ff0000", "#ff0000ff"])(
+    "accepts the hex form %s",
+    async (hex) => {
+      const result = await color({
+        input: await grey(0),
+        hex,
+        blendMode: "wash",
+        opacity: 1,
+      });
 
-    expect(await pixel(result, 0, 0)).toEqual([255, 0, 0, 255]);
-  });
+      expect(await pixel(result, 0, 0)).toEqual([255, 0, 0, 255]);
+    },
+  );
 });
 
 describe("color errors", () => {
   it("rejects an invalid hex color", async () => {
-    await expect(color({ input: await grey(0), hex: "invalid" })).rejects.toMatchObject({
+    await expect(
+      color({ input: await grey(0), hex: "invalid" }),
+    ).rejects.toMatchObject({
       name: "ProcessingError",
       message: expect.stringContaining("Invalid hex color"),
     });
@@ -175,7 +199,8 @@ describe("color errors", () => {
 
   it("rejects an unknown blend mode", async () => {
     const input = await grey(0);
-    await expect(color({ input, blendMode: "multiply" as unknown as "tint" })).rejects.toThrow(
+    // @ts-expect-error "multiply" is not a blend mode.
+    await expect(color({ input, blendMode: "multiply" })).rejects.toThrow(
       "Invalid blend mode",
     );
   });
