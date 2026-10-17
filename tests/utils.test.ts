@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
-import { loadImage, ProcessingError, resizeImage } from "../src";
+import { loadImage, resizeImage } from "../src";
 import { createFiles, solid } from "./fixtures";
 
 let files: Awaited<ReturnType<typeof createFiles>>;
@@ -29,8 +29,10 @@ describe("loadImage", () => {
   });
 
   it.each(["notes.txt", "empty.png", "missing.png"])("rejects %s", async (name) => {
-    await expect(loadImage(files.path(name))).rejects.toThrow(ProcessingError);
-    await expect(loadImage(files.path(name))).rejects.toThrow("Failed to load image");
+    await expect(loadImage(files.path(name))).rejects.toMatchObject({
+      name: "ProcessingError",
+      message: expect.stringContaining("Failed to load image"),
+    });
   });
 });
 

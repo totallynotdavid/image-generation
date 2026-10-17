@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { circle, ProcessingError } from "../../src";
+import { circle } from "../../src";
 import { pixel, size, solid, stripes } from "../fixtures";
 
 describe("circle", () => {
@@ -57,12 +57,10 @@ describe("circle", () => {
   it("rejects an invalid border color", async () => {
     const input = await solid(100, 100, [0, 0, 0, 255]);
 
-    await expect(circle({ input, borderColor: "invalid", borderWidth: 5 })).rejects.toThrow(
-      ProcessingError,
-    );
-    await expect(circle({ input, borderColor: "invalid", borderWidth: 5 })).rejects.toThrow(
-      "Invalid border color",
-    );
+    await expect(circle({ input, borderColor: "invalid", borderWidth: 5 })).rejects.toMatchObject({
+      name: "ProcessingError",
+      message: expect.stringContaining("Invalid border color"),
+    });
   });
 
   it("rejects a border that leaves no image", async () => {

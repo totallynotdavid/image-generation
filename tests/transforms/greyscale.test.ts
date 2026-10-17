@@ -1,14 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
-import { greyscale, ProcessingError } from "../../src";
+import { greyscale } from "../../src";
 import { createFiles, pixel, size, solid } from "../fixtures";
 
 let files: Awaited<ReturnType<typeof createFiles>>;
 
 beforeAll(async () => {
-  files = await createFiles({
-    "red.png": await solid(100, 60, [255, 0, 0, 255]),
-    "notes.txt": "not an image",
-  });
+  files = await createFiles({ "red.png": await solid(100, 60, [255, 0, 0, 255]) });
 });
 afterAll(() => files.dispose());
 
@@ -34,18 +31,5 @@ describe("greyscale", () => {
     const result = await greyscale({ input: await solid(8, 8, [200, 50, 50, 128]) });
 
     expect((await pixel(result, 4, 4))[3]).toBe(128);
-  });
-
-  it("rejects a file that is not an image", async () => {
-    await expect(greyscale({ input: files.path("notes.txt") })).rejects.toThrow(ProcessingError);
-    await expect(greyscale({ input: files.path("notes.txt") })).rejects.toThrow(
-      "Failed to load image",
-    );
-  });
-
-  it("rejects a missing file", async () => {
-    await expect(greyscale({ input: files.path("missing.png") })).rejects.toThrow(
-      "Failed to load image",
-    );
   });
 });

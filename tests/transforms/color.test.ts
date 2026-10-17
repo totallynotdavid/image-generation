@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { color, ProcessingError } from "../../src";
+import { color } from "../../src";
 import { pixel, solid } from "../fixtures";
 
 const grey = (value: number, alpha = 255): Promise<Uint8Array> =>
@@ -167,27 +167,16 @@ describe("color options", () => {
 
 describe("color errors", () => {
   it("rejects an invalid hex color", async () => {
-    const input = await grey(0);
-    await expect(color({ input, hex: "invalid" })).rejects.toThrow(ProcessingError);
-    await expect(color({ input, hex: "invalid" })).rejects.toThrow("Invalid hex color");
+    await expect(color({ input: await grey(0), hex: "invalid" })).rejects.toMatchObject({
+      name: "ProcessingError",
+      message: expect.stringContaining("Invalid hex color"),
+    });
   });
 
   it("rejects an unknown blend mode", async () => {
     const input = await grey(0);
     await expect(color({ input, blendMode: "multiply" as unknown as "tint" })).rejects.toThrow(
       "Invalid blend mode",
-    );
-  });
-
-  it("rejects a path that does not exist", async () => {
-    await expect(color({ input: "/nonexistent/image.png" })).rejects.toThrow(
-      "Failed to load image",
-    );
-  });
-
-  it("rejects bytes that are not an image", async () => {
-    await expect(color({ input: new Uint8Array([1, 2, 3]) })).rejects.toThrow(
-      "Failed to load image",
     );
   });
 });

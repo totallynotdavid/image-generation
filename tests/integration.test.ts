@@ -3,6 +3,31 @@ import { describe, expect, it } from "vite-plus/test";
 import { blink, circle, color, greyscale } from "../src";
 import { pixel, size, solid } from "./fixtures";
 
+describe("unreadable input", () => {
+  const transforms = {
+    greyscale: (input: string | Uint8Array) => greyscale({ input }),
+    color: (input: string | Uint8Array) => color({ input }),
+    circle: (input: string | Uint8Array) => circle({ input }),
+    blink: async (input: string | Uint8Array) =>
+      blink({ inputs: [await solid(4, 4, [0, 0, 0, 255]), input] }),
+  };
+
+  const unreadable = {
+    "a missing path": "/nonexistent/image.png",
+    "bytes that are not an image": new Uint8Array([1, 2, 3]),
+  };
+  const cases = Object.entries(transforms).flatMap(([name, run]) =>
+    Object.entries(unreadable).map(([label, input]) => [name, label, run, input] as const),
+  );
+
+  it.each(cases)("%s rejects %s", async (_name, _label, run, input) => {
+    await expect(run(input)).rejects.toMatchObject({
+      name: "ProcessingError",
+      message: expect.stringContaining("Failed to load image"),
+    });
+  });
+});
+
 describe("chained transforms", () => {
   it("feeds the output of color into greyscale", async () => {
     const tinted = await color({

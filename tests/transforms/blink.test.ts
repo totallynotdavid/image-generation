@@ -36,16 +36,13 @@ describe("blink", () => {
     expect(gif.loopCount).toBe(0);
   });
 
-  it("uses the delay for every frame", async () => {
-    const gif = await Animation.decode(await blink({ inputs: [red, blue, red], delay: 300 }));
+  it.each([
+    [300, 300],
+    [10, 50],
+  ])("turns a delay of %i ms into %i ms for every frame", async (delay, duration) => {
+    const gif = await Animation.decode(await blink({ inputs: [red, blue, red], delay }));
 
-    expect(gif.frames.map((frame) => frame.duration)).toEqual([300, 300, 300]);
-  });
-
-  it("raises a delay below 50 ms to 50 ms", async () => {
-    const gif = await Animation.decode(await blink({ inputs: [red, blue], delay: 10 }));
-
-    expect(gif.frames[0]!.duration).toBe(50);
+    expect(gif.frames.map((frame) => frame.duration)).toEqual([duration, duration, duration]);
   });
 
   it("fills every frame to the size of the first image", async () => {
@@ -61,11 +58,5 @@ describe("blink", () => {
   it("requires at least two images", async () => {
     await expect(blink({ inputs: [] })).rejects.toThrow(ProcessingError);
     await expect(blink({ inputs: [red] })).rejects.toThrow("At least 2 images required");
-  });
-
-  it("reports an input that cannot be loaded", async () => {
-    await expect(blink({ inputs: [red, files.path("missing.png")] })).rejects.toThrow(
-      "Failed to load image",
-    );
   });
 });
