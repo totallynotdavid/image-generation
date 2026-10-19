@@ -3,6 +3,8 @@ dist
 coverage
 *.lcov
 junit.xml
+.env.*
+!.env.example
 
 !/example/**/*.png
 !/example/**/*.gif
