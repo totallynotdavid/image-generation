@@ -16,7 +16,7 @@ jobs:
 
       - uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5
 
-      - run: mise run install
+      - run: bun install --frozen-lockfile
 
       - name: Release tag matches package.json
         run: |
@@ -26,9 +26,9 @@ jobs:
             exit 1
           fi
 
-      - run: mise run check
+      - run: bun run check
 
-      - run: mise run build
+      - run: bun run build
 
       # The prepack script builds the package before publishing.
       - name: Publish to npm

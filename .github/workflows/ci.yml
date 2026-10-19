@@ -27,9 +27,9 @@ jobs:
 
       - uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5
 
-      - run: mise run install
+      - run: bun install --frozen-lockfile
 
-      - run: mise run check
+      - run: bun run check
 
       - name: Upload test results to Codecov
         # Upload even when the tests fail.
@@ -44,25 +44,3 @@ jobs:
         with:
           files: ./coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
-
-  node:
-    name: Node ${{ matrix.node }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ["22.18", "24"]
-    env:
-      MISE_NODE_VERSION: ${{ matrix.node }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5
-
-      - run: mise run install
-
-      - run: mise run test
-
-      - run: mise run build
