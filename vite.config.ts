@@ -20,4 +20,19 @@ export default defineConfig({
       reporter: ["text", "lcov"],
     },
   },
+  fmt: {
+    printWidth: 80,
+    proseWrap: "always",
+    ignorePatterns: ["dist/**", "coverage/**", "example/output/**", "bun.lock"],
+  },
+  lint: {
+    plugins: ["typescript", "unicorn", "oxc", "vitest"],
+    categories: {
+      correctness: "error",
+      suspicious: "error",
+      perf: "error",
+    },
+    options: { typeAware: true },
+    ignorePatterns: ["dist/**", "coverage/**"],
+  },
 });
