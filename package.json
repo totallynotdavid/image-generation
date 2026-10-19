@@ -36,6 +36,13 @@
     "provenance": true
   },
   "scripts": {
+    "lint": "vp lint --deny-warnings && vp fmt --check",
+    "fix": "vp lint --fix && vp fmt",
+    "typecheck": "tsc --noEmit",
+    "test": "vp test run --coverage",
+    "build": "vp pack && node scripts/smoke.mjs",
+    "check": "bun run lint && bun run typecheck && bun run test && bun run build",
+    "example": "bun example/main.ts",
     "prepack": "vp pack"
   },
   "dependencies": {
