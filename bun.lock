@@ -5,7 +5,7 @@
     "": {
       "name": "@totallynotdavid/image-generation",
       "dependencies": {
-        "imagescript": "^3.2.1",
+        "imagescript": "^3.3.0",
       },
       "devDependencies": {
         "@arethetypeswrong/core": "^0.18.5",
@@ -332,7 +332,7 @@
 
     "fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
 
-    "imagescript": ["imagescript@3.2.1", "", {}, "sha512-esDhPnhRZlnQs2KtWj/1RszjZwtnstpuATOknBaPJOq6bnyX5Yt+1P7C+t1NrLoA6OhgXbkq899Q72p6QL1MAQ=="],
+    "imagescript": ["imagescript@3.3.0", "", {}, "sha512-oE3zva5qqPhqGSHEeVWZ5W4a/vdji8xPaycCbNkL2lmVkx4tssuL9O6KqKdPUnO9/VoQhGvp5peRmfSTuCfjTw=="],
 
     "js-tokens": ["js-tokens@10.0.0", "", {}, "sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q=="],
 

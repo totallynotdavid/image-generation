@@ -46,7 +46,7 @@
     "prepack": "vp pack"
   },
   "dependencies": {
-    "imagescript": "^3.2.1"
+    "imagescript": "^3.3.0"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
