@@ -39,37 +39,20 @@ jobs:
             fi
           done
 
-      # Fork and Dependabot pull requests cannot read repository secrets.
-      - name: npm can publish the package
-        if: >-
-          ${{ github.event_name != 'pull_request' ||
-          (github.event.pull_request.head.repo.full_name == github.repository &&
-          github.actor != 'dependabot[bot]') }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          TRUSTED_PUBLISHER: ${{ vars.NPM_TRUSTED_PUBLISHER }}
+      - name: The version is not on npm yet
         run: |
           package="$(node -p "require('./package.json').name")"
-          if [ -z "${NODE_AUTH_TOKEN}" ]; then
-            if [ "${TRUSTED_PUBLISHER}" != "true" ]; then
-              echo "No way to authenticate to npm. Add the NPM_AUTH_TOKEN secret, or set up the trusted publisher and set the NPM_TRUSTED_PUBLISHER variable to true, see .github/contributing.md." >&2
-              exit 1
-            fi
-            echo "Publishing uses the trusted publisher. npm offers no way to check it before a publish."
-            exit 0
-          fi
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${RUNNER_TEMP}/.npmrc"
-          export NPM_CONFIG_USERCONFIG="${RUNNER_TEMP}/.npmrc"
-          if ! user="$(npm whoami --registry https://registry.npmjs.org)"; then
-            echo "NPM_AUTH_TOKEN is not accepted by npm. Create a new token." >&2
+          version="$(node -p "require('./package.json').version")"
+          # npm view prints the version when it is published and fails with
+          # E404 when it is not. Any other failure is a real error.
+          published=""
+          if ! published="$(npm view "${package}@${version}" version 2> "${RUNNER_TEMP}/npm-view.log")" &&
+            ! grep -q E404 "${RUNNER_TEMP}/npm-view.log"; then
+            cat "${RUNNER_TEMP}/npm-view.log" >&2
             exit 1
           fi
-          if ! collaborators="$(npm access list collaborators "${package}" --json --registry https://registry.npmjs.org)"; then
-            echo "NPM_AUTH_TOKEN cannot read the access list of ${package}, so it cannot publish it." >&2
-            exit 1
-          fi
-          if [ "$(jq -r --arg user "${user}" '.[$user] // ""' <<< "${collaborators}")" != "read-write" ]; then
-            echo "${user} has no write access to ${package}, or NPM_AUTH_TOKEN is scoped away from it." >&2
+          if [ -n "${published}" ]; then
+            echo "${package}@${published} is already on npm. Bump version in package.json." >&2
             exit 1
           fi
 
@@ -122,7 +105,6 @@ jobs:
 
   publish:
     needs: [preflight, build]
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -137,17 +119,15 @@ jobs:
           name: package
           path: package
 
-      # npm uses trusted publishing when configured and otherwise uses the
-      # token.
+      # npm authenticates through the trusted publisher, with no stored token.
+      # The ./ prefix makes package/<file> a local tarball path.
       - name: Publish to npm
         run: |
-          if [ -n "${NODE_AUTH_TOKEN}" ]; then
-            echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${RUNNER_TEMP}/.npmrc"
-            export NPM_CONFIG_USERCONFIG="${RUNNER_TEMP}/.npmrc"
+          dry_run=()
+          if [[ "${GITHUB_REF}" != refs/tags/* ]]; then
+            dry_run=(--dry-run)
           fi
-          npm publish package/*.tgz
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          npm publish "${dry_run[@]}" ./package/*.tgz
 
   release:
     needs: publish

@@ -56,23 +56,14 @@ One-time setup, in your fork:
 1. Change `name` in `package.json` to a scope you own on npm.
 2. Publish the first version by hand so the package exists on npm: run
    `npm login`, then `bun run build`, then `npm publish --access public`.
-3. Let the workflow authenticate to npm. Use trusted publishing, which needs no
-   stored token:
-   1. On npmjs.com, open the package, then Settings, then Trusted Publisher, and
-      choose GitHub Actions.
-   2. Enter your GitHub user or organization and the repository name. Enter the
-      workflow filename `publish.yml`. Leave the environment name empty. Allow
-      `npm publish`.
-   3. On GitHub, open the repository, then Settings, Secrets and variables,
-      Actions, Variables, and add a repository variable named
-      `NPM_TRUSTED_PUBLISHER` with the value `true`.
-4. Or use a token instead: on npmjs.com, open your account, then Access Tokens,
-   and create a granular access token with write access to the package and no
-   other scope. On GitHub, add it as a repository secret named `NPM_AUTH_TOKEN`.
-   When the secret exists, the dry run checks that it can publish.
+3. Set up trusted publishing. The workflow publishes only this way and uses no
+   stored token. On npmjs.com, open the package, then Settings, then Trusted
+   Publisher, and choose GitHub Actions. Enter your GitHub user or organization
+   and the repository name. Enter the workflow filename `publish.yml`. Leave the
+   environment name empty. Allow `npm publish`.
 
-When trusted publishing is set up, npm uses it before any token. Delete the
-`NPM_AUTH_TOKEN` secret once a release has gone out through it.
+npm checks the trusted publisher only when a version is published, so a mistake
+in this setup shows on the first tag.
 
 For each release:
 
@@ -93,7 +84,8 @@ For each release:
 On a tag, the `Release` workflow checks that the tag matches the `version` in
 `package.json` and that the first line of `.github/release-notes.md` is the line
 above. It runs `bun run check`, packs the tarball, publishes that tarball to npm
-with provenance, and creates the GitHub release from the notes file.
+through the trusted publisher with provenance, and creates the GitHub release
+from the notes file.
 
 Delete a bad tag with `git push origin :refs/tags/v2.0.0` and tag again. A
 version already on npm cannot be published twice, so bump it.
@@ -103,13 +95,13 @@ version already on npm cannot be published twice, so bump it.
 Every pull request and manual run (`gh workflow run publish.yml --ref <branch>`)
 runs the same workflow without publishing or creating the release. The checks
 and pack run as on a tag. The version is compared with the notes only because
-there is no tag. A separate `preflight` job fails when:
+there is no tag. The `publish` job runs `npm publish --dry-run` on the packed
+tarball, so a bad tarball path or package is caught before the tag. A separate
+`preflight` job fails when:
 
 - a job names an `environment:` that does not exist in the repository;
-- the `NPM_AUTH_TOKEN` secret exists but npm rejects it (`npm whoami`) or the
-  token has no write access to the package (`npm access list collaborators`);
-- neither the secret nor the `NPM_TRUSTED_PUBLISHER` variable is set.
+- the `version` in `package.json` is already on npm, as when a release forgot
+  its version bump.
 
-The npm checks are skipped on pull requests from forks and from Dependabot,
-which cannot read secrets. npm cannot check a trusted publisher before a
-publish, so the variable records that you set it up.
+A dry run does not check the trusted publisher. npm validates it on the first
+publish.
