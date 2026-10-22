@@ -82,14 +82,6 @@ jobs:
             exit 1
           fi
 
-      - name: npm supports trusted publishing
-        run: |
-          npm_version="$(npm --version)"
-          if [ "$(printf '%s\n11.5.1\n' "$npm_version" | sort -V | head -n 1)" != "11.5.1" ]; then
-            echo "npm ${npm_version} cannot publish with OIDC, 11.5.1 or later is needed" >&2
-            exit 1
-          fi
-
       - run: bun run check
 
       - name: Pack the package
@@ -110,6 +102,11 @@ jobs:
       contents: read
       id-token: write
     steps:
+      # Checkout must precede mise because mise reads the pinned Node version from mise.toml.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
       - uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5
         with:
           install_args: node
@@ -118,6 +115,14 @@ jobs:
         with:
           name: package
           path: package
+
+      - name: npm supports trusted publishing
+        run: |
+          npm_version="$(npm --version)"
+          if [ "$(printf '%s\n11.5.1\n' "$npm_version" | sort -V | head -n 1)" != "11.5.1" ]; then
+            echo "npm ${npm_version} cannot publish with OIDC, 11.5.1 or later is needed" >&2
+            exit 1
+          fi
 
       # npm authenticates through the trusted publisher, with no stored token.
       # The ./ prefix makes package/<file> a local tarball path.
