@@ -18,6 +18,8 @@ jobs:
       actions: read
       contents: read
       deployments: read
+    outputs:
+      published: ${{ steps.npm-version.outputs.published }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -39,8 +41,11 @@ jobs:
             fi
           done
 
+      # A release tag must carry a new version. Pull requests and manual runs
+      # only report whether it is published, so the publish job can skip a dry
+      # run that npm refuses for a published version.
       - name: The version is not on npm yet
-        if: startsWith(github.ref, 'refs/tags/')
+        id: npm-version
         run: |
           package="$(node -p "require('./package.json').name")"
           version="$(node -p "require('./package.json').version")"
@@ -52,7 +57,8 @@ jobs:
             cat "${RUNNER_TEMP}/npm-view.log" >&2
             exit 1
           fi
-          if [ -n "${published}" ]; then
+          echo "published=$([ -n "${published}" ] && echo true || echo false)" >> "${GITHUB_OUTPUT}"
+          if [ -n "${published}" ] && [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             echo "${package}@${published} is already on npm. Bump version in package.json." >&2
             exit 1
           fi
@@ -128,12 +134,22 @@ jobs:
       # npm authenticates through the trusted publisher, with no stored token.
       # The ./ prefix makes package/<file> a local tarball path.
       - name: Publish to npm
-        run: |
-          dry_run=()
-          if [[ "${GITHUB_REF}" != refs/tags/* ]]; then
-            dry_run=(--dry-run)
-          fi
-          npm publish "${dry_run[@]}" ./package/*.tgz
+        if: startsWith(github.ref, 'refs/tags/')
+        run: npm publish ./package/*.tgz
+
+      - name: Publish to npm (dry run)
+        if:
+          ${{ !startsWith(github.ref, 'refs/tags/') &&
+          needs.preflight.outputs.published != 'true' }}
+        run: npm publish --dry-run ./package/*.tgz
+
+      # npm publish --dry-run refuses a version that is already on npm, so the
+      # tarball is listed with npm pack --dry-run instead.
+      - name: List the tarball (version already on npm)
+        if:
+          ${{ !startsWith(github.ref, 'refs/tags/') &&
+          needs.preflight.outputs.published == 'true' }}
+        run: npm pack --dry-run ./package/*.tgz
 
   release:
     needs: publish
