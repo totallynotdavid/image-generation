@@ -1,6 +1,6 @@
 import { Animation } from "imagescript";
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
-import { blink, ProcessingError } from "../../src";
+import { blink, circle, ProcessingError } from "../../src";
 import { createFiles, solid } from "../fixtures";
 
 let files: Awaited<ReturnType<typeof createFiles>>;
@@ -68,6 +68,25 @@ describe("blink", () => {
     expect([second.width, second.height]).toEqual([100, 100]);
     expect(Array.from(second.getRGBAAt(0, 0))).toEqual([0, 255, 0, 255]);
     expect(Array.from(second.getRGBAAt(99, 99))).toEqual([0, 255, 0, 255]);
+  });
+
+  it("does not show a frame through the transparent pixels of the next", async () => {
+    const opaque = await solid(40, 40, [255, 0, 0, 255]);
+    const rounded = await circle({
+      input: await solid(40, 40, [0, 0, 255, 255]),
+    });
+    const gif = await Animation.decode(
+      await blink({ inputs: [opaque, rounded, opaque, rounded] }),
+    );
+
+    expect(
+      gif.frames.map((frame) => Array.from(frame.getRGBAAt(0, 0))),
+    ).toEqual([
+      [255, 0, 0, 255],
+      [0, 0, 0, 0],
+      [255, 0, 0, 255],
+      [0, 0, 0, 0],
+    ]);
   });
 
   it("requires at least two images", async () => {

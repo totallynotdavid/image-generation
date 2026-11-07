@@ -24,7 +24,7 @@ export async function blink(params: BlinkParams): Promise<TransformResult> {
     const frames = images.map((image) => {
       if (image.width !== width || image.height !== height)
         image.cover(width, height);
-      return Frame.from(image, duration);
+      return Frame.from(image, duration, 0, 0, "background");
     });
 
     const animation = new Animation(frames, { loopCount: loop ? -1 : 0 });
