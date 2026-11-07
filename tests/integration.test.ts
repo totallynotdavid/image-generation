@@ -1,6 +1,6 @@
 import { Animation } from "imagescript";
 import { describe, expect, it } from "vite-plus/test";
-import { blink, circle, color, greyscale } from "../src";
+import { blink, circle, color, greyscale, ProcessingError } from "../src";
 import { pixel, size, solid } from "./fixtures";
 
 describe("unreadable input", () => {
@@ -27,6 +27,27 @@ describe("unreadable input", () => {
       name: "ProcessingError",
       message: expect.stringContaining("Failed to load image"),
     });
+  });
+});
+
+describe("error cause", () => {
+  it("holds the original error", async () => {
+    const error = await greyscale({ input: "/nonexistent/image.png" }).catch(
+      (caught: unknown) => caught,
+    );
+
+    expect.assert(error instanceof ProcessingError);
+    expect(error.cause).toMatchObject({ code: "ENOENT" });
+  });
+
+  it("is not set when the failure has none", async () => {
+    const error = await color({
+      input: await solid(4, 4, [0, 0, 0, 255]),
+      hex: "invalid",
+    }).catch((caught: unknown) => caught);
+
+    expect.assert(error instanceof ProcessingError);
+    expect(Object.hasOwn(error, "cause")).toBe(false);
   });
 });
 
@@ -62,6 +83,20 @@ describe("chained transforms", () => {
     expect(await size(washed)).toEqual([110, 110]);
     expect(await pixel(washed, 55, 55)).toEqual([140, 140, 216, 255]);
     expect((await pixel(washed, 0, 0))[3]).toBe(0);
+  });
+
+  it("feeds the output of blink into greyscale", async () => {
+    const gif = await blink({
+      inputs: [
+        await solid(10, 10, [255, 0, 0, 255]),
+        await solid(10, 10, [0, 0, 255, 255]),
+      ],
+    });
+
+    const grey = await greyscale({ input: gif });
+
+    expect(await size(grey)).toEqual([10, 10]);
+    expect(await pixel(grey, 5, 5)).toEqual([76, 76, 76, 255]);
   });
 
   it("builds an animation from processed frames", async () => {

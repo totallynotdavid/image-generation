@@ -1,12 +1,11 @@
 export class ImageTransformError extends Error {
   readonly code: string;
-  override readonly cause?: Error;
+  declare readonly cause?: Error;
 
   constructor(code: string, message: string, cause?: Error) {
-    super(`[${code}] ${message}`);
+    super(`[${code}] ${message}`, cause ? { cause } : undefined);
     this.code = code;
     this.name = this.constructor.name;
-    this.cause = cause;
   }
 }
 
