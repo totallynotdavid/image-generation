@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
-import { loadImage, resizeImage } from "../src";
-import { createFiles, solid } from "./fixtures";
+import { loadImage, ProcessingError, resizeImage } from "../src";
+import { animated, createFiles, solid } from "./fixtures";
 
 let files: Awaited<ReturnType<typeof createFiles>>;
 let rectangle: Uint8Array;
@@ -27,6 +27,20 @@ describe("loadImage", () => {
 
     expect([image.width, image.height]).toEqual([150, 80]);
   });
+
+  it.each(["gif", "webp"] as const)(
+    "loads the first frame of an animated %s",
+    async (format) => {
+      const bytes = await animated(format, [
+        [255, 0, 0, 255],
+        [0, 0, 255, 255],
+      ]);
+      const image = await loadImage(bytes);
+
+      expect([image.width, image.height]).toEqual([20, 20]);
+      expect(Array.from(image.getRGBAAt(10, 10))).toEqual([255, 0, 0, 255]);
+    },
+  );
 
   it.each(["notes.txt", "empty.png", "missing.png"])(
     "rejects %s",
@@ -56,6 +70,18 @@ describe("resizeImage", () => {
     const image = await loadImage(rectangle);
 
     expect(resizeImage(image, {})).toBe(image);
+  });
+
+  it.each([
+    ["a negative width", { width: -5 }],
+    ["a zero width next to a height", { width: 0, height: 10 }],
+    ["a height that rounds to zero", { height: 0.2 }],
+    ["an unknown mode", { width: 10, mode: "RESIZE_UNKNOWN" }],
+  ] as const)("throws a ProcessingError for %s", async (_label, options) => {
+    const image = await loadImage(rectangle);
+
+    // @ts-expect-error The unknown mode is not a ResizeMode.
+    expect(() => resizeImage(image, options)).toThrow(ProcessingError);
   });
 
   it("takes the resize mode", async () => {

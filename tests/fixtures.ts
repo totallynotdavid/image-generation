@@ -1,7 +1,7 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Image } from "imagescript";
+import { Animation, Frame, Image } from "imagescript";
 
 export type Rgba = [r: number, g: number, b: number, a: number];
 
@@ -11,6 +11,21 @@ export function solid(
   [r, g, b, a]: Rgba,
 ): Promise<Uint8Array> {
   return new Image(width, height).fill(Image.rgbaToColor(r, g, b, a)).encode();
+}
+
+/** An animation with one square frame per color. */
+export async function animated(
+  format: "gif" | "webp",
+  colors: Rgba[],
+  side = 20,
+): Promise<Uint8Array> {
+  const frames = await Promise.all(
+    colors.map(async (rgba) =>
+      Frame.from(await Image.decode(await solid(side, side, rgba)), 100),
+    ),
+  );
+  const animation = new Animation(frames);
+  return format === "gif" ? animation.encodeGIF() : animation.encodeWebP();
 }
 
 /** Left third red, middle third green, right third blue. */
