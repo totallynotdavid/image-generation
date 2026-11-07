@@ -100,8 +100,10 @@ tarball, so a bad tarball path or package is caught before the tag. A separate
 `preflight` job fails when:
 
 - a job names an `environment:` that does not exist in the repository;
-- the `version` in `package.json` is already on npm, as when a release forgot
-  its version bump.
+- the `version` in `package.json` is already on npm and the run is for a tag, as
+  when a release forgot its version bump. A pull request or manual run only
+  reports that the version is published, and the `publish` job then skips its
+  `npm publish --dry-run`.
 
 A dry run does not check the trusted publisher. npm validates it on the first
 publish.
