@@ -59,15 +59,38 @@ describe("circle", () => {
     expect(await size(result)).toEqual([24, 24]);
   });
 
-  it("rejects an invalid border color", async () => {
+  it.each([
+    ["with a border", 5],
+    ["without a border", 0],
+    ["with a border that rounds to none", 0.4],
+  ])("rejects an invalid border color %s", async (_label, borderWidth) => {
     const input = await solid(100, 100, [0, 0, 0, 255]);
 
     await expect(
-      circle({ input, borderColor: "invalid", borderWidth: 5 }),
+      circle({ input, borderColor: "invalid", borderWidth }),
     ).rejects.toMatchObject({
       name: "ProcessingError",
       message: expect.stringContaining("Invalid border color"),
     });
+  });
+
+  it("rejects an empty border color", async () => {
+    await expect(
+      circle({
+        input: await solid(100, 100, [0, 0, 0, 255]),
+        borderColor: "",
+        borderWidth: 5,
+      }),
+    ).rejects.toThrow("Invalid border color");
+  });
+
+  it("rejects a NaN border width", async () => {
+    await expect(
+      circle({
+        input: await solid(100, 100, [0, 0, 0, 255]),
+        borderWidth: Number.NaN,
+      }),
+    ).rejects.toThrow("Invalid border width");
   });
 
   it("rejects a border that leaves no image", async () => {

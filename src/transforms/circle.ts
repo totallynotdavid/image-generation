@@ -10,9 +10,18 @@ import {
 
 export async function circle(params: CircleParams): Promise<TransformResult> {
   try {
-    const image = await loadImage(params.input);
+    const requestedWidth = params.borderWidth ?? 0;
+    if (Number.isNaN(requestedWidth)) {
+      throw new ProcessingError("Invalid border width: NaN");
+    }
+    const borderWidth = Math.max(0, Math.round(requestedWidth));
+    const borderColor = params.borderColor ?? "#000000";
+    const border = parseHex(borderColor);
+    if (!border) {
+      throw new ProcessingError(`Invalid border color: ${borderColor}`);
+    }
 
-    const borderWidth = Math.max(0, Math.round(params.borderWidth || 0));
+    const image = await loadImage(params.input);
     const size = Math.min(image.width, image.height);
 
     const disc = image
@@ -25,11 +34,6 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
       .cropCircle();
     if (borderWidth === 0) return await disc.encode();
 
-    const borderColor = params.borderColor || "#000000";
-    const border = parseHex(borderColor);
-    if (!border) {
-      throw new ProcessingError(`Invalid border color: ${borderColor}`);
-    }
     if (borderWidth >= size / 2) {
       throw new ProcessingError("Border width too large for image size");
     }
