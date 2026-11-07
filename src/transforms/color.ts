@@ -9,8 +9,9 @@ import {
 
 type BlendMode = NonNullable<ColorParams["blendMode"]>;
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
+function unitInterval(value: number, name: string): number {
+  if (Number.isNaN(value)) throw new ProcessingError(`Invalid ${name}: NaN`);
+  return Math.max(0, Math.min(1, value));
 }
 
 function softLight(base: number, overlay: number): number {
@@ -20,8 +21,10 @@ function softLight(base: number, overlay: number): number {
   return base + (2 * overlay - 1) * (curve - base);
 }
 
+const FLOAT_NOISE = 1e-9;
+
 function mix(base: number, effect: number, amount: number): number {
-  return (effect * amount + base * (1 - amount)) | 0;
+  return Math.floor(base + (effect - base) * amount + FLOAT_NOISE);
 }
 
 function hueAndSaturation({ red, green, blue }: Rgb): {
@@ -147,8 +150,8 @@ export async function color(params: ColorParams): Promise<TransformResult> {
     if (!tint) {
       throw new ProcessingError(`Invalid hex color: ${hex}`);
     }
-    const intensity = clamp(params.intensity ?? 1, 0, 1);
-    const opacity = clamp(params.opacity ?? 0.3, 0, 1);
+    const intensity = unitInterval(params.intensity ?? 1, "intensity");
+    const opacity = unitInterval(params.opacity ?? 0.3, "opacity");
 
     const image = await loadImage(params.input);
     if (mode === "tint") applyTint(image.bitmap, tint, opacity, intensity);

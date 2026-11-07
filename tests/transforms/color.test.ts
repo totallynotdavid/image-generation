@@ -142,6 +142,24 @@ describe("color options", () => {
     expect(await pixel(result, 0, 0)).toEqual([177, 50, 50, 255]);
   });
 
+  it.each([
+    ["wash", "#030303"],
+    ["tint", "#ffffff"],
+  ] as const)(
+    "%s with a color the image already has leaves it unchanged",
+    async (blendMode, hex) => {
+      const result = await color({
+        input: await grey(3),
+        hex,
+        blendMode,
+        opacity: 0.3,
+        intensity: 0.3,
+      });
+
+      expect(await pixel(result, 0, 0)).toEqual([3, 3, 3, 255]);
+    },
+  );
+
   it("clamps opacity and intensity to 0..1", async () => {
     const input = await grey(100);
     const wild = await color({
@@ -196,6 +214,18 @@ describe("color errors", () => {
       message: expect.stringContaining("Invalid hex color"),
     });
   });
+
+  it.each(["opacity", "intensity"] as const)(
+    "rejects a NaN %s",
+    async (name) => {
+      await expect(
+        color({ input: await grey(0), [name]: Number.NaN }),
+      ).rejects.toMatchObject({
+        name: "ProcessingError",
+        message: expect.stringContaining(`Invalid ${name}`),
+      });
+    },
+  );
 
   it("rejects an unknown blend mode", async () => {
     const input = await grey(0);
