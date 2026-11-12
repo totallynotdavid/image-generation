@@ -28,11 +28,7 @@ export function resizeImage(image: Image, options: ResizeOptions): Image {
   if (!width && !height) return image;
 
   try {
-    return image.resize(
-      width ?? Image.RESIZE_AUTO,
-      height ?? Image.RESIZE_AUTO,
-      { mode },
-    );
+    return image.resize({ width, height, mode });
   } catch (error) {
     throw processingError(error, "Failed to resize image");
   }

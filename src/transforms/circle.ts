@@ -1,4 +1,4 @@
-import { Image } from "imagescript";
+import { Colors, Image } from "imagescript";
 import type { CircleParams, TransformResult } from "../types";
 import { parseHex } from "../hex";
 import { loadImage } from "../utils";
@@ -40,7 +40,7 @@ export async function circle(params: CircleParams): Promise<TransformResult> {
 
     const outerSize = size + borderWidth * 2;
     const ring = new Image(outerSize, outerSize)
-      .fill(Image.rgbaToColor(border.red, border.green, border.blue, 255))
+      .fill(Colors.fromRGBA(border.red, border.green, border.blue, 255))
       .cropCircle();
     return await ring.composite(disc, borderWidth, borderWidth).encode();
   } catch (error) {

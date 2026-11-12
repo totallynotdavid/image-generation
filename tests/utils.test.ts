@@ -88,7 +88,7 @@ describe("resizeImage", () => {
     const resized = resizeImage(await loadImage(rectangle), {
       width: 30,
       height: 30,
-      mode: "RESIZE_NEAREST_NEIGHBOR",
+      mode: "nearest-neighbor",
     });
 
     expect([resized.width, resized.height]).toEqual([30, 30]);
